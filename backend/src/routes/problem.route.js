@@ -1,0 +1,41 @@
+// routes/problem.routes.js
+const express = require('express');
+const {
+  createProblem,
+  getProblems,
+  getProblemById,
+  assignProblem,
+  getStats,
+} = require('../controllers/problem.controller');
+const authMiddleware = require('../middleware/auth.middleware');
+const rbacMiddleware = require('../middleware/rbac.middlewre');
+
+const router = express.Router();
+
+// Citizen routes
+router.post(
+  '/',
+  authMiddleware,
+  rbacMiddleware(['citizen']),
+  createProblem
+);
+
+// All authenticated users
+router.get('/', authMiddleware, getProblems);
+router.get('/:id', authMiddleware, getProblemById);
+
+// Admin only
+router.put(
+  '/:id/assign',
+  authMiddleware,
+  rbacMiddleware(['admin']),
+  assignProblem
+);
+router.get(
+  '/stats/dashboard',
+  authMiddleware,
+  rbacMiddleware(['admin']),
+  getStats
+);
+
+module.exports = router;
