@@ -10,6 +10,7 @@ const problemRoutes = require('./routes/problem.route');
 const projectRoutes = require('./routes/project.route');
 const internalRoutes = require('./routes/internal.route');
 const notificationRoutes = require('./routes/notification.route');
+const userRoutes = require('./routes/user.route'); // additive — see controllers/user.controller.js
 
 // ✅ Import error handler (optional but recommended)
 const { errorHandler } = require('./middleware/errorHandler.middleware');
@@ -25,6 +26,7 @@ app.use('/api/problems', problemRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/internal', internalRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/users', userRoutes);
 
 // Health check (optional)
 app.get('/health', (req, res) => {

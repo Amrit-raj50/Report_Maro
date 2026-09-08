@@ -1,9 +1,11 @@
 // src/index.js
 require('dotenv').config();
 
+const http = require('http');
 const app = require('./app');
 const connectDB = require('./config/db');
 const { getRedisClient, closeRedis } = require('./config/redis');
+const { initSocket } = require('./config/socket');
 
 const startServer = async () => {
   try {
@@ -16,7 +18,11 @@ const startServer = async () => {
     console.log('✅ Redis initialized');
 
     // 3. Start the server IMMEDIATELY
-    const server = app.listen(3000, () => {
+    // Wrapped in http.createServer so Socket.io can share the same port —
+    // app.listen() alone can't attach a socket server to it afterwards.
+    const server = http.createServer(app);
+    initSocket(server, app);
+    server.listen(3000, () => {
       console.log('🚀 Server is running on http://localhost:3000');
     });
 
