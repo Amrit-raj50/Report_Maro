@@ -1,9 +1,7 @@
 // src/controllers/auth.controller.js
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/user.model'); 
-
-console.log(process.env.JWT_SECRET);
+const User = require('../models/user.model');
 
 // 📝 REGISTER - Create a new user
 const register = async (req, res) => {
@@ -36,7 +34,7 @@ const register = async (req, res) => {
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
 
     // 5. Send response (exclude password)
@@ -85,10 +83,8 @@ const login = async (req, res) => {
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
-
-    console.log(token);
 
     // 4. Send response
     res.status(200).json({
@@ -125,7 +121,7 @@ const getMe = async (req, res) => {
 };
 
 module.exports = {
-    register,
-    login,
-    getMe
-}
+  register,
+  login,
+  getMe,
+};

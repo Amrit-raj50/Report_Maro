@@ -7,7 +7,7 @@
 const User = require('../models/user.model');
 
 // 📝 GET /api/users?role=university - List users, optionally filtered by role
-exports.getUsers = async (req, res, next) => {
+const getUsers = async (req, res, next) => {
   try {
     const { role } = req.query;
     const filter = {};
@@ -22,4 +22,8 @@ exports.getUsers = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+module.exports = {
+  getUsers,
 };

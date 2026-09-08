@@ -2,20 +2,24 @@
 const Project = require('../models/project.model');
 const Problem = require('../models/problem.model');
 const Notification = require('../models/notification.model');
+const AuditLog = require('../models/auditlog.model');
 
 // 📝 GET /api/projects - List projects (optionally by status or university)
-//
 // Added alongside apps/web because nothing previously let a university see
 // its own assigned projects or an industry browse fundable ones — only
-// POST .../proposal and PUT .../fund existed. Additive only.
-exports.getProjects = async (req, res, next) => {
+// POST .../proposal and PUT .../fund existed.
+const getProjects = async (req, res, next) => {
   try {
     const { status, university_id } = req.query;
     const filter = {};
     if (status) filter.status = status;
     if (university_id) filter.university_id = university_id;
 
-    const projects = await Project.find(filter).sort({ created_at: -1 });
+    const projects = await Project.find(filter)
+      .populate('problem_id')
+      .populate('university_id', 'full_name organization email')
+      .populate('industry_partner_id', 'full_name organization email')
+      .sort({ created_at: -1 });
 
     res.json({
       success: true,
@@ -26,10 +30,14 @@ exports.getProjects = async (req, res, next) => {
   }
 };
 
-// 📝 GET /api/projects/:id - Single project detail (additive, see getProjects above)
-exports.getProjectById = async (req, res, next) => {
+// 📝 GET /api/projects/:id - Single project detail
+const getProjectById = async (req, res, next) => {
   try {
-    const project = await Project.findById(req.params.id);
+    const project = await Project.findById(req.params.id)
+      .populate('problem_id')
+      .populate('university_id', 'full_name organization email')
+      .populate('industry_partner_id', 'full_name organization email');
+
     if (!project) {
       return res.status(404).json({
         success: false,
@@ -87,6 +95,13 @@ const submitProposal = async (req, res, next) => {
     project.milestones = milestones || [];
     project.status = 'under_review';
     await project.save();
+
+    // Audit log
+    await AuditLog.create({
+      eventType: 'PROPOSAL_SUBMITTED',
+      payload: { projectId: project._id, universityId: req.user.id, budget },
+      source: 'university',
+    }).catch(err => console.error('AuditLog error:', err.message));
 
     // Notify industry partners
     await Notification.create({
@@ -157,6 +172,13 @@ const fundProject = async (req, res, next) => {
       status: 'in_progress',
     });
 
+    // Audit log
+    await AuditLog.create({
+      eventType: 'PROJECT_FUNDED',
+      payload: { projectId: project._id, industryId: req.user.id, amount },
+      source: 'industry',
+    }).catch(err => console.error('AuditLog error:', err.message));
+
     // Notify university
     await Notification.create({
       userId: project.university_id,
@@ -197,6 +219,8 @@ const fundProject = async (req, res, next) => {
 };
 
 module.exports = {
-    submitProposal,
-    fundProject
-}
+  getProjects,
+  getProjectById,
+  submitProposal,
+  fundProject,
+};
