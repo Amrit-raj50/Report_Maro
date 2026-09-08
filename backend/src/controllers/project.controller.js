@@ -4,7 +4,7 @@ const Problem = require('../models/problem.model');
 const Notification = require('../models/notification.model');
 
 // 📝 POST /api/projects/:id/proposal - University submits proposal
-exports.submitProposal = async (req, res, next) => {
+const submitProposal = async (req, res, next) => {
   try {
     const { proposal_text, budget, milestones } = req.body;
     const projectId = req.params.id;
@@ -77,7 +77,7 @@ exports.submitProposal = async (req, res, next) => {
 };
 
 // 📝 PUT /api/projects/:id/fund - Industry funds project
-exports.fundProject = async (req, res, next) => {
+const fundProject = async (req, res, next) => {
   try {
     const { amount } = req.body;
     const projectId = req.params.id;
@@ -155,3 +155,8 @@ exports.fundProject = async (req, res, next) => {
     next(error);
   }
 };
+
+module.exports = {
+    submitProposal,
+    fundProject
+}

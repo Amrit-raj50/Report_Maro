@@ -7,7 +7,7 @@ const { getCache, setCache } = require('../utils/redisCache');
 const { uploadToCloudinary } = require('../utils/cloudinary');
 
 // POST /api/problems - Citizen submits problem
-exports.createProblem = async (req, res, next) => {
+const createProblem = async (req, res, next) => {
   try {
     const { title, description, location, image_urls } = req.body;
 
@@ -58,7 +58,7 @@ exports.createProblem = async (req, res, next) => {
 };
 
 // 📝 GET /api/problems - List problems with filters
-exports.getProblems = async (req, res, next) => {
+const getProblems = async (req, res, next) => {
   try {
     const { category, district, status, page = 1, limit = 10 } = req.query;
 
@@ -92,7 +92,7 @@ exports.getProblems = async (req, res, next) => {
 };
 
 // 📝 GET /api/problems/:id - Get single problem
-exports.getProblemById = async (req, res, next) => {
+const getProblemById = async (req, res, next) => {
   try {
     const problem = await Problem.findById(req.params.id)
       .populate('submitted_by', 'full_name email')
@@ -112,7 +112,7 @@ exports.getProblemById = async (req, res, next) => {
 };
 
 // 📝 PUT /api/problems/:id/assign - Admin assigns to university
-exports.assignProblem = async (req, res, next) => {
+const assignProblem = async (req, res, next) => {
   try {
     const { universityId } = req.body;
     const problemId = req.params.id;
@@ -201,7 +201,7 @@ exports.assignProblem = async (req, res, next) => {
 };
 
 // 📝 GET /api/problems/stats - Admin dashboard stats (cached 5 min)
-exports.getStats = async (req, res, next) => {
+const getStats = async (req, res, next) => {
   try {
     const cacheKey = 'stats:dashboard';
 
@@ -251,3 +251,11 @@ exports.getStats = async (req, res, next) => {
     next(error);
   }
 };
+
+module.exports = {
+    getStats,
+    assignProblem,
+    getProblemById,
+    getProblems,
+    createProblem
+}
