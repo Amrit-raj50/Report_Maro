@@ -2,6 +2,8 @@
 const Problem = require('../models/problem.model');
 const Project = require('../models/project.model');
 const Notification = require('../models/notification.model');
+const User = require('../models/user.model');
+const AuditLog = require('../models/auditlog.model');
 const { enqueueClassification } = require('../queue/producer');
 const { getCache, setCache } = require('../utils/redisCache');
 const { uploadToCloudinary } = require('../utils/cloudinary');
@@ -9,7 +11,16 @@ const { uploadToCloudinary } = require('../utils/cloudinary');
 // POST /api/problems - Citizen submits problem
 const createProblem = async (req, res, next) => {
   try {
-    const { title, description, location, image_urls } = req.body;
+    let { title, description, location, image_urls } = req.body;
+
+    // Handle parsed location if submitted as JSON string in multipart/form-data
+    if (typeof location === 'string') {
+      try {
+        location = JSON.parse(location);
+      } catch (err) {
+        // keep as is
+      }
+    }
 
     // Validate required fields
     if (!title || !description || !location || !location.lat || !location.lng || !location.district) {
@@ -60,12 +71,17 @@ const createProblem = async (req, res, next) => {
 // 📝 GET /api/problems - List problems with filters
 const getProblems = async (req, res, next) => {
   try {
-    const { category, district, status, page = 1, limit = 10 } = req.query;
+    const { category, district, status, submitted_by, page = 1, limit = 10 } = req.query;
 
     const filter = {};
     if (category) filter.category = category;
     if (district) filter['location.district'] = district;
     if (status) filter.status = status;
+    if (submitted_by === 'me' && req.user) {
+      filter.submitted_by = req.user.id;
+    } else if (submitted_by) {
+      filter.submitted_by = submitted_by;
+    }
 
     const problems = await Problem.find(filter)
       .populate('submitted_by', 'full_name email')
@@ -166,6 +182,13 @@ const assignProblem = async (req, res, next) => {
       status: 'proposed',
     });
 
+    // Audit log
+    await AuditLog.create({
+      eventType: 'PROBLEM_ASSIGNED',
+      payload: { problemId: problem._id, universityId, assignedBy: req.user.id },
+      source: 'admin',
+    }).catch(err => console.error('AuditLog error:', err.message));
+
     // Create notification
     await Notification.create({
       userId: universityId,
@@ -253,9 +276,9 @@ const getStats = async (req, res, next) => {
 };
 
 module.exports = {
-    getStats,
-    assignProblem,
-    getProblemById,
-    getProblems,
-    createProblem
-}
+  createProblem,
+  getProblems,
+  getProblemById,
+  assignProblem,
+  getStats,
+};

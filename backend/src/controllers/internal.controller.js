@@ -1,6 +1,7 @@
 // controllers/internal.controller.js
 const Problem = require('../models/problem.model');
 const Notification = require('../models/notification.model');
+const AuditLog = require('../models/auditlog.model');
 
 // 📝 PATCH /api/internal/problems/:id - AI updates problem
 const updateProblemAI = async (req, res, next) => {
@@ -27,6 +28,13 @@ const updateProblemAI = async (req, res, next) => {
     // If status is 'verified', update and notify admin
     if (status === 'verified' && problem.status === 'submitted') {
       problem.status = 'verified';
+
+      // Audit log
+      await AuditLog.create({
+        eventType: 'PROBLEM_AI_VERIFIED',
+        payload: { problemId: problem._id, category, priority, confidence },
+        source: 'ai_worker',
+      }).catch(err => console.error('AuditLog error:', err.message));
 
       // Create notification
       await Notification.create({
@@ -67,4 +75,6 @@ const updateProblemAI = async (req, res, next) => {
   }
 };
 
-module.exports = {updateProblemAI}
+module.exports = {
+  updateProblemAI,
+};

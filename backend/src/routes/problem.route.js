@@ -9,6 +9,7 @@ const {
 } = require('../controllers/problem.controller');
 const authMiddleware = require('../middleware/auth.middleware');
 const rbacMiddleware = require('../middleware/rbac.middlewre');
+const upload = require('../middleware/upload.middleware');
 
 const router = express.Router();
 
@@ -17,6 +18,7 @@ router.post(
   '/',
   authMiddleware,
   rbacMiddleware(['citizen']),
+  upload.array('images', 5),
   createProblem
 );
 
