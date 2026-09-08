@@ -7,19 +7,9 @@ const rbacMiddleware = require('../middleware/rbac.middlewre');
 const router = express.Router();
 
 // University: Submit proposal
-router.post(
-  '/:id/proposal',
-  authMiddleware,
-  rbacMiddleware(['university']),
-  submitProposal
-);
+router.post('/:id/proposal',authMiddleware,rbacMiddleware(['university']),submitProposal);
 
 // Industry: Fund project
-router.put(
-  '/:id/fund',
-  authMiddleware,
-  rbacMiddleware(['industry']),
-  fundProject
-);
+router.put('/:id/fund',authMiddleware,rbacMiddleware(['industry']),fundProject);
 
 module.exports = router;
