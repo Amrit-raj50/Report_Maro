@@ -53,7 +53,6 @@ const ProjectSchema = new mongoose.Schema(
 );
 
 // Indexes
-ProjectSchema.index({ problem_id: 1 });
 ProjectSchema.index({ university_id: 1 });
 ProjectSchema.index({ status: 1 });
 
