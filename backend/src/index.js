@@ -1,40 +1,23 @@
+// src/index.js
+require('dotenv').config();
+
 const app = require('./app');
-const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const { getRedisClient, closeRedis } = require('./config/redis');
 
-dotenv.config();
-
 const startServer = async () => {
   try {
-    // Connect to MongoDB
+    // 1. Connect to MongoDB
     await connectDB();
-    console.log('MongoDB connected successfully!');
+    console.log('✅ MongoDB connected successfully!');
 
-    // Initialize Redis
+    // 2. Initialize Redis (no need to wait for "ready")
     const redis = getRedisClient();
-    
-    // Wait for Redis to be ready
-    await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new Error('Redis connection timeout after 10s'));
-      }, 10000);
-      
-      redis.once('ready', () => {
-        clearTimeout(timeout);
-        resolve();
-      });
-      
-      redis.once('error', (err) => {
-        clearTimeout(timeout);
-        reject(err);
-      });
-    });
+    console.log('✅ Redis initialized');
 
-    console.log('Redis is ready!');
-
+    // 3. Start the server IMMEDIATELY
     const server = app.listen(3000, () => {
-      console.log('Server is running on port 3000');
+      console.log('🚀 Server is running on http://localhost:3000');
     });
 
     // Graceful shutdown
@@ -51,8 +34,7 @@ const startServer = async () => {
     process.on('SIGTERM', shutdown);
 
   } catch (error) {
-    console.error('Failed to start server:', error.message);
-    console.error(error.stack);
+    console.error('❌ Failed to start server:', error.message);
     process.exit(1);
   }
 };
