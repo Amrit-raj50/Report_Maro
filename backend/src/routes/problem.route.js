@@ -25,17 +25,7 @@ router.get('/', authMiddleware, getProblems);
 router.get('/:id', authMiddleware, getProblemById);
 
 // Admin only
-router.put(
-  '/:id/assign',
-  authMiddleware,
-  rbacMiddleware(['admin']),
-  assignProblem
-);
-router.get(
-  '/stats/dashboard',
-  authMiddleware,
-  rbacMiddleware(['admin']),
-  getStats
-);
+router.put('/:id/assign',authMiddleware,rbacMiddleware(['admin']),assignProblem);
+router.get('/stats/dashboard',authMiddleware,rbacMiddleware(['admin']),getStats);
 
 module.exports = router;

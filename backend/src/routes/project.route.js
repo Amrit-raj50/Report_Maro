@@ -12,19 +12,9 @@ router.get('/', authMiddleware, getProjects);
 router.get('/:id', authMiddleware, getProjectById);
 
 // University: Submit proposal
-router.post(
-  '/:id/proposal',
-  authMiddleware,
-  rbacMiddleware(['university']),
-  submitProposal
-);
+router.post('/:id/proposal',authMiddleware,rbacMiddleware(['university']),submitProposal);
 
 // Industry: Fund project
-router.put(
-  '/:id/fund',
-  authMiddleware,
-  rbacMiddleware(['industry']),
-  fundProject
-);
+router.put('/:id/fund',authMiddleware,rbacMiddleware(['industry']),fundProject);
 
 module.exports = router;
