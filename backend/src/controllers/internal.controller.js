@@ -3,7 +3,7 @@ const Problem = require('../models/problem.model');
 const Notification = require('../models/notification.model');
 
 // 📝 PATCH /api/internal/problems/:id - AI updates problem
-exports.updateProblemAI = async (req, res, next) => {
+const updateProblemAI = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { category, priority, confidence, status } = req.body;
@@ -66,3 +66,5 @@ exports.updateProblemAI = async (req, res, next) => {
     next(error);
   }
 };
+
+module.exports = {updateProblemAI}
