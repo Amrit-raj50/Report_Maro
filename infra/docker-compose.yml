@@ -1,0 +1,39 @@
+name: sih-portal
+
+# Matches backend/'s actual dependencies (backend/src/config/db.js,
+# backend/src/config/redis.js) — no Postgres, no MinIO, nothing backend/
+# doesn't use.
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: sih
+      MONGO_INITDB_ROOT_PASSWORD: sih_dev_password
+      MONGO_INITDB_DATABASE: sih_portal
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost/sih_portal --quiet
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mongo_data:
+  redis_data:

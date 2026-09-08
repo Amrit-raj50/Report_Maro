@@ -3,6 +3,46 @@ const Project = require('../models/project.model');
 const Problem = require('../models/problem.model');
 const Notification = require('../models/notification.model');
 
+// 📝 GET /api/projects - List projects (optionally by status or university)
+//
+// Added alongside apps/web because nothing previously let a university see
+// its own assigned projects or an industry browse fundable ones — only
+// POST .../proposal and PUT .../fund existed. Additive only.
+exports.getProjects = async (req, res, next) => {
+  try {
+    const { status, university_id } = req.query;
+    const filter = {};
+    if (status) filter.status = status;
+    if (university_id) filter.university_id = university_id;
+
+    const projects = await Project.find(filter).sort({ created_at: -1 });
+
+    res.json({
+      success: true,
+      data: projects,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 📝 GET /api/projects/:id - Single project detail (additive, see getProjects above)
+exports.getProjectById = async (req, res, next) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: 'Project not found',
+      });
+    }
+
+    res.json({ success: true, data: project });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // 📝 POST /api/projects/:id/proposal - University submits proposal
 exports.submitProposal = async (req, res, next) => {
   try {
