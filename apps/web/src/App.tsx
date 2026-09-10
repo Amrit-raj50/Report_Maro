@@ -9,6 +9,8 @@ import ProblemList from './pages/ProblemList.js';
 import ProblemDetail from './pages/ProblemDetail.js';
 import AdminDashboard from './pages/AdminDashboard.js';
 import UniversityDashboard from './pages/UniversityDashboard.js';
+import MentorDashboard from './pages/MentorDashboard.js';
+import StudentDashboard from './pages/StudentDashboard.js';
 import IndustryPortal from './pages/IndustryPortal.js';
 import ProjectDetail from './pages/ProjectDetail.js';
 
@@ -22,14 +24,18 @@ export default function App() {
         <Route path="/problems" element={<ProblemList />} />
         <Route path="/problems/:id" element={<ProblemDetail />} />
 
-        <Route element={<ProtectedRoute allow={['citizen']} />}>
+        <Route element={<ProtectedRoute allow={['citizen', 'university', 'admin']} />}>
           <Route path="/submit" element={<SubmitProblem />} />
+          <Route path="/student" element={<StudentDashboard />} />
         </Route>
         <Route element={<ProtectedRoute allow={['admin']} />}>
           <Route path="/admin" element={<AdminDashboard />} />
         </Route>
         <Route element={<ProtectedRoute allow={['university']} />}>
           <Route path="/university" element={<UniversityDashboard />} />
+          <Route path="/university/mentor" element={<MentorDashboard />} />
+          <Route path="/mentor" element={<MentorDashboard />} />
+          <Route path="/university/student" element={<StudentDashboard />} />
         </Route>
         <Route element={<ProtectedRoute allow={['industry']} />}>
           <Route path="/industry" element={<IndustryPortal />} />

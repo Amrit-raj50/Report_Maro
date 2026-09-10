@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { loginRequestSchema } from '@sih/shared-types';
 import { apiClient, apiErrorMessage } from '../lib/apiClient.js';
 import { useAuthStore } from '../store/authStore.js';
@@ -7,13 +7,19 @@ import { Button } from '../components/Button.js';
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const setSession = useAuthStore((s) => s.setSession);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+
+  // Check if user was redirected from a protected page like /university
+  const fromPath = (location.state as { from?: string } | undefined)?.from;
+  const isUniversityRedirect = fromPath === '/university' || location.search.includes('role=university');
+
+  const [email, setEmail] = useState(isUniversityRedirect ? 'dean@nitjsr.ac.in' : '');
+  const [password, setPassword] = useState(isUniversityRedirect ? 'mock-login-not-a-secret' : '');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const performLogin = async (loginEmail: string, loginPass: string) => {
+  const performLogin = async (loginEmail: string, loginPass: string, forcedRole?: string) => {
     setError(null);
     const parsed = loginRequestSchema.safeParse({ email: loginEmail, password: loginPass });
     if (!parsed.success) {
@@ -22,19 +28,60 @@ export default function Login() {
     }
     setLoading(true);
     try {
-      const res = await apiClient.post('/auth/login', parsed.data);
-      setSession(res.data.user, res.data.token);
+      let res;
+      try {
+        res = await apiClient.post('/auth/login', parsed.data);
+      } catch (err: any) {
+        // Self-healing fallback for Hackathon demo accounts if not yet in fresh DB
+        if (loginEmail === 'dean@nitjsr.ac.in' || loginEmail === 'dean.test@university.edu') {
+          await apiClient.post('/auth/register', {
+            full_name: 'Dr. S. Mahato (Dean R&D)',
+            email: loginEmail,
+            password: loginPass,
+            role: 'university',
+            organization: 'NIT Jamshedpur',
+          }).catch(() => null);
+          res = await apiClient.post('/auth/login', parsed.data);
+        } else if (loginEmail === 'himmat@nitjsr.ac.in') {
+          await apiClient.post('/auth/register', {
+            full_name: 'Himmat (Student Investigator)',
+            email: loginEmail,
+            password: loginPass,
+            role: 'citizen',
+            organization: 'NIT Jamshedpur',
+          }).catch(() => null);
+          res = await apiClient.post('/auth/login', parsed.data);
+        } else if (loginEmail === 'admin@sihportal.dev') {
+          await apiClient.post('/auth/register', {
+            full_name: 'Portal Administrator',
+            email: loginEmail,
+            password: loginPass,
+            role: 'admin',
+          }).catch(() => null);
+          res = await apiClient.post('/auth/login', parsed.data);
+        } else {
+          throw err;
+        }
+      }
 
-      // Smart role-based redirect
-      const role = res.data.user.role;
-      if (role === 'admin') {
-        navigate('/admin');
-      } else if (role === 'university') {
-        navigate('/university');
-      } else if (role === 'industry') {
-        navigate('/industry');
-      } else {
-        navigate('/problems');
+      if (res?.data?.user && res?.data?.token) {
+        setSession(res.data.user, res.data.token);
+
+        const role = res.data.user.role;
+        // Priority destination: if student demo or target, go to /student
+        if (forcedRole === 'student' || loginEmail === 'himmat@nitjsr.ac.in') {
+          navigate('/student');
+        } else if (fromPath && (role === 'university' || !fromPath.startsWith('/university'))) {
+          navigate(fromPath);
+        } else if (role === 'university' || forcedRole === 'university') {
+          navigate('/university');
+        } else if (role === 'admin') {
+          navigate('/admin');
+        } else if (role === 'industry') {
+          navigate('/industry');
+        } else {
+          navigate('/problems');
+        }
       }
     } catch (err) {
       setError(apiErrorMessage(err, 'Invalid email or password'));
@@ -49,10 +96,10 @@ export default function Login() {
   };
 
   // Quick fill helper for hackathon demo & evaluation
-  const handleQuickDemo = (demoEmail: string) => {
+  const handleQuickDemo = (demoEmail: string, role?: string) => {
     setEmail(demoEmail);
     setPassword('mock-login-not-a-secret');
-    performLogin(demoEmail, 'mock-login-not-a-secret');
+    performLogin(demoEmail, 'mock-login-not-a-secret', role);
   };
 
   return (
@@ -68,6 +115,17 @@ export default function Login() {
             Sign in to access departmental triage, university proposals, or citizen grievance logs.
           </p>
         </div>
+
+        {/* Redirect Notice */}
+        {isUniversityRedirect && (
+          <div className="mb-4 p-3 bg-forest/10 border border-forest/30 rounded-[2px] flex items-start gap-2 text-xs text-forest">
+            <span className="font-bold">🏛️ Note:</span>
+            <span>
+              Institutional access required. Sign in with a University credential to access the
+              University R&amp;D Dashboard.
+            </span>
+          </div>
+        )}
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -122,10 +180,10 @@ export default function Login() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <button
               type="button"
-              onClick={() => handleQuickDemo('admin@sihportal.dev')}
+              onClick={() => handleQuickDemo('admin@sihportal.dev', 'admin')}
               className="p-2 bg-paper border border-navy/40 hover:border-navy hover:bg-white text-navy rounded-[2px] text-left transition-colors"
             >
               <div className="text-[11px] font-bold text-navy flex items-center gap-1">
@@ -138,22 +196,39 @@ export default function Login() {
 
             <button
               type="button"
-              onClick={() => handleQuickDemo('dean@nitjsr.ac.in')}
-              className="p-2 bg-paper border border-forest/40 hover:border-forest hover:bg-white text-forest rounded-[2px] text-left transition-colors"
+              onClick={() => handleQuickDemo('dean@nitjsr.ac.in', 'university')}
+              className="p-2 bg-forest/10 border-2 border-forest hover:bg-forest/20 text-forest rounded-[2px] text-left transition-colors relative"
             >
               <div className="text-[11px] font-bold text-forest flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-forest"></span> University
+                <span className="w-1.5 h-1.5 rounded-full bg-forest"></span> 🏛️ University
               </div>
-              <div className="font-mono text-[10px] text-ink-muted truncate">dean@nitjsr.ac.in</div>
+              <div className="font-mono text-[10px] text-forest/90 truncate">dean@nitjsr.ac.in</div>
+              <span className="text-[9px] font-bold uppercase tracking-wider text-forest block mt-0.5">
+                → R&amp;D Desk
+              </span>
             </button>
 
             <button
               type="button"
-              onClick={() => handleQuickDemo('asha.devi@example.com')}
+              onClick={() => handleQuickDemo('himmat@nitjsr.ac.in', 'student')}
+              className="p-2 bg-turmeric/10 border-2 border-turmeric hover:bg-turmeric/20 text-ink rounded-[2px] text-left transition-colors relative"
+            >
+              <div className="text-[11px] font-bold text-navy flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-turmeric-deep"></span> 👨‍🎓 Student
+              </div>
+              <div className="font-mono text-[10px] text-ink-muted truncate">himmat@nitjsr.ac.in</div>
+              <span className="text-[9px] font-bold uppercase tracking-wider text-turmeric-deep block mt-0.5">
+                → Student Desk
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleQuickDemo('asha.devi@example.com', 'citizen')}
               className="p-2 bg-paper border border-border hover:border-navy hover:bg-white text-ink rounded-[2px] text-left transition-colors"
             >
               <div className="text-[11px] font-bold text-ink flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-turmeric-deep"></span> Citizen
+                <span className="w-1.5 h-1.5 rounded-full bg-ink-muted"></span> Citizen
               </div>
               <div className="font-mono text-[10px] text-ink-muted truncate">
                 asha.devi@example.com

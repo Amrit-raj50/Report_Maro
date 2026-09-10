@@ -8,6 +8,7 @@ export function Layout() {
   useSocketConnection();
   const { user, clearSession } = useAuthStore();
   const location = useLocation();
+  const isUniversity = location.pathname.startsWith('/university');
   const [fontScale, setFontScale] = useState<number>(1);
   const [lang, setLang] = useState<'en' | 'hi'>('en');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -171,9 +172,21 @@ export function Layout() {
                             ? '/industry'
                             : '/problems'
                     }
-                    className="px-3 py-1.5 bg-navy text-white text-[11px] sm:text-xs font-semibold rounded-[2px] hover:bg-navy-deep border border-navy transition-colors uppercase tracking-wide"
+                    className={`px-3 py-1.5 text-[11px] sm:text-xs font-bold rounded-[2px] border transition-colors uppercase tracking-wide flex items-center gap-1.5 ${
+                      user.role === 'university'
+                        ? 'bg-turmeric text-ink border-turmeric-deep hover:bg-turmeric-deep'
+                        : 'bg-navy text-white border-navy hover:bg-navy-deep'
+                    }`}
                   >
-                    Dashboard ({user.role})
+                    <span>
+                      {user.role === 'university'
+                        ? '🏛️ University Dashboard'
+                        : user.role === 'admin'
+                          ? '⚙️ Admin Dashboard'
+                          : user.role === 'industry'
+                            ? '💼 Industry Portal'
+                            : '📋 My Grievances'}
+                    </span>
                   </Link>
                 </div>
               ) : (
@@ -196,189 +209,195 @@ export function Layout() {
           </div>
         </div>
 
-        {/* BAND 3: PRIMARY NAVIGATION (NAVY BAND) */}
-        <div className="w-full bg-navy text-white">
-          <div className="max-w-7xl mx-auto px-3 sm:px-4">
-            {/* Mobile Nav Header */}
-            <div className="flex md:hidden items-center justify-between py-2 border-b border-navy-deep">
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="inline-flex items-center gap-1 px-2.5 py-1 bg-navy-deep text-white border border-white/20 rounded-[2px] text-xs font-bold tracking-wider uppercase"
-                aria-label="Toggle Navigation Menu"
-              >
-                <span className="material-symbols-outlined text-base">
-                  {mobileMenuOpen ? 'close' : 'menu'}
-                </span>
-                <span>{mobileMenuOpen ? 'Close Menu' : 'Portal Menu'}</span>
-              </button>
+        {/* BAND 3: PRIMARY NAVIGATION (NAVY BAND - Public & Citizen Pages Only) */}
+        {!isUniversity && (
+          <div className="w-full bg-navy text-white">
+            <div className="max-w-7xl mx-auto px-3 sm:px-4">
+              {/* Mobile Nav Header */}
+              <div className="flex md:hidden items-center justify-between py-2 border-b border-navy-deep">
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-navy-deep text-white border border-white/20 rounded-[2px] text-xs font-bold tracking-wider uppercase"
+                  aria-label="Toggle Navigation Menu"
+                >
+                  <span className="material-symbols-outlined text-base">
+                    {mobileMenuOpen ? 'close' : 'menu'}
+                  </span>
+                  <span>{mobileMenuOpen ? 'Close Menu' : 'Portal Menu'}</span>
+                </button>
 
-              <div className="flex items-center gap-1.5">
-                <Link
-                  to="/submit"
-                  className="px-2.5 py-1 bg-turmeric text-ink font-bold text-[11px] uppercase tracking-wider rounded-[2px] border border-turmeric-deep"
-                >
-                  SUBMIT ISSUE
-                </Link>
-                <Link
-                  to="/problems"
-                  className="px-2.5 py-1 bg-transparent text-white font-medium text-[11px] uppercase tracking-wider rounded-[2px] border border-white/50"
-                >
-                  TRACK
-                </Link>
+                <div className="flex items-center gap-1.5">
+                  <Link
+                    to="/submit"
+                    className="px-2.5 py-1 bg-turmeric text-ink font-bold text-[11px] uppercase tracking-wider rounded-[2px] border border-turmeric-deep"
+                  >
+                    SUBMIT ISSUE
+                  </Link>
+                  <Link
+                    to="/problems"
+                    className="px-2.5 py-1 bg-transparent text-white font-medium text-[11px] uppercase tracking-wider rounded-[2px] border border-white/50"
+                  >
+                    TRACK
+                  </Link>
+                </div>
               </div>
-            </div>
 
-            {/* Desktop Navigation Links */}
-            <div className="hidden md:flex flex-row items-center justify-between">
-              <nav className="flex flex-wrap items-center text-xs font-bold uppercase tracking-wider">
-                <Link
-                  to="/"
-                  className={`px-3 py-3 transition-colors ${
-                    location.pathname === '/'
-                      ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
-                      : 'hover:bg-navy-deep text-white'
-                  }`}
-                >
-                  Home
-                </Link>
-                <a
-                  href="/#about-scheme"
-                  className="px-3 py-3 hover:bg-navy-deep text-white transition-colors"
-                >
-                  About the Scheme
-                </a>
-                <Link
-                  to="/submit"
-                  className={`px-3 py-3 transition-colors ${
-                    location.pathname === '/submit'
-                      ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
-                      : 'hover:bg-navy-deep text-white'
-                  }`}
-                >
-                  Submit a Problem
-                </Link>
-                <Link
-                  to="/problems"
-                  className={`px-3 py-3 transition-colors ${
-                    location.pathname === '/problems'
-                      ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
-                      : 'hover:bg-navy-deep text-white'
-                  }`}
-                >
-                  Track Problems
-                </Link>
-                <Link
-                  to="/university"
-                  className={`px-3 py-3 transition-colors ${
-                    location.pathname.startsWith('/university')
-                      ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
-                      : 'hover:bg-navy-deep text-white'
-                  }`}
-                >
-                  University Portal
-                </Link>
-                <Link
-                  to="/industry"
-                  className={`px-3 py-3 transition-colors ${
-                    location.pathname.startsWith('/industry')
-                      ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
-                      : 'hover:bg-navy-deep text-white'
-                  }`}
-                >
-                  Industry &amp; Funding
-                </Link>
-                <Link
-                  to="/admin"
-                  className={`px-3 py-3 transition-colors ${
-                    location.pathname.startsWith('/admin')
-                      ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
-                      : 'hover:bg-navy-deep text-white'
-                  }`}
-                >
-                  Analytics &amp; AI Queue
-                </Link>
-                <a
-                  href="/#notices"
-                  className="px-3 py-3 hover:bg-navy-deep text-white transition-colors"
-                >
-                  Circulars &amp; Notices
-                </a>
-              </nav>
+              {/* Desktop Navigation Links */}
+              <div className="hidden md:flex flex-row items-center justify-between">
+                <nav className="flex flex-wrap items-center text-xs font-bold uppercase tracking-wider">
+                  <Link
+                    to="/"
+                    className={`px-3 py-3 transition-colors ${
+                      location.pathname === '/'
+                        ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
+                        : 'hover:bg-navy-deep text-white'
+                    }`}
+                  >
+                    Home
+                  </Link>
+                  <a
+                    href="/#about-scheme"
+                    className="px-3 py-3 hover:bg-navy-deep text-white transition-colors"
+                  >
+                    About the Scheme
+                  </a>
+                  <Link
+                    to="/submit"
+                    className={`px-3 py-3 transition-colors ${
+                      location.pathname === '/submit'
+                        ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
+                        : 'hover:bg-navy-deep text-white'
+                    }`}
+                  >
+                    Submit a Problem
+                  </Link>
+                  <Link
+                    to="/problems"
+                    className={`px-3 py-3 transition-colors ${
+                      location.pathname === '/problems'
+                        ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
+                        : 'hover:bg-navy-deep text-white'
+                    }`}
+                  >
+                    Track Problems
+                  </Link>
+                  <Link
+                    to="/university"
+                    className={`px-3 py-3 transition-colors ${
+                      location.pathname.startsWith('/university')
+                        ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
+                        : 'hover:bg-navy-deep text-white'
+                    }`}
+                  >
+                    University Portal
+                  </Link>
+                  <Link
+                    to="/industry"
+                    className={`px-3 py-3 transition-colors ${
+                      location.pathname.startsWith('/industry')
+                        ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
+                        : 'hover:bg-navy-deep text-white'
+                    }`}
+                  >
+                    Industry &amp; Funding
+                  </Link>
+                  <Link
+                    to="/admin"
+                    className={`px-3 py-3 transition-colors ${
+                      location.pathname.startsWith('/admin')
+                        ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
+                        : 'hover:bg-navy-deep text-white'
+                    }`}
+                  >
+                    Analytics &amp; AI Queue
+                  </Link>
+                  <a
+                    href="/#notices"
+                    className="px-3 py-3 hover:bg-navy-deep text-white transition-colors"
+                  >
+                    Circulars &amp; Notices
+                  </a>
+                </nav>
 
-              <div className="flex items-center gap-2 py-2">
-                <Link
-                  to="/submit"
-                  className="inline-flex items-center justify-center px-3.5 py-1.5 bg-turmeric text-ink font-bold text-xs uppercase tracking-wider rounded-[2px] border border-turmeric-deep hover:bg-turmeric-deep transition-colors"
-                >
-                  SUBMIT A PROBLEM
-                </Link>
-                <Link
-                  to="/problems"
-                  className="inline-flex items-center justify-center px-3 py-1.5 bg-transparent text-white font-semibold text-xs uppercase tracking-wider rounded-[2px] border border-white/60 hover:bg-white/10 transition-colors"
-                >
-                  TRACK STATUS
-                </Link>
+                <div className="flex items-center gap-2 py-2">
+                  <Link
+                    to="/submit"
+                    className="inline-flex items-center justify-center px-3.5 py-1.5 bg-turmeric text-ink font-bold text-xs uppercase tracking-wider rounded-[2px] border border-turmeric-deep hover:bg-turmeric-deep transition-colors"
+                  >
+                    SUBMIT A PROBLEM
+                  </Link>
+                  <Link
+                    to="/problems"
+                    className="inline-flex items-center justify-center px-3 py-1.5 bg-transparent text-white font-semibold text-xs uppercase tracking-wider rounded-[2px] border border-white/60 hover:bg-white/10 transition-colors"
+                  >
+                    TRACK STATUS
+                  </Link>
+                </div>
               </div>
-            </div>
 
-            {/* Mobile Expanded Menu Drawer */}
-            {mobileMenuOpen && (
-              <nav className="md:hidden flex flex-col divide-y divide-navy-deep bg-navy border-t border-navy-deep py-2 text-xs font-semibold uppercase tracking-wider">
-                <Link to="/" className="px-3 py-2.5 hover:bg-navy-deep text-white">
-                  ● Home
-                </Link>
-                <a href="/#about-scheme" className="px-3 py-2.5 hover:bg-navy-deep text-white">
-                  ● About the Scheme
-                </a>
-                <Link to="/submit" className="px-3 py-2.5 hover:bg-navy-deep text-turmeric">
-                  ● Submit a Problem
-                </Link>
-                <Link to="/problems" className="px-3 py-2.5 hover:bg-navy-deep text-white">
-                  ● Track Problems
-                </Link>
-                <Link to="/university" className="px-3 py-2.5 hover:bg-navy-deep text-white">
-                  ● University Portal
-                </Link>
-                <Link to="/industry" className="px-3 py-2.5 hover:bg-navy-deep text-white">
-                  ● Industry &amp; Funding
-                </Link>
-                <Link to="/admin" className="px-3 py-2.5 hover:bg-navy-deep text-white">
-                  ● Analytics &amp; AI Queue
-                </Link>
-                <a href="/#notices" className="px-3 py-2.5 hover:bg-navy-deep text-white">
-                  ● Circulars &amp; Notices
-                </a>
-              </nav>
-            )}
+              {/* Mobile Expanded Menu Drawer */}
+              {mobileMenuOpen && (
+                <nav className="md:hidden flex flex-col divide-y divide-navy-deep bg-navy border-t border-navy-deep py-2 text-xs font-semibold uppercase tracking-wider">
+                  <Link to="/" className="px-3 py-2.5 hover:bg-navy-deep text-white">
+                    ● Home
+                  </Link>
+                  <a href="/#about-scheme" className="px-3 py-2.5 hover:bg-navy-deep text-white">
+                    ● About the Scheme
+                  </a>
+                  <Link to="/submit" className="px-3 py-2.5 hover:bg-navy-deep text-turmeric">
+                    ● Submit a Problem
+                  </Link>
+                  <Link to="/problems" className="px-3 py-2.5 hover:bg-navy-deep text-white">
+                    ● Track Problems
+                  </Link>
+                  <Link to="/university" className="px-3 py-2.5 hover:bg-navy-deep text-white">
+                    ● University Portal
+                  </Link>
+                  <Link to="/industry" className="px-3 py-2.5 hover:bg-navy-deep text-white">
+                    ● Industry &amp; Funding
+                  </Link>
+                  <Link to="/admin" className="px-3 py-2.5 hover:bg-navy-deep text-white">
+                    ● Analytics &amp; AI Queue
+                  </Link>
+                  <a href="/#notices" className="px-3 py-2.5 hover:bg-navy-deep text-white">
+                    ● Circulars &amp; Notices
+                  </a>
+                </nav>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </header>
 
       {/* ============================================================ */}
       {/* PERSISTENT FLOATING ACTION ELEMENT (RIGHT EDGE TAB)         */}
       {/* ============================================================ */}
-      <Link
-        to="/submit"
-        className="fixed right-0 top-1/2 -translate-y-1/2 z-40 hidden md:flex items-center bg-turmeric text-ink border-l-2 border-t-2 border-b-2 border-turmeric-deep px-2 py-4 shadow-sm hover:bg-turmeric-deep transition-all group"
-        title="Quickly Submit a Civic Problem"
-      >
-        <span
-          className="font-bold text-xs uppercase tracking-widest text-ink"
-          style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
-        >
-          ● SUBMIT A PROBLEM
-        </span>
-      </Link>
+      {!isUniversity && (
+        <>
+          <Link
+            to="/submit"
+            className="fixed right-0 top-1/2 -translate-y-1/2 z-40 hidden md:flex items-center bg-turmeric text-ink border-l-2 border-t-2 border-b-2 border-turmeric-deep px-2 py-4 shadow-sm hover:bg-turmeric-deep transition-all group"
+            title="Quickly Submit a Civic Problem"
+          >
+            <span
+              className="font-bold text-xs uppercase tracking-widest text-ink"
+              style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+            >
+              ● SUBMIT A PROBLEM
+            </span>
+          </Link>
 
-      {/* Mobile Floating Action Button */}
-      <Link
-        to="/submit"
-        className="md:hidden fixed bottom-5 right-5 z-40 w-12 h-12 rounded-full bg-turmeric text-ink font-bold flex items-center justify-center border-2 border-turmeric-deep shadow-lg active:scale-95"
-        title="Submit a Problem"
-      >
-        <span className="material-symbols-outlined text-2xl font-bold">add</span>
-      </Link>
+          {/* Mobile Floating Action Button */}
+          <Link
+            to="/submit"
+            className="md:hidden fixed bottom-5 right-5 z-40 w-12 h-12 rounded-full bg-turmeric text-ink font-bold flex items-center justify-center border-2 border-turmeric-deep shadow-lg active:scale-95"
+            title="Submit a Problem"
+          >
+            <span className="material-symbols-outlined text-2xl font-bold">add</span>
+          </Link>
+        </>
+      )}
 
       {/* ============================================================ */}
       {/* MAIN CONTENT OUTLET                                          */}
