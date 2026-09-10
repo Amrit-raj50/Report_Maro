@@ -11,10 +11,14 @@ import AdminDashboard from './pages/AdminDashboard.js';
 import UniversityDashboard from './pages/UniversityDashboard.js';
 import IndustryPortal from './pages/IndustryPortal.js';
 import ProjectDetail from './pages/ProjectDetail.js';
+import GovernmentDashboard from './pages/GovernmentDashboard.js';
 
 export default function App() {
   return (
     <Routes>
+      {/* Government dashboard has its own full-screen layout (sidebar + three-band header) */}
+      <Route path="/government" element={<GovernmentDashboard />} />
+
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />

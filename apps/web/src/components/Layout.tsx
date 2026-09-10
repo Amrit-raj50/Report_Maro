@@ -298,6 +298,16 @@ export function Layout() {
                 >
                   Analytics &amp; AI Queue
                 </Link>
+                <Link
+                  to="/government"
+                  className={`px-3 py-3 transition-colors ${
+                    location.pathname.startsWith('/government')
+                      ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
+                      : 'hover:bg-navy-deep text-white'
+                  }`}
+                >
+                  Govt Dashboard
+                </Link>
                 <a
                   href="/#notices"
                   className="px-3 py-3 hover:bg-navy-deep text-white transition-colors"
@@ -345,6 +355,9 @@ export function Layout() {
                 </Link>
                 <Link to="/admin" className="px-3 py-2.5 hover:bg-navy-deep text-white">
                   ● Analytics &amp; AI Queue
+                </Link>
+                <Link to="/government" className="px-3 py-2.5 hover:bg-navy-deep text-white">
+                  ● Govt Dashboard
                 </Link>
                 <a href="/#notices" className="px-3 py-2.5 hover:bg-navy-deep text-white">
                   ● Circulars &amp; Notices
