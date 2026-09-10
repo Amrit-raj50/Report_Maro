@@ -45,9 +45,13 @@ export default function SubmitProblem() {
     <div className="mx-auto max-w-xl">
       <Card>
         <h1 className="text-xl font-semibold">Report a problem</h1>
-        <p className="mt-1 text-sm text-slate-500">Our AI will read your report and route it to the right team within seconds.</p>
+        <p className="mt-1 text-sm text-slate-500">
+          Our AI will read your report and route it to the right team within seconds.
+        </p>
         {submitted ? (
-          <p className="mt-6 rounded-lg bg-green-50 p-4 text-green-800">Thanks — your report has been submitted and is being analysed.</p>
+          <p className="mt-6 rounded-lg bg-green-50 p-4 text-green-800">
+            Thanks — your report has been submitted and is being analysed.
+          </p>
         ) : (
           <form onSubmit={handleSubmit} className="mt-4 space-y-3">
             <input
@@ -64,16 +68,41 @@ export default function SubmitProblem() {
               onChange={(e) => setDescription(e.target.value)}
             />
             <div className="grid grid-cols-2 gap-3">
-              <input placeholder="District" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" value={district} onChange={(e) => setDistrict(e.target.value)} />
-              <input placeholder="Landmark (optional)" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" value={address} onChange={(e) => setAddress(e.target.value)} />
+              <input
+                placeholder="District"
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                value={district}
+                onChange={(e) => setDistrict(e.target.value)}
+              />
+              <input
+                placeholder="Landmark (optional)"
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <input type="number" step="0.0001" placeholder="Latitude" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" value={lat} onChange={(e) => setLat(Number(e.target.value))} />
-              <input type="number" step="0.0001" placeholder="Longitude" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" value={lng} onChange={(e) => setLng(Number(e.target.value))} />
+              <input
+                type="number"
+                step="0.0001"
+                placeholder="Latitude"
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                value={lat}
+                onChange={(e) => setLat(Number(e.target.value))}
+              />
+              <input
+                type="number"
+                step="0.0001"
+                placeholder="Longitude"
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                value={lng}
+                onChange={(e) => setLng(Number(e.target.value))}
+              />
             </div>
             <p className="text-xs text-slate-400">
-              Photo upload will call POST /api/problems as multipart form data once the file picker is wired up (backend/src/controllers/problem.controller.js
-              already accepts req.files via Cloudinary) — tracked in docs/TASK_BREAKDOWN.md.
+              Photo upload will call POST /api/problems as multipart form data once the file picker
+              is wired up (backend/src/controllers/problem.controller.js already accepts req.files
+              via Cloudinary) — tracked in docs/TASK_BREAKDOWN.md.
             </p>
             {error && <p className="text-sm text-red-600">{error}</p>}
             <Button type="submit" disabled={loading} className="w-full">

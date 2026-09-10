@@ -1,5 +1,10 @@
 {
   "extends": "@sih/config/tsconfig.react.json",
-  "compilerOptions": { "composite": true, "outDir": "dist", "rootDir": "src", "types": ["vite/client"] },
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "types": ["vite/client"]
+  },
   "include": ["src"]
 }

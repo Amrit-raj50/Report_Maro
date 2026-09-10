@@ -9,13 +9,17 @@ export default function IndustryPortal() {
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
-    apiClient.get('/projects', { params: { status: 'under_review' } }).then((res) => setProjects(res.data.data));
+    apiClient
+      .get('/projects', { params: { status: 'under_review' } })
+      .then((res) => setProjects(res.data.data));
   }, []);
 
   return (
     <div>
       <h1 className="mb-4 text-xl font-semibold">Projects seeking funding</h1>
-      {projects.length === 0 && <p className="text-sm text-slate-500">No projects currently under review.</p>}
+      {projects.length === 0 && (
+        <p className="text-sm text-slate-500">No projects currently under review.</p>
+      )}
       <div className="grid gap-3 sm:grid-cols-2">
         {projects.map((p) => (
           <Link key={p._id} to={`/projects/${p._id}`}>

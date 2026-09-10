@@ -12,7 +12,10 @@
     "./tsconfig.react.json": "./tsconfig.react.json",
     "./prettier.json": "./prettier.json"
   },
-  "files": ["*.js", "*.json"],
+  "files": [
+    "*.js",
+    "*.json"
+  ],
   "scripts": {
     "lint": "echo \"(config) nothing to lint\"",
     "typecheck": "echo \"(config) nothing to typecheck\"",

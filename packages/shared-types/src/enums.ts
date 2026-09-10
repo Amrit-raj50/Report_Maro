@@ -23,7 +23,13 @@ export const prioritySchema = z.enum(['low', 'medium', 'high']);
 export type Priority = z.infer<typeof prioritySchema>;
 
 /** See backend/src/models/problem.model.js — no REJECTED/DUPLICATE state exists yet. */
-export const problemStatusSchema = z.enum(['submitted', 'verified', 'assigned', 'in_progress', 'resolved']);
+export const problemStatusSchema = z.enum([
+  'submitted',
+  'verified',
+  'assigned',
+  'in_progress',
+  'resolved',
+]);
 export type ProblemStatus = z.infer<typeof problemStatusSchema>;
 
 /** See backend/src/models/project.model.js. */

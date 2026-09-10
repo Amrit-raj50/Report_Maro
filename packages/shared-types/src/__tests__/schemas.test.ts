@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { createProblemRequestSchema, registerRequestSchema, listProblemsQuerySchema } from '../index.js';
+import {
+  createProblemRequestSchema,
+  registerRequestSchema,
+  listProblemsQuerySchema,
+} from '../index.js';
 
 describe('registerRequestSchema', () => {
   it('defaults role to citizen and lowercases email', () => {
@@ -13,7 +17,10 @@ describe('registerRequestSchema', () => {
   });
 
   it('rejects a short password (backend/src/models/user.model.js has no min length, but the form should still guard)', () => {
-    expect(registerRequestSchema.safeParse({ full_name: 'A', email: 'a@b.com', password: '123' }).success).toBe(false);
+    expect(
+      registerRequestSchema.safeParse({ full_name: 'A', email: 'a@b.com', password: '123' })
+        .success,
+    ).toBe(false);
   });
 });
 

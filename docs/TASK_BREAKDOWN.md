@@ -29,7 +29,7 @@ current contract and docs/ARCHITECTURE.md for why it's shaped this way.
 - [ ] Replace the dummy keyword-count `classifyText()` with real
       classification — the queue/producer/internal-callback plumbing
       already works end-to-end (BullMQ job → worker → `PATCH
-      /api/internal/problems/:id`), so this is a drop-in swap of the
+    /api/internal/problems/:id`), so this is a drop-in swap of the
       function body, not a new integration.
 - [ ] Same for `getPriority()` — currently a fixed urgent-keyword list.
 - [ ] Consider a confidence threshold below which a human (admin) reviews
@@ -48,7 +48,7 @@ current contract and docs/ARCHITECTURE.md for why it's shaped this way.
       a map picker.
 - [ ] `AdminDashboard.tsx`'s stats tiles are a starting point — the
       `byCategory`/`byDistrict` aggregates from `GET
-      /api/problems/stats/dashboard` aren't charted yet.
+    /api/problems/stats/dashboard` aren't charted yet.
 
 ## Cross-cutting
 

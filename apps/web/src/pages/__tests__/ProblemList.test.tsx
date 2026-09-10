@@ -16,7 +16,7 @@ describe('ProblemList', () => {
       </MemoryRouter>,
     );
 
-    await waitFor(() => expect(screen.getByText(/Contaminated pond water/i)).toBeInTheDocument());
-    expect(screen.getByText(/Large pothole on NH-33/i)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText(/High Fluoride & Arsenic/i)).toBeInTheDocument());
+    expect(screen.getByText(/Frequent Culvert Subsidence/i)).toBeInTheDocument();
   });
 });

@@ -48,14 +48,35 @@ export default function Register() {
       <Card>
         <h1 className="text-xl font-semibold">Create an account</h1>
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
-          <select className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" value={role} onChange={(e) => setRole(e.target.value as UserRole)}>
+          <select
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            value={role}
+            onChange={(e) => setRole(e.target.value as UserRole)}
+          >
             <option value="citizen">Citizen</option>
             <option value="university">University</option>
             <option value="industry">Industry</option>
           </select>
-          <input placeholder="Full name" className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-          <input type="email" placeholder="Email" className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <input type="password" placeholder="Password (min 6 chars)" className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <input
+            placeholder="Full name"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Password (min 6 chars)"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
           {role !== 'citizen' && (
             <input
               placeholder="Organization name"
@@ -70,7 +91,10 @@ export default function Register() {
           </Button>
         </form>
         <p className="mt-4 text-sm text-slate-500">
-          Already have an account? <Link to="/login" className="text-brand-600 hover:underline">Sign in</Link>
+          Already have an account?{' '}
+          <Link to="/login" className="text-brand-600 hover:underline">
+            Sign in
+          </Link>
         </p>
       </Card>
     </div>

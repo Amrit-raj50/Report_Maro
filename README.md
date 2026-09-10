@@ -11,10 +11,10 @@ propose solutions, and industries fund them.
 
 ## 🌐 Live Links
 
-| Platform | Link |
-|---|---|
-| 🖥️ Project / Frontend | https://amrit-raj50.github.io/PS/ |
-| ⚙️ Backend API | https://report-maro-1.onrender.com/ |
-| 💻 GitHub Repository | https://github.com/himmatmundhe07/Report_Maro |
-| postman(incomplete) | https://documenter.getpostman.com/view/50840965/2sBYAxQA7k |
-| frontend Workflow | https://github.com/Amrit-raj50/PS/blob/main/fron.md |
+| Platform              | Link                                                       |
+| --------------------- | ---------------------------------------------------------- |
+| 🖥️ Project / Frontend | https://amrit-raj50.github.io/PS/                          |
+| ⚙️ Backend API        | https://report-maro-1.onrender.com/                        |
+| 💻 GitHub Repository  | https://github.com/himmatmundhe07/Report_Maro              |
+| postman(incomplete)   | https://documenter.getpostman.com/view/50840965/2sBYAxQA7k |
+| frontend Workflow     | https://github.com/Amrit-raj50/PS/blob/main/fron.md        |

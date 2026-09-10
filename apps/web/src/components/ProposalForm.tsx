@@ -4,7 +4,15 @@ import { apiClient, apiErrorMessage } from '../lib/apiClient.js';
 import { Card } from './Card.js';
 import { Button } from './Button.js';
 
-export function ProposalForm({ projectId, onClose, onSubmitted }: { projectId: string; onClose: () => void; onSubmitted: () => void }) {
+export function ProposalForm({
+  projectId,
+  onClose,
+  onSubmitted,
+}: {
+  projectId: string;
+  onClose: () => void;
+  onSubmitted: () => void;
+}) {
   const [proposalText, setProposalText] = useState('');
   const [budget, setBudget] = useState(100000);
   const [error, setError] = useState<string | null>(null);

@@ -11,7 +11,11 @@ export const locationSchema = z.object({
 });
 export type Location = z.infer<typeof locationSchema>;
 
-const populatedRef = z.object({ full_name: z.string().optional(), email: z.string().optional(), organization: z.string().optional() });
+const populatedRef = z.object({
+  full_name: z.string().optional(),
+  email: z.string().optional(),
+  organization: z.string().optional(),
+});
 
 export const problemSchema = z.object({
   _id: idSchema,

@@ -20,7 +20,9 @@ export default function ProblemList() {
     <div>
       <h1 className="mb-4 text-xl font-semibold">Reported problems</h1>
       {loading && <p className="text-sm text-slate-500">Loading…</p>}
-      {!loading && problems.length === 0 && <p className="text-sm text-slate-500">No problems reported yet.</p>}
+      {!loading && problems.length === 0 && (
+        <p className="text-sm text-slate-500">No problems reported yet.</p>
+      )}
       <div className="grid gap-3 sm:grid-cols-2">
         {problems.map((p) => (
           <Link key={p._id} to={`/problems/${p._id}`}>

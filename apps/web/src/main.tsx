@@ -13,12 +13,16 @@ async function enableMocksIfConfigured() {
 const root = document.getElementById('root');
 if (!root) throw new Error('#root element missing from index.html');
 
-enableMocksIfConfigured().then(() => {
-  ReactDOM.createRoot(root).render(
-    <React.StrictMode>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </React.StrictMode>,
-  );
-});
+enableMocksIfConfigured()
+  .catch((err) => {
+    console.warn('[MSW] Could not start mock service worker, continuing without mocks:', err);
+  })
+  .finally(() => {
+    ReactDOM.createRoot(root).render(
+      <React.StrictMode>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </React.StrictMode>,
+    );
+  });

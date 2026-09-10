@@ -52,22 +52,24 @@ export default function ProjectDetail() {
         </div>
         <p className="mt-3 text-sm text-slate-700">{project.proposal_text}</p>
         <p className="mt-3 text-sm">
-          <span className="text-slate-400">Budget:</span> ₹{(project.budget ?? 0).toLocaleString('en-IN')}
+          <span className="text-slate-400">Budget:</span> ₹
+          {(project.budget ?? 0).toLocaleString('en-IN')}
         </p>
 
-        {user?.role === 'industry' && (project.status === 'under_review' || project.status === 'proposed') && (
-          <div className="mt-4 flex items-end gap-2">
-            <input
-              type="number"
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
-            />
-            <Button onClick={fund} disabled={loading}>
-              {loading ? 'Funding…' : 'Fund this project'}
-            </Button>
-          </div>
-        )}
+        {user?.role === 'industry' &&
+          (project.status === 'under_review' || project.status === 'proposed') && (
+            <div className="mt-4 flex items-end gap-2">
+              <input
+                type="number"
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                value={amount}
+                onChange={(e) => setAmount(Number(e.target.value))}
+              />
+              <Button onClick={fund} disabled={loading}>
+                {loading ? 'Funding…' : 'Fund this project'}
+              </Button>
+            </div>
+          )}
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </Card>
     </div>

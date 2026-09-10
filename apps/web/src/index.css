@@ -2,5 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: light; }
-body { @apply bg-slate-50 text-slate-900 antialiased; }
+:root {
+  color-scheme: light;
+  --paper: #FBF9F4;
+  --ink: #1C1B19;
+  --ink-muted: #55524B;
+  --border: #D9D4C7;
+  --navy: #0B2545;
+  --navy-deep: #081B33;
+  --forest: #14532D;
+  --turmeric: #E7A614;
+  --turmeric-deep: #C48A0A;
+
+  /* Font scaling state */
+  --font-scale: 1;
+}
+
+html {
+  font-size: calc(16px * var(--font-scale));
+}
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Government standard accessible focus outline */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 2px;
+}
+
+/* Material Symbols icon styling */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+}
+
+/* Flat government card style */
+.govt-card {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}

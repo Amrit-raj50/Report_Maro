@@ -8,7 +8,10 @@ export default [
   ...base,
   {
     files: ['**/*.{ts,tsx}'],
-    languageOptions: { globals: { ...globals.browser, ...globals.es2022 }, parserOptions: { ecmaFeatures: { jsx: true } } },
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.es2022 },
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
     plugins: { 'react-hooks': reactHooks, 'react-refresh': reactRefresh },
     rules: {
       ...reactHooks.configs.recommended.rules,

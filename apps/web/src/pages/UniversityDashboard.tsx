@@ -20,7 +20,9 @@ export default function UniversityDashboard() {
 
   const refresh = () => {
     if (!user) return;
-    apiClient.get('/projects', { params: { university_id: user.id } }).then((res) => setProjects(res.data.data));
+    apiClient
+      .get('/projects', { params: { university_id: user.id } })
+      .then((res) => setProjects(res.data.data));
   };
 
   useEffect(refresh, [user]);
@@ -29,7 +31,9 @@ export default function UniversityDashboard() {
     <div className="space-y-6">
       <h1 className="text-xl font-semibold">University dashboard</h1>
       <div className="space-y-3">
-        {projects.length === 0 && <p className="text-sm text-slate-500">No problems assigned to your organization yet.</p>}
+        {projects.length === 0 && (
+          <p className="text-sm text-slate-500">No problems assigned to your organization yet.</p>
+        )}
         {projects.map((p) => (
           <Card key={p._id}>
             <div className="flex items-start justify-between gap-4">
@@ -37,7 +41,9 @@ export default function UniversityDashboard() {
                 <p className="font-medium">Problem #{p.problem_id}</p>
                 <p className="text-xs text-slate-500">{STATUS_LABEL[p.status]}</p>
               </div>
-              {p.status === 'proposed' && <Button onClick={() => setProposalFor(p)}>Submit proposal</Button>}
+              {p.status === 'proposed' && (
+                <Button onClick={() => setProposalFor(p)}>Submit proposal</Button>
+              )}
             </div>
           </Card>
         ))}

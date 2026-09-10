@@ -15,8 +15,12 @@ export default function AdminDashboard() {
 
   const refresh = () => {
     apiClient.get('/problems/stats/dashboard').then((res) => setStats(res.data.data));
-    apiClient.get('/problems', { params: { status: 'verified', limit: 20 } }).then((res) => setQueue(res.data.data));
-    apiClient.get('/users', { params: { role: 'university' } }).then((res) => setUniversities(res.data.data));
+    apiClient
+      .get('/problems', { params: { status: 'verified', limit: 20 } })
+      .then((res) => setQueue(res.data.data));
+    apiClient
+      .get('/users', { params: { role: 'university' } })
+      .then((res) => setUniversities(res.data.data));
   };
 
   useEffect(refresh, []);
@@ -44,8 +48,14 @@ export default function AdminDashboard() {
             label="Pending verification"
             value={stats.byStatus.find((s) => s._id === 'submitted')?.count ?? 0}
           />
-          <StatTile label="Assigned" value={stats.byStatus.find((s) => s._id === 'assigned')?.count ?? 0} />
-          <StatTile label="Resolved" value={stats.byStatus.find((s) => s._id === 'resolved')?.count ?? 0} />
+          <StatTile
+            label="Assigned"
+            value={stats.byStatus.find((s) => s._id === 'assigned')?.count ?? 0}
+          />
+          <StatTile
+            label="Resolved"
+            value={stats.byStatus.find((s) => s._id === 'resolved')?.count ?? 0}
+          />
         </div>
       )}
 
@@ -54,7 +64,9 @@ export default function AdminDashboard() {
       <section>
         <h2 className="mb-3 text-lg font-medium">Verified problems awaiting assignment</h2>
         <div className="space-y-3">
-          {queue.length === 0 && <p className="text-sm text-slate-500">Nothing waiting on assignment.</p>}
+          {queue.length === 0 && (
+            <p className="text-sm text-slate-500">Nothing waiting on assignment.</p>
+          )}
           {queue.map((p) => (
             <Card key={p._id} className="flex items-center justify-between gap-4">
               <div>
@@ -69,7 +81,9 @@ export default function AdminDashboard() {
                 <select
                   className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
                   value={selectedUniByProblem[p._id] ?? ''}
-                  onChange={(e) => setSelectedUniByProblem((s) => ({ ...s, [p._id]: e.target.value }))}
+                  onChange={(e) =>
+                    setSelectedUniByProblem((s) => ({ ...s, [p._id]: e.target.value }))
+                  }
                 >
                   <option value="">Assign to…</option>
                   {universities.map((u) => (
