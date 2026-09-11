@@ -483,43 +483,16 @@ export default function GovernmentDashboard() {
       {/* ═══════════════ MAIN CONTENT AREA ═══════════════ */}
       <div className="flex flex-1 flex-col overflow-hidden">
 
-        {/* ── Band 1 — Utility bar ── */}
-        <div className="flex h-8 items-center justify-between bg-navy px-5 text-[11px] text-white/80">
-          <div className="flex items-center gap-4">
-            <span>☎ 1800-XXX-XXXX</span>
-            <span>✉ helpdesk@samadhan-setu.jharkhand.gov.in</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="cursor-pointer hover:text-white">A+</span>
-            <span className="cursor-pointer hover:text-white">A</span>
-            <span className="cursor-pointer hover:text-white">A-</span>
-            <span className="text-white/40">|</span>
-            <span className="cursor-pointer hover:text-white">English</span>
-            <span className="cursor-pointer hover:text-white">हिन्दी</span>
-            {backendLive && (
-              <>
-                <span className="text-white/40">|</span>
-                <span className="flex items-center gap-1 text-green-300">
-                  <span className="block h-1.5 w-1.5 rounded-full bg-green-400"></span>
-                  Live DB
-                </span>
-              </>
-            )}
-          </div>
-        </div>
-
         {/* ── Band 2 — Identity bar ── */}
         <div className="flex items-center justify-between border-b border-border bg-paper px-6 py-3">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-navy/20 bg-navy/5 text-xl">
-              🏛
-            </div>
+            <img src="/favicon.svg" alt="Samadhan Setu Logo" className="h-12 w-12 object-contain" />
             <div>
               <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
                 Department of Higher & Technical Education · Government of Jharkhand
               </div>
               <h1 className="font-display text-xl font-semibold text-ink leading-tight">
-                Societal Innovation Dashboard
+                Samadhan Setu
               </h1>
             </div>
           </div>
