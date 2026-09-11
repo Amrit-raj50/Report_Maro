@@ -8,11 +8,15 @@ import { Button } from '../components/Button.js';
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-  const setSession = useAuthStore((s) => s.setSession);
+  const { user, clearSession, setSession } = useAuthStore();
 
   // Check if user was redirected from a protected page like /university
-  const fromPath = (location.state as { from?: string } | undefined)?.from;
-  const isUniversityRedirect = fromPath === '/university' || location.search.includes('role=university');
+  const stateObj = location.state as { from?: string; requiredRole?: string; message?: string } | undefined;
+  const fromPath = stateObj?.from;
+  const isUniversityRedirect =
+    Boolean(fromPath?.startsWith('/university')) ||
+    stateObj?.requiredRole === 'university' ||
+    location.search.includes('role=university');
 
   const [email, setEmail] = useState(isUniversityRedirect ? 'dean@nitjsr.ac.in' : '');
   const [password, setPassword] = useState(isUniversityRedirect ? 'mock-login-not-a-secret' : '');
@@ -118,12 +122,27 @@ export default function Login() {
 
         {/* Redirect Notice */}
         {isUniversityRedirect && (
-          <div className="mb-4 p-3 bg-forest/10 border border-forest/30 rounded-[2px] flex items-start gap-2 text-xs text-forest">
-            <span className="font-bold">🏛️ Note:</span>
+          <div className="mb-4 p-3 bg-forest/10 border border-forest/30 rounded-[2px] flex flex-col gap-1 text-xs text-forest">
+            <div className="flex items-start gap-1.5 font-bold">
+              <span>🏛️ University Access Required:</span>
+            </div>
             <span>
-              Institutional access required. Sign in with a University credential to access the
-              University R&amp;D Dashboard.
+              {stateObj?.message || 'Please sign in with your University credential or use the 1-click University demo button below.'}
             </span>
+            {user && (
+              <div className="mt-2 pt-2 border-t border-forest/20 flex items-center justify-between text-[11px] text-ink">
+                <span>
+                  Currently logged in as: <strong>{user.full_name}</strong> ({user.role})
+                </span>
+                <button
+                  type="button"
+                  onClick={clearSession}
+                  className="text-urgent font-bold underline hover:text-urgent/80"
+                >
+                  Logout current account
+                </button>
+              </div>
+            )}
           </div>
         )}
 

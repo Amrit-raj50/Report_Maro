@@ -11,7 +11,17 @@ export function ProtectedRoute({ allow }: { allow?: UserRole[] }) {
   }
 
   if (allow && !allow.includes(user.role)) {
-    return <Navigate to="/" replace />;
+    return (
+      <Navigate
+        to="/login"
+        state={{
+          from: location.pathname,
+          requiredRole: allow[0],
+          message: `This portal requires a ${allow.join('/')} account. You are currently logged in as ${user.full_name} (${user.role}). Please sign in with a university account.`,
+        }}
+        replace
+      />
+    );
   }
 
   return <Outlet />;
