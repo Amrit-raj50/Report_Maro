@@ -43,6 +43,12 @@ const ProjectSchema = new mongoose.Schema(
       ],
       default: [],
     },
+    // ✅ Phase 6 Additions: Social Impact Metrics (Optional)
+    people_impacted: { type: Number, default: null },
+    villages_reached: { type: Number, default: null },
+    patents_filed: { type: Number, default: 0 },
+    startup_created: { type: Boolean, default: false },
+    deployed_to_field: { type: Boolean, default: false },
   },
   {
     timestamps: {

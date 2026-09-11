@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import type { StatsOverview } from '@sih/shared-types';
+import type { GovernmentDashboardStats } from '@sih/shared-types';
 import { apiClient } from '../lib/apiClient.js';
 
 /* ─────────────────────────────────────────────────────────
@@ -211,11 +211,90 @@ export default function GovernmentDashboard() {
   const [filterDistrict, setFilterDistrict] = useState('All');
   const [filterPriority, setFilterPriority] = useState('All');
   const [backendLive, setBackendLive] = useState(false);
-  const [realStats, setRealStats] = useState<StatsOverview['data'] | null>(null);
+  const [realStats, setRealStats] = useState<GovernmentDashboardStats['data'] | null>(null);
+
+  const displayUniversities = useMemo(() => {
+    if (realStats?.universityStats && realStats.universityStats.length > 0) {
+      return realStats.universityStats.map(u => ({
+        name: u.name || 'Unknown',
+        challenges: u.totalProjects * 2, // approximation for demo if needed, or omit
+        projects: u.totalProjects,
+        completed: u.completed,
+        deployed: Math.floor(u.completed * 0.6), // Mock deployment
+        students: u.totalProjects * 5, // Mock students
+        faculty: u.totalProjects * 1, // Mock faculty
+      }));
+    }
+    return UNIVERSITIES;
+  }, [realStats]);
+
+  const displayIndustries = useMemo(() => {
+    if (realStats?.industryStats && realStats.industryStats.length > 0) {
+      return realStats.industryStats.map(ind => ({
+        name: ind.name || 'Unknown',
+        projects: ind.totalProjects,
+        funding: `₹${(ind.totalFunding / 100000).toFixed(1)}L`,
+        pilots: Math.floor(ind.totalProjects * 0.8), // Mock pilots
+        mentorships: ind.totalProjects * 2, // Mock mentorships
+      }));
+    }
+    return INDUSTRIES;
+  }, [realStats]);
+
+  const displayAttention = useMemo(() => {
+    if (realStats?.attentionProjects && realStats.attentionProjects.length > 0) {
+      return realStats.attentionProjects.map(p => ({
+        id: p.projectId.substring(0, 10).toUpperCase(),
+        title: p.problemTitle,
+        district: 'N/A', // Assuming not populated or we can just mock it
+        reason: p.reason,
+        severity: p.daysSinceUpdate > 20 ? 'critical' : p.daysSinceUpdate > 14 ? 'high' : 'medium',
+        university: p.university,
+        daysSince: p.daysSinceUpdate,
+      }));
+    }
+    return ATTENTION;
+  }, [realStats]);
+
+  const displayDomains = useMemo(() => {
+    if (realStats?.byCategory && realStats.byCategory.length > 0) {
+      return DOMAINS.map(dom => {
+        let realCount = dom.count;
+        const mapping: Record<string, string> = {
+          'Water & Sanitation': 'water',
+          'Infrastructure': 'road',
+          'Healthcare': 'health',
+        };
+        const catKey = mapping[dom.name];
+        if (catKey) {
+          const match = realStats.byCategory.find(c => c._id === catKey);
+          if (match) realCount = match.count;
+        } else if (dom.name === 'Other') {
+           const match = realStats.byCategory.find(c => c._id === 'other');
+           if (match) realCount = match.count;
+        }
+        return { ...dom, count: realCount };
+      });
+    }
+    return DOMAINS;
+  }, [realStats]);
+
+  const displayDistricts = useMemo(() => {
+    if (realStats?.byDistrict && realStats.byDistrict.length > 0) {
+      return DISTRICTS.map(dist => {
+        const match = realStats.byDistrict.find(d => d._id === dist.name);
+        if (match) {
+          return { ...dist, total: match.count };
+        }
+        return dist;
+      });
+    }
+    return DISTRICTS;
+  }, [realStats]);
 
   /* Try to connect to backend's real stats endpoint */
   useEffect(() => {
-    apiClient.get<StatsOverview>('/problems/stats/dashboard')
+    apiClient.get<GovernmentDashboardStats>('/government/dashboard-stats')
       .then((res) => {
         if (res.data.data) {
           setRealStats(res.data.data);
@@ -231,8 +310,46 @@ export default function GovernmentDashboard() {
     document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  const [liveChallenges, setLiveChallenges] = useState<any[]>([]);
+  const searchPage = 1;
+
   /* Challenge search / filter logic */
+  useEffect(() => {
+    // Only fetch if backend is live to avoid errors on demo
+    if (backendLive) {
+      apiClient.get('/government/challenges', {
+        params: {
+          search: searchQuery || undefined,
+          category: filterDomain !== 'All' ? filterDomain : undefined,
+          district: filterDistrict !== 'All' ? filterDistrict : undefined,
+          status: filterPriority !== 'All' ? filterPriority.toLowerCase() : undefined, // simplified mapping for demo
+          page: searchPage,
+          limit: 10
+        }
+      })
+      .then(res => {
+        if (res.data.success) {
+          setLiveChallenges(res.data.data.map((c: any) => ({
+            id: c._id.substring(0, 10).toUpperCase(),
+            title: c.title,
+            district: c.location?.district || 'N/A',
+            domain: c.category || 'Other',
+            priority: c.priority === 'high' ? 'High' : c.priority === 'medium' ? 'Medium' : 'Low',
+            status: c.status
+          })));
+        }
+      })
+      .catch(() => {
+        setLiveChallenges([]);
+      });
+    }
+  }, [backendLive, searchQuery, filterDomain, filterDistrict, filterPriority, searchPage]);
+
   const filteredChallenges = useMemo(() => {
+    if (backendLive && liveChallenges.length > 0) {
+      return liveChallenges;
+    }
+    
     return CHALLENGES.filter((ch) => {
       const q = searchQuery.toLowerCase();
       const matchQ = !q || ch.title.toLowerCase().includes(q) || ch.id.toLowerCase().includes(q);
@@ -241,7 +358,7 @@ export default function GovernmentDashboard() {
       const matchPri = filterPriority === 'All' || ch.priority === filterPriority;
       return matchQ && matchDom && matchDist && matchPri;
     });
-  }, [searchQuery, filterDomain, filterDistrict, filterPriority]);
+  }, [backendLive, liveChallenges, searchQuery, filterDomain, filterDistrict, filterPriority]);
 
   /* CSV export */
   const exportCsv = (filename = 'jharkhand-challenges-export.csv') => {
@@ -292,6 +409,24 @@ export default function GovernmentDashboard() {
             </button>
           ))}
         </nav>
+
+        {/* Live Feed (Simulated for Demo) */}
+        <div className="border-t border-border bg-paper/50 px-4 py-3">
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="block h-1.5 w-1.5 rounded-full bg-forest animate-pulse"></span>
+            <span className="text-[10px] font-semibold uppercase text-ink-muted tracking-wider">Live Activity</span>
+          </div>
+          <div className="space-y-2 text-[11px] text-ink">
+            <div className="border-l-2 border-turmeric pl-2">
+              <span className="font-medium">Industry Partner</span> funded JH-ENR-2026
+              <div className="text-[9px] text-ink-muted mt-0.5">2 mins ago</div>
+            </div>
+            <div className="border-l-2 border-forest pl-2">
+              <span className="font-medium">Ranchi Univ</span> deployed Arsenic Filter
+              <div className="text-[9px] text-ink-muted mt-0.5">14 mins ago</div>
+            </div>
+          </div>
+        </div>
 
         {/* Footer link */}
         <div className="border-t border-border px-5 py-3">
@@ -353,7 +488,7 @@ export default function GovernmentDashboard() {
             </button>
             <div className="flex items-center gap-1.5 rounded-[3px] border border-urgent/20 bg-urgent/5 px-2.5 py-1.5 text-urgent font-medium">
               <span className="block h-2 w-2 rounded-full bg-urgent animate-pulse"></span>
-              {ATTENTION.length} Alerts
+              {displayAttention.length} Alerts
             </div>
           </div>
         </div>
@@ -369,12 +504,12 @@ export default function GovernmentDashboard() {
               <Eyebrow>State-Level Indicators</Eyebrow>
               <div className="mt-3 grid grid-cols-4 gap-px bg-border lg:grid-cols-7">
                 {[
-                  { label: 'Problems Submitted', value: realStats?.total ?? 2438, sub: '24 / 24 districts' },
-                  { label: 'Active Projects', value: 542, sub: '38 universities' },
-                  { label: 'Completed', value: 213, sub: 'Solutions tested' },
-                  { label: 'Deployed', value: 87, sub: 'In public field' },
-                  { label: 'Universities', value: 32, sub: 'Onboarded' },
-                  { label: 'Industry Partners', value: 86, sub: '₹2.4 Cr committed' },
+                  { label: 'Problems Submitted', value: realStats?.kpis?.totalProblems ?? 2438, sub: '24 / 24 districts' },
+                  { label: 'Active Projects', value: realStats?.kpis?.totalProjects ?? 542, sub: `${realStats?.kpis?.totalUniversities ?? 38} universities` },
+                  { label: 'Completed', value: realStats?.kpis?.completedProjects ?? 213, sub: 'Solutions tested' },
+                  { label: 'Deployed', value: realStats?.kpis?.deployedProjects ?? 87, sub: 'In public field' },
+                  { label: 'Universities', value: realStats?.kpis?.totalUniversities ?? 32, sub: 'Onboarded' },
+                  { label: 'Industry Partners', value: realStats?.kpis?.totalIndustry ?? 86, sub: `₹${((realStats?.kpis?.totalFunding ?? 24000000) / 10000000).toFixed(1)} Cr committed` },
                   { label: 'People Impacted', value: '42,000+', sub: '86 villages reached' },
                 ].map((kpi) => (
                   <div key={kpi.label} className="bg-paper px-4 py-4">
@@ -398,7 +533,7 @@ export default function GovernmentDashboard() {
                 <SectionHeading id="challenges-h" title="Challenges by Domain" subtitle="Click any sector for severity breakdown" />
 
                 <div className="mt-4 space-y-2.5">
-                  {DOMAINS.map((dom) => {
+                  {displayDomains.map((dom) => {
                     const pct = Math.round((dom.count / 550) * 100);
                     const active = selectedDomain.name === dom.name;
                     return (
@@ -458,7 +593,7 @@ export default function GovernmentDashboard() {
                     Jharkhand · 24 Districts
                   </div>
                   <div className="grid grid-cols-4 gap-2">
-                    {DISTRICTS.map((d) => {
+                    {displayDistricts.map((d) => {
                       const active = selectedDistrict.name === d.name;
                       const heat =
                         d.total >= 300 ? 'border-urgent text-urgent' :
@@ -513,30 +648,53 @@ export default function GovernmentDashboard() {
               <SectionHeading id="pipeline-h" title="Challenge → Project Lifecycle" subtitle="Conversion funnel from citizen report to societal deployment" />
 
               <div className="mt-5">
-                {PIPELINE.map((step, idx) => (
-                  <div key={step.stage} className="flex items-center gap-4">
-                    {/* Funnel bar */}
-                    <div className="flex-1">
-                      <div className="flex items-baseline justify-between mb-1">
-                        <span className="text-[12px] font-medium text-ink">
-                          <span className="font-mono text-ink-muted mr-1.5">{String(idx + 1).padStart(2, '0')}</span>
-                          {step.stage}
-                        </span>
-                        <span className="font-mono text-[13px] font-medium text-ink">{step.count.toLocaleString('en-IN')}</span>
+                {PIPELINE.map((step, idx) => {
+                  let realCount = step.count;
+                  let realPct = step.pct;
+                  
+                  if (realStats?.pipeline) {
+                    const statusKey = step.stage === 'Submitted' ? 'submitted' :
+                                      step.stage === 'Validated' ? 'verified' :
+                                      step.stage === 'Domain Matched' ? 'assigned' :
+                                      step.stage === 'Univ. Assigned' ? 'in_progress' :
+                                      step.stage === 'Project Active' ? 'active' :
+                                      step.stage === 'Completed' ? 'completed' :
+                                      null;
+                    
+                    if (statusKey) {
+                      realCount = realStats.pipeline.problems?.[statusKey] ?? realStats.pipeline.projects?.[statusKey] ?? 0;
+                    }
+                    
+                    // Simple logic for funnel percentage based on max value (Submitted)
+                    const maxVal = realStats.pipeline.problems?.['submitted'] ?? 2438;
+                    realPct = maxVal > 0 ? Math.round((realCount / maxVal) * 100) : 0;
+                  }
+
+                  return (
+                    <div key={step.stage} className="flex items-center gap-4">
+                      {/* Funnel bar */}
+                      <div className="flex-1">
+                        <div className="flex items-baseline justify-between mb-1">
+                          <span className="text-[12px] font-medium text-ink">
+                            <span className="font-mono text-ink-muted mr-1.5">{String(idx + 1).padStart(2, '0')}</span>
+                            {step.stage}
+                          </span>
+                          <span className="font-mono text-[13px] font-medium text-ink">{realCount.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div className="h-5 w-full rounded-[2px] bg-border/40 overflow-hidden">
+                          <div
+                            className="h-full rounded-[2px] bg-navy transition-all duration-500"
+                            style={{ width: `${realPct}%`, opacity: 0.15 + (realPct / 100) * 0.85 }}
+                          ></div>
+                        </div>
                       </div>
-                      <div className="h-5 w-full rounded-[2px] bg-border/40 overflow-hidden">
-                        <div
-                          className="h-full rounded-[2px] bg-navy transition-all duration-500"
-                          style={{ width: `${step.pct}%`, opacity: 0.15 + (step.pct / 100) * 0.85 }}
-                        ></div>
-                      </div>
+                      {/* Arrow connector */}
+                      {idx < PIPELINE.length - 1 && (
+                        <div className="w-4 text-center text-border text-xs">↓</div>
+                      )}
                     </div>
-                    {/* Arrow connector */}
-                    {idx < PIPELINE.length - 1 && (
-                      <div className="w-4 text-center text-border text-xs">↓</div>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </section>
 
@@ -549,11 +707,11 @@ export default function GovernmentDashboard() {
                   <span className="block h-2.5 w-2.5 rounded-full bg-urgent animate-pulse"></span>
                   <h2 className="font-display text-lg font-medium text-ink">Projects Requiring Attention</h2>
                 </div>
-                <Eyebrow>{ATTENTION.length} flagged</Eyebrow>
+                <Eyebrow>{displayAttention.length} flagged</Eyebrow>
               </div>
 
               <div className="mt-4 space-y-3">
-                {ATTENTION.map((p) => (
+                {displayAttention.map((p) => (
                   <div key={p.id} className="flex items-start justify-between gap-4 rounded-[3px] border border-border bg-white p-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -600,7 +758,7 @@ export default function GovernmentDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/50">
-                      {UNIVERSITIES.map((u) => (
+                      {displayUniversities.map((u) => (
                         <tr key={u.name} className="hover:bg-navy/[0.02]">
                           <td className="py-2.5 pr-3 font-medium text-ink">{u.name}</td>
                           <td className="py-2.5 pr-2 text-right font-mono">{u.challenges}</td>
@@ -648,7 +806,7 @@ export default function GovernmentDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/50">
-                      {INDUSTRIES.map((ind) => (
+                      {displayIndustries.map((ind) => (
                         <tr key={ind.name} className="hover:bg-navy/[0.02]">
                           <td className="py-2.5 pr-3 font-medium text-ink">{ind.name}</td>
                           <td className="py-2.5 pr-2 text-right font-mono">{ind.projects}</td>
@@ -671,12 +829,12 @@ export default function GovernmentDashboard() {
               {/* Top-line metrics */}
               <div className="mt-5 grid grid-cols-3 gap-px bg-forest/10 lg:grid-cols-6">
                 {[
-                  { val: '42,000+', label: 'People Impacted' },
-                  { val: '86', label: 'Villages Reached' },
-                  { val: '87', label: 'Solutions Deployed' },
-                  { val: '156', label: 'Prototypes Validated' },
-                  { val: '12', label: 'Startups Incubated' },
-                  { val: '8', label: 'Patents Filed' },
+                  { val: realStats?.impactStats?.totalPeopleImpacted ? `${realStats.impactStats.totalPeopleImpacted}+` : '42,000+', label: 'People Impacted' },
+                  { val: realStats?.impactStats?.totalVillagesReached || '86', label: 'Villages Reached' },
+                  { val: realStats?.impactStats?.totalDeployed || realStats?.kpis?.deployedProjects || '87', label: 'Solutions Deployed' },
+                  { val: realStats?.kpis?.completedProjects || '156', label: 'Prototypes Validated' },
+                  { val: realStats?.impactStats?.totalStartups || '12', label: 'Startups Incubated' },
+                  { val: realStats?.impactStats?.totalPatents || '8', label: 'Patents Filed' },
                 ].map((m) => (
                   <div key={m.label} className="bg-paper px-4 py-3 text-center">
                     <div className="font-mono text-xl font-medium text-forest">{m.val}</div>
@@ -712,13 +870,13 @@ export default function GovernmentDashboard() {
                 <Eyebrow>Innovation Outcomes</Eyebrow>
                 <div className="mt-3 grid grid-cols-4 gap-px bg-forest/10 lg:grid-cols-7">
                   {[
-                    { val: 213, label: 'Projects Completed' },
-                    { val: 156, label: 'Prototypes Developed' },
-                    { val: 87, label: 'Solutions Deployed' },
-                    { val: 8, label: 'Patents Generated' },
-                    { val: 12, label: 'Startups Created' },
-                    { val: 43, label: 'Industry Pilots' },
-                    { val: 124, label: 'Research Projects' },
+                    { val: realStats?.kpis?.completedProjects || 213, label: 'Projects Completed' },
+                    { val: realStats?.kpis?.completedProjects || 156, label: 'Prototypes Developed' },
+                    { val: realStats?.impactStats?.totalDeployed || realStats?.kpis?.deployedProjects || 87, label: 'Solutions Deployed' },
+                    { val: realStats?.impactStats?.totalPatents || 8, label: 'Patents Generated' },
+                    { val: realStats?.impactStats?.totalStartups || 12, label: 'Startups Created' },
+                    { val: realStats?.industryStats?.reduce((sum, ind) => sum + ind.totalProjects, 0) || 43, label: 'Industry Pilots' },
+                    { val: realStats?.kpis?.totalProjects || 124, label: 'Research Projects' },
                   ].map((o) => (
                     <div key={o.label} className="bg-paper px-3 py-2.5 text-center">
                       <div className="font-mono text-base font-medium text-ink">{o.val}</div>
