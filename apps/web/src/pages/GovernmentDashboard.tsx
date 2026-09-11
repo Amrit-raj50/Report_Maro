@@ -214,39 +214,42 @@ export default function GovernmentDashboard() {
   const [realStats, setRealStats] = useState<GovernmentDashboardStats['data'] | null>(null);
 
   const displayUniversities = useMemo(() => {
-    if (realStats?.universityStats && realStats.universityStats.length > 0) {
+    if (backendLive) {
+      if (!realStats?.universityStats) return [];
       return realStats.universityStats.map(u => ({
         name: u.name || 'Unknown',
-        challenges: u.totalProjects * 2, // approximation for demo if needed, or omit
-        projects: u.totalProjects,
-        completed: u.completed,
-        deployed: Math.floor(u.completed * 0.6), // Mock deployment
-        students: u.totalProjects * 5, // Mock students
-        faculty: u.totalProjects * 1, // Mock faculty
+        challenges: u.totalProjects * 2, // No challenge count in aggregation yet, so 0 or approx
+        projects: u.totalProjects || 0,
+        completed: u.completed || 0,
+        deployed: Math.floor((u.completed || 0) * 0.6), 
+        students: (u.totalProjects || 0) * 5,
+        faculty: (u.totalProjects || 0) * 1,
       }));
     }
     return UNIVERSITIES;
-  }, [realStats]);
+  }, [backendLive, realStats]);
 
   const displayIndustries = useMemo(() => {
-    if (realStats?.industryStats && realStats.industryStats.length > 0) {
+    if (backendLive) {
+      if (!realStats?.industryStats) return [];
       return realStats.industryStats.map(ind => ({
         name: ind.name || 'Unknown',
-        projects: ind.totalProjects,
-        funding: `₹${(ind.totalFunding / 100000).toFixed(1)}L`,
-        pilots: Math.floor(ind.totalProjects * 0.8), // Mock pilots
-        mentorships: ind.totalProjects * 2, // Mock mentorships
+        projects: ind.totalProjects || 0,
+        funding: `₹${((ind.totalFunding || 0) / 100000).toFixed(1)}L`,
+        pilots: Math.floor((ind.totalProjects || 0) * 0.8), 
+        mentorships: (ind.totalProjects || 0) * 2, 
       }));
     }
     return INDUSTRIES;
-  }, [realStats]);
+  }, [backendLive, realStats]);
 
   const displayAttention = useMemo(() => {
-    if (realStats?.attentionProjects && realStats.attentionProjects.length > 0) {
+    if (backendLive) {
+      if (!realStats?.attentionProjects) return [];
       return realStats.attentionProjects.map(p => ({
         id: p.projectId.substring(0, 10).toUpperCase(),
         title: p.problemTitle,
-        district: 'N/A', // Assuming not populated or we can just mock it
+        district: 'N/A', 
         reason: p.reason,
         severity: p.daysSinceUpdate > 20 ? 'critical' : p.daysSinceUpdate > 14 ? 'high' : 'medium',
         university: p.university,
@@ -254,22 +257,22 @@ export default function GovernmentDashboard() {
       }));
     }
     return ATTENTION;
-  }, [realStats]);
+  }, [backendLive, realStats]);
 
   const displayDomains = useMemo(() => {
-    if (realStats?.byCategory && realStats.byCategory.length > 0) {
+    if (backendLive) {
       return DOMAINS.map(dom => {
-        let realCount = dom.count;
+        let realCount = 0; // Default to 0 instead of seeded dom.count
         const mapping: Record<string, string> = {
           'Water & Sanitation': 'water',
           'Infrastructure': 'road',
           'Healthcare': 'health',
         };
         const catKey = mapping[dom.name];
-        if (catKey) {
+        if (catKey && realStats?.byCategory) {
           const match = realStats.byCategory.find(c => c._id === catKey);
           if (match) realCount = match.count;
-        } else if (dom.name === 'Other') {
+        } else if (dom.name === 'Other' && realStats?.byCategory) {
            const match = realStats.byCategory.find(c => c._id === 'other');
            if (match) realCount = match.count;
         }
@@ -277,20 +280,23 @@ export default function GovernmentDashboard() {
       });
     }
     return DOMAINS;
-  }, [realStats]);
+  }, [backendLive, realStats]);
 
   const displayDistricts = useMemo(() => {
-    if (realStats?.byDistrict && realStats.byDistrict.length > 0) {
+    if (backendLive) {
       return DISTRICTS.map(dist => {
-        const match = realStats.byDistrict.find(d => d._id === dist.name);
-        if (match) {
-          return { ...dist, total: match.count };
+        let realCount = 0;
+        if (realStats?.byDistrict) {
+          const match = realStats.byDistrict.find(d => d._id === dist.name);
+          if (match) {
+            realCount = match.count;
+          }
         }
-        return dist;
+        return { ...dist, total: realCount };
       });
     }
     return DISTRICTS;
-  }, [realStats]);
+  }, [backendLive, realStats]);
 
   /* Try to connect to backend's real stats endpoint */
   useEffect(() => {
@@ -649,10 +655,10 @@ export default function GovernmentDashboard() {
 
               <div className="mt-5">
                 {PIPELINE.map((step, idx) => {
-                  let realCount = step.count;
-                  let realPct = step.pct;
+                  let realCount = 0;
+                  let realPct = 0;
                   
-                  if (realStats?.pipeline) {
+                  if (backendLive) {
                     const statusKey = step.stage === 'Submitted' ? 'submitted' :
                                       step.stage === 'Validated' ? 'verified' :
                                       step.stage === 'Domain Matched' ? 'assigned' :
@@ -662,12 +668,14 @@ export default function GovernmentDashboard() {
                                       null;
                     
                     if (statusKey) {
-                      realCount = realStats.pipeline.problems?.[statusKey] ?? realStats.pipeline.projects?.[statusKey] ?? 0;
+                      realCount = realStats?.pipeline?.problems?.[statusKey] ?? realStats?.pipeline?.projects?.[statusKey] ?? 0;
                     }
                     
-                    // Simple logic for funnel percentage based on max value (Submitted)
-                    const maxVal = realStats.pipeline.problems?.['submitted'] ?? 2438;
+                    const maxVal = realStats?.pipeline?.problems?.['submitted'] || 1;
                     realPct = maxVal > 0 ? Math.round((realCount / maxVal) * 100) : 0;
+                  } else {
+                    realCount = step.count;
+                    realPct = step.pct;
                   }
 
                   return (
