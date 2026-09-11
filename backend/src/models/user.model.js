@@ -30,6 +30,31 @@ const UserSchema = new mongoose.Schema(
       trim: true,
       default: null,
     },
+    phone: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    district: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    taluka: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    village_or_city: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    pincode: {
+      type: String,
+      trim: true,
+      default: null,
+    },
   },
   {
     timestamps: {
