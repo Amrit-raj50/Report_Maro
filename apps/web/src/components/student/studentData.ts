@@ -99,6 +99,9 @@ export interface TeamComment {
   avatar: string;
   message: string;
   timestamp: string;
+  projectId?: string;
+  projectName?: string;
+  isMentor?: boolean;
 }
 
 export interface StudentAchievement {

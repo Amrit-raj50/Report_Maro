@@ -6,16 +6,15 @@ import {
   STUDENT_TASKS,
   EXPLORE_CHALLENGES,
   TEAM_MEMBERS,
-  INITIAL_TEAM_COMMENTS,
   INITIAL_STUDENT_DELIVERABLES,
   STUDENT_ACHIEVEMENTS,
   StudentProject,
   StudentTaskItem,
   ExploreChallenge,
   StudentDeliverable,
-  TeamComment,
   ProofOfWork,
 } from './studentData.js';
+import { useProjectMessages } from '../../utils/projectMessaging.js';
 import {
   Briefcase,
   CheckSquare,
@@ -75,7 +74,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   const [todaysTasks, setTodaysTasks] = useState(INITIAL_TODAYS_TASKS);
   const [tasks, setTasks] = useState<StudentTaskItem[]>(STUDENT_TASKS);
   const [challenges, setChallenges] = useState<ExploreChallenge[]>(EXPLORE_CHALLENGES);
-  const [comments, setComments] = useState<TeamComment[]>(INITIAL_TEAM_COMMENTS);
+  const { messages: comments, sendMessage, resetMessages } = useProjectMessages();
   const [deliverables, setDeliverables] = useState<StudentDeliverable[]>(INITIAL_STUDENT_DELIVERABLES);
   const [achievements] = useState(STUDENT_ACHIEVEMENTS);
 
@@ -263,18 +262,17 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
     e.preventDefault();
     if (!newCommentText.trim()) return;
 
-    const newCom: TeamComment = {
-      id: `com-${Date.now()}`,
+    sendMessage({
       author: profile.name,
       role: 'Frontend Developer',
       avatar: profile.avatarIcon,
       message: newCommentText.trim(),
-      timestamp: 'Just now',
-    };
+      projectId: 'Smart Water Monitoring',
+      projectName: 'Smart Water Monitoring (Namkum Block)',
+    });
 
-    setComments([...comments, newCom]);
     setNewCommentText('');
-    showToast('Update shared with the project team.');
+    showToast('Message sent to project team and Dr. Sharma!');
   };
 
   // Filtered Challenges
@@ -1551,30 +1549,72 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         {/* ==================================================================== */}
         {activeTab === 'messages' && (
           <div className="space-y-6">
-            <div className="border border-border bg-white p-5">
-              <h2 className="font-display text-lg font-bold text-navy">
-                Project Communications & Mentor Q&A
-              </h2>
-              <p className="text-xs text-ink-muted">
-                Direct discussions with Dr. Sharma and peer student developers
-              </p>
+            <div className="border border-border bg-white p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h2 className="font-display text-lg font-bold text-navy">
+                  Project Communications & Mentor Q&A
+                </h2>
+                <p className="text-xs text-ink-muted">
+                  Direct discussions with Dr. Rajesh Sharma and peer student developers
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1 font-mono text-[11px] text-forest bg-forest/10 px-2.5 py-1 border border-forest/30">
+                  <span className="h-2 w-2 rounded-full bg-forest animate-pulse" />
+                  Synced with Mentor Workspace
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetMessages();
+                    showToast('Project discussion thread reset to defaults.');
+                  }}
+                  className="text-[11px] font-bold text-ink-muted hover:text-urgent hover:underline"
+                  title="Reset discussion thread to default messages"
+                >
+                  Reset Thread
+                </button>
+              </div>
             </div>
 
             <div className="border border-border bg-white p-5 space-y-4">
               <div className="space-y-3 max-h-96 overflow-y-auto">
-                {comments.map((c) => (
-                  <div key={c.id} className="border border-border bg-paper p-4 space-y-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <span>{c.avatar}</span>
-                        <strong className="text-navy">{c.author}</strong>
-                        <span className="text-[10px] text-ink-muted font-mono">({c.role})</span>
+                {comments.map((c) => {
+                  const isMentor = c.isMentor || c.author.toLowerCase().includes('sharma') || c.role.toLowerCase().includes('mentor');
+                  const isHimmat = c.author.toLowerCase().includes('himmat');
+                  return (
+                    <div
+                      key={c.id}
+                      className={`border p-4 space-y-1 transition ${
+                        isMentor
+                          ? 'border-turmeric/50 bg-turmeric/5'
+                          : isHimmat
+                          ? 'border-navy/30 bg-white'
+                          : 'border-border bg-paper'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2">
+                          <span>{c.avatar}</span>
+                          <strong className="text-navy">{c.author}</strong>
+                          <span className="text-[10px] text-ink-muted font-mono">({c.role})</span>
+                          {isMentor && (
+                            <span className="text-[9px] bg-turmeric/20 text-ink border border-turmeric/40 px-1.5 py-0.2 rounded-[2px] font-bold uppercase">
+                              Faculty Guide
+                            </span>
+                          )}
+                          {isHimmat && (
+                            <span className="text-[9px] bg-navy/10 text-navy border border-navy/20 px-1.5 py-0.2 rounded-[2px] font-bold uppercase">
+                              You
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-ink-muted font-mono">{c.timestamp}</span>
                       </div>
-                      <span className="text-[10px] text-ink-muted font-mono">{c.timestamp}</span>
+                      <p className="text-xs text-ink mt-1 leading-relaxed">{c.message}</p>
                     </div>
-                    <p className="text-xs text-ink mt-1">{c.message}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <form onSubmit={handlePostComment} className="flex gap-2 pt-2 border-t border-border">

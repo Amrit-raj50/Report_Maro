@@ -39,7 +39,9 @@ import {
   Shield,
   ChevronRight,
   Award,
+  MessageSquare,
 } from 'lucide-react';
+import { useProjectMessages } from '../../utils/projectMessaging.js';
 
 export type MentorNavTab =
   | 'dashboard'
@@ -111,12 +113,39 @@ export const MentorDashboardView: React.FC<MentorDashboardViewProps> = ({
   // New Industry Message Form
   const [newChatMessage, setNewChatMessage] = useState('');
 
+  // Shared Project Messages (with Student Portal)
+  const {
+    messages: projectMessages,
+    sendMessage: sendProjectMessage,
+    resetMessages: resetProjectMessages,
+  } = useProjectMessages();
+  const [mentorStudentReply, setMentorStudentReply] = useState('');
+  const [messageProjectFilter, setMessageProjectFilter] = useState<string>('All');
+
   // Toast Notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 4000);
+  };
+
+  const handleSendStudentReply = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mentorStudentReply.trim()) return;
+
+    sendProjectMessage({
+      author: 'Dr. Rajesh Sharma',
+      role: 'Faculty Mentor / PI',
+      avatar: '👨‍🏫',
+      message: mentorStudentReply.trim(),
+      isMentor: true,
+      projectId: messageProjectFilter === 'All' ? 'Smart Water Monitoring' : messageProjectFilter,
+      projectName: messageProjectFilter === 'All' ? 'Smart Water Monitoring (Namkum Block)' : messageProjectFilter,
+    });
+
+    setMentorStudentReply('');
+    showToast('Reply dispatched to student research team!');
   };
 
   // Derived Counts
@@ -555,6 +584,7 @@ export const MentorDashboardView: React.FC<MentorDashboardViewProps> = ({
               { key: 'tasks', label: 'Tasks', icon: CheckCircle2, badge: overdueTasksCount > 0 ? `${overdueTasksCount} Overdue` : undefined, badgeColor: 'bg-urgent text-white' },
               { key: 'milestones', label: 'Milestones', icon: Clock },
               { key: 'reviews', label: 'Reviews', icon: FileCheck2, badge: `${pendingReviewsCount} Pending`, badgeColor: 'bg-turmeric text-ink' },
+              { key: 'messages', label: 'Student Messages', icon: MessageSquare, count: projectMessages.length },
               { key: 'documents', label: 'Documents', icon: FileText },
               { key: 'industry', label: 'Industry Communication', icon: Building2 },
               { key: 'notifications', label: 'Notifications', icon: Bell },
@@ -1111,6 +1141,17 @@ export const MentorDashboardView: React.FC<MentorDashboardViewProps> = ({
                         className="text-[10px] font-bold text-navy hover:underline"
                       >
                         Edit Role
+                      </button>
+                      <button
+                        onClick={() => {
+                          setMessageProjectFilter('Smart Water Monitoring');
+                          setActiveTab('messages');
+                        }}
+                        className="text-[10px] font-bold text-forest hover:underline flex items-center gap-0.5"
+                        title="Chat with student team"
+                      >
+                        <MessageSquare className="h-2.5 w-2.5" />
+                        <span>Chat</span>
                       </button>
                       <button
                         onClick={() => {
@@ -1718,7 +1759,7 @@ export const MentorDashboardView: React.FC<MentorDashboardViewProps> = ({
         {/* ==================================================================== */}
         {/* TAB 8: INDUSTRY COMMUNICATION (Prompt-Specified Feature 6)           */}
         {/* ==================================================================== */}
-        {(activeTab === 'industry' || activeTab === 'messages') && (
+        {activeTab === 'industry' && (
           <div className="space-y-6">
             <div className="border border-border bg-white p-5">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -1806,6 +1847,142 @@ export const MentorDashboardView: React.FC<MentorDashboardViewProps> = ({
                 >
                   <Send className="h-3.5 w-3.5" />
                   Send
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* TAB 8B: STUDENT PROJECT COMMUNICATIONS & MENTOR Q&A                 */}
+        {/* ==================================================================== */}
+        {activeTab === 'messages' && (
+          <div className="space-y-6">
+            <div className="border border-border bg-white p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">💬</span>
+                <div>
+                  <h2 className="font-display text-lg font-bold text-navy">
+                    Student Project Communications & Mentor Q&A
+                  </h2>
+                  <p className="text-xs text-ink-muted">
+                    Direct technical discussions with Himmat Patel, Rahul, and student teams across all mentored projects
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1 font-mono text-xs text-forest bg-forest/10 px-3 py-1 border border-forest/30">
+                  <span className="h-2 w-2 rounded-full bg-forest animate-pulse" />
+                  Synced with Student Portal
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetProjectMessages();
+                    showToast('Project discussion thread reset to defaults.');
+                  }}
+                  className="text-xs font-bold text-ink-muted hover:text-urgent hover:underline"
+                  title="Reset discussion thread"
+                >
+                  Reset Thread
+                </button>
+              </div>
+            </div>
+
+            {/* Active Thread & Controls */}
+            <div className="border-2 border-border bg-white p-5 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-border pb-3">
+                <div>
+                  <h3 className="font-display text-base font-bold text-navy flex items-center gap-2">
+                    <span>BIT Mesra & NIT Jamshedpur Student Cohort</span>
+                    <span className="text-xs font-mono font-normal text-forest bg-forest/10 px-2 py-0.5 border border-forest/20">
+                      {projectMessages.length} Messages
+                    </span>
+                  </h3>
+                  <p className="text-xs text-ink-muted">
+                    Primary Investigators: <strong>Dr. Rajesh Sharma</strong> · Student Leads: <strong>Himmat Patel, Rahul</strong>
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-semibold text-ink-muted">Filter by Project:</label>
+                  <select
+                    value={messageProjectFilter}
+                    onChange={(e) => setMessageProjectFilter(e.target.value)}
+                    className="border border-border bg-paper px-2.5 py-1 text-xs font-medium text-navy"
+                  >
+                    <option value="All">All Mentored Projects</option>
+                    <option value="Smart Water Monitoring">Smart Water Monitoring (Namkum Block)</option>
+                    <option value="Solar Microgrid & BMS">Solar Microgrid & BMS (Khunti Village)</option>
+                    <option value="AI Crop Blight Detection">AI Crop Blight Detection (Mandar)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Chat Thread */}
+              <div className="border border-border bg-paper p-4 space-y-3 max-h-[460px] overflow-y-auto">
+                {projectMessages
+                  .filter((m) =>
+                    messageProjectFilter === 'All' ? true : m.projectId === messageProjectFilter || !m.projectId
+                  )
+                  .map((m) => {
+                    const isMentorMsg =
+                      m.isMentor ||
+                      m.author.toLowerCase().includes('sharma') ||
+                      m.role.toLowerCase().includes('mentor');
+                    const isHimmat = m.author.toLowerCase().includes('himmat');
+
+                    return (
+                      <div
+                        key={m.id}
+                        className={`flex flex-col ${isMentorMsg ? 'items-end' : 'items-start'}`}
+                      >
+                        <div className="flex items-center gap-1.5 text-[11px] text-ink-muted mb-1">
+                          <span className="text-sm">{m.avatar}</span>
+                          <strong className="text-navy">{m.author}</strong>
+                          <span className="font-mono">({m.role})</span>
+                          {isMentorMsg && (
+                            <span className="text-[9px] bg-turmeric/20 text-ink border border-turmeric/40 px-1.5 py-0.2 rounded-[2px] font-bold">
+                              You / Faculty Guide
+                            </span>
+                          )}
+                          {isHimmat && (
+                            <span className="text-[9px] bg-forest/10 text-forest border border-forest/30 px-1.5 py-0.2 rounded-[2px] font-bold">
+                              Student Lead
+                            </span>
+                          )}
+                          <span>·</span>
+                          <span className="font-mono">{m.timestamp}</span>
+                        </div>
+                        <div
+                          className={`max-w-xl p-3 text-xs leading-relaxed ${
+                            isMentorMsg
+                              ? 'bg-navy text-white border border-navy shadow-sm'
+                              : 'bg-white text-ink border border-border shadow-xs'
+                          }`}
+                        >
+                          <p>{m.message}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+
+              {/* Response Composer Form */}
+              <form onSubmit={handleSendStudentReply} className="pt-2 flex gap-2">
+                <input
+                  type="text"
+                  value={mentorStudentReply}
+                  onChange={(e) => setMentorStudentReply(e.target.value)}
+                  placeholder="Reply to Himmat Patel and student team as Dr. Rajesh Sharma..."
+                  className="flex-1 border border-border bg-paper px-3 py-2 text-xs font-medium text-ink focus:border-navy focus:bg-white"
+                />
+                <button
+                  type="submit"
+                  className="flex items-center gap-1.5 border border-navy bg-navy px-5 py-2 text-xs font-bold text-white hover:bg-navy-deep transition"
+                >
+                  <Send className="h-3.5 w-3.5" />
+                  <span>Send Response</span>
                 </button>
               </form>
             </div>
