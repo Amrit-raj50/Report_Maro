@@ -11,9 +11,9 @@ import {
   getVillagesForBlock,
 } from '../data/jharkhandLgd.js';
 import {
-  JHARKHAND_UNIVERSITIES,
-  JHARKHAND_DEPARTMENTS,
+  useJharkhandUniversities,
   getUniversityById,
+  saveUniversityDepartmentsToDb,
 } from '../data/jharkhandUniversities.js';
 
 interface PostalPostOffice {
@@ -39,18 +39,21 @@ export default function Register() {
   // Role locking logic:
   // 1. If coming from "Submit a Problem" or queryRole=citizen -> Lock to Citizen Mode
   // 2. If coming to University Portal or queryRole=university -> Lock to University Mode
+  // 3. If coming to Industry Portal or queryRole=industry -> Lock to Industry Mode
   const isCitizenTarget = queryRole === 'citizen' || queryFor === 'submit';
   const isUniversityTarget = queryRole === 'university';
+  const isIndustryTarget = queryRole === 'industry';
 
   const [showAllRoles, setShowAllRoles] = useState(false);
 
-  const isCitizenOnly = !showAllRoles && isCitizenTarget && !isUniversityTarget;
-  const isUniversityOnly = !showAllRoles && isUniversityTarget;
+  const isCitizenOnly = !showAllRoles && isCitizenTarget && !isUniversityTarget && !isIndustryTarget;
+  const isUniversityOnly = !showAllRoles && isUniversityTarget && !isIndustryTarget;
+  const isIndustryOnly = !showAllRoles && isIndustryTarget && !isCitizenTarget && !isUniversityTarget;
 
   // Role
   const [role, setRole] = useState<UserRole>(() => {
     if (isUniversityTarget) return 'university';
-    if (queryRole === 'industry') return 'industry';
+    if (isIndustryTarget) return 'industry';
     return 'citizen';
   });
 
@@ -62,10 +65,17 @@ export default function Register() {
   });
 
   // University Academic Fields
+  const { universities } = useJharkhandUniversities();
   const [selectedUnivId, setSelectedUnivId] = useState<string>('nitjsr');
   const [customUnivName, setCustomUnivName] = useState('');
-  const [department, setDepartment] = useState<string>(JHARKHAND_DEPARTMENTS[0] || 'Computer Science & Engineering');
+  const [department, setDepartment] = useState<string>('');
   const [customDepartment, setCustomDepartment] = useState('');
+
+  // Institution departments management state (saved directly to MongoDB)
+  const [institutionDepartments, setInstitutionDepartments] = useState<string[]>([]);
+  const [newDeptInput, setNewDeptInput] = useState('');
+  const [isSavingDepts, setIsSavingDepts] = useState(false);
+  const [deptSaveStatus, setDeptSaveStatus] = useState<string | null>(null);
 
   // Student-specific fields
   const [rollNumber, setRollNumber] = useState('');
@@ -124,6 +134,8 @@ export default function Register() {
       setRole('citizen');
     } else if (isUniversityOnly) {
       setRole('university');
+    } else if (isIndustryOnly) {
+      setRole('industry');
     } else if (queryRole === 'university') {
       setRole('university');
     } else if (queryRole === 'industry') {
@@ -135,20 +147,87 @@ export default function Register() {
     if (queryType === 'mentor') setUnivSubRole('mentor');
     else if (queryType === 'institution' || queryType === 'dean') setUnivSubRole('institution');
     else if (queryType === 'student') setUnivSubRole('student');
-  }, [queryRole, queryType, isCitizenOnly, isUniversityOnly]);
+  }, [queryRole, queryType, isCitizenOnly, isUniversityOnly, isIndustryOnly]);
 
-  // When university is selected, auto-update campus location & AISHE code
+  // When university is selected, auto-update campus location, AISHE code, and existing departments
   useEffect(() => {
     if (role === 'university' && selectedUnivId !== '__other__') {
-      const u = getUniversityById(selectedUnivId);
+      const u = universities.find((x) => x.id === selectedUnivId) || getUniversityById(selectedUnivId);
       if (u) {
         setDistrict(u.district);
-        setPincode(u.pincode);
+        setPincode(u.pincode || '');
         setVillageOrCity(u.city);
-        setAisheCodeInput(u.aisheCode);
+        setAisheCodeInput(u.aisheCode || '');
+        const existingDepts = Array.isArray(u.departments) ? u.departments : [];
+        setInstitutionDepartments(existingDepts);
+        if (existingDepts.length > 0 && existingDepts[0]) {
+          setDepartment(existingDepts[0]);
+        } else {
+          setDepartment('');
+        }
       }
     }
-  }, [role, selectedUnivId]);
+  }, [role, selectedUnivId, universities]);
+
+  const handleAddDepartment = async () => {
+    const trimmed = newDeptInput.trim();
+    if (!trimmed) return;
+    if (institutionDepartments.some((d) => d.toLowerCase() === trimmed.toLowerCase())) {
+      setNewDeptInput('');
+      return;
+    }
+    const updated = [...institutionDepartments, trimmed];
+    setInstitutionDepartments(updated);
+    setNewDeptInput('');
+
+    // If a known institution is selected, save directly to MongoDB immediately
+    if (selectedUnivId && selectedUnivId !== '__other__') {
+      try {
+        setIsSavingDepts(true);
+        await saveUniversityDepartmentsToDb(selectedUnivId, updated, 'replace');
+        setDeptSaveStatus('✓ Saved directly to MongoDB Atlas');
+        setTimeout(() => setDeptSaveStatus(null), 3000);
+      } catch {
+        setDeptSaveStatus('Saved locally (will sync on registration)');
+      } finally {
+        setIsSavingDepts(false);
+      }
+    }
+  };
+
+  const handleRemoveDepartment = async (deptToRemove: string) => {
+    const updated = institutionDepartments.filter((d) => d !== deptToRemove);
+    setInstitutionDepartments(updated);
+    if (selectedUnivId && selectedUnivId !== '__other__') {
+      try {
+        setIsSavingDepts(true);
+        await saveUniversityDepartmentsToDb(selectedUnivId, updated, 'replace');
+        setDeptSaveStatus('✓ Updated in MongoDB Atlas');
+        setTimeout(() => setDeptSaveStatus(null), 3000);
+      } catch {
+        // ignore
+      } finally {
+        setIsSavingDepts(false);
+      }
+    }
+  };
+
+  const handleSaveDepartmentsNow = async () => {
+    if (institutionDepartments.length === 0) return;
+    try {
+      setIsSavingDepts(true);
+      const targetId = selectedUnivId === '__other__' ? customUnivName.trim() : selectedUnivId;
+      if (targetId) {
+        await saveUniversityDepartmentsToDb(targetId, institutionDepartments, 'replace');
+        setDeptSaveStatus('✓ All departments saved directly to MongoDB Atlas!');
+        setTimeout(() => setDeptSaveStatus(null), 4000);
+      }
+    } catch {
+      setDeptSaveStatus('Error saving to MongoDB');
+    } finally {
+      setIsSavingDepts(false);
+    }
+  };
 
   // Get official LGD blocks for currently selected district
   const availableBlocks = useMemo(() => {
@@ -354,9 +433,11 @@ export default function Register() {
     const effectiveUnivName =
       selectedUnivId === '__other__'
         ? customUnivName.trim() || 'Affiliated Institution'
-        : getUniversityById(selectedUnivId)?.name || 'NIT Jamshedpur';
+        : (universities.find((u) => u.id === selectedUnivId)?.name || getUniversityById(selectedUnivId)?.name || 'NIT Jamshedpur');
     const effectiveDept =
-      department === '__other__' ? customDepartment.trim() || 'General' : department;
+      univSubRole === 'institution'
+        ? (institutionDepartments.join(', ') || 'All Departments')
+        : (department === '__other__' ? customDepartment.trim() || 'General' : (department || customDepartment.trim() || 'General'));
 
     if (role === 'university') {
       if (univSubRole === 'student') {
@@ -395,7 +476,46 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const res = await apiClient.post('/auth/register', parsed.data);
+      // Directly persist university departments to MongoDB Atlas
+      if (role === 'university') {
+        const targetId =
+          selectedUnivId === '__other__'
+            ? customUnivName.trim() || effectiveUnivName
+            : selectedUnivId;
+
+        if (univSubRole === 'institution' && institutionDepartments.length > 0 && targetId) {
+          try {
+            await saveUniversityDepartmentsToDb(targetId, institutionDepartments, 'replace', {
+              name: effectiveUnivName,
+              district: district || 'Ranchi',
+              aishe_code: aisheCodeInput.trim() || undefined,
+            });
+          } catch (e) {
+            console.warn('Direct MongoDB save warning during registration:', e);
+          }
+        } else if (
+          (univSubRole === 'student' || univSubRole === 'mentor') &&
+          effectiveDept &&
+          effectiveDept !== 'General' &&
+          targetId
+        ) {
+          try {
+            await saveUniversityDepartmentsToDb(targetId, [effectiveDept], 'add', {
+              name: effectiveUnivName,
+              district: district || 'Ranchi',
+            });
+          } catch {
+            // non-fatal
+          }
+        }
+      }
+
+      const res = await apiClient.post('/auth/register', {
+        ...parsed.data,
+        departments: univSubRole === 'institution' ? institutionDepartments : (effectiveDept ? [effectiveDept] : []),
+        university_code: selectedUnivId !== '__other__' ? selectedUnivId : undefined,
+        university_name: effectiveUnivName,
+      });
       setSession(res.data.user, res.data.token);
 
       // Save client profile details in localStorage for enriched dashboard experience
@@ -461,10 +581,18 @@ export default function Register() {
                 ? 'झारखंड सरकार · नागरिक पंजीकरण (NIC & LGD Integrated)'
                 : isUniversityOnly
                   ? 'झारखंड सरकार · उच्च एवं तकनीकी शिक्षा विभाग'
-                  : 'झारखंड सरकार · नागरिक एवं संस्था पंजीकरण (NIC & LGD Integrated)'}
+                  : isIndustryOnly
+                    ? 'झारखंड सरकार · उद्योग एवं सीएसआर सहभागिता'
+                    : 'झारखंड सरकार · नागरिक एवं संस्था पंजीकरण (NIC & LGD Integrated)'}
             </span>
             <span className="text-[10px] font-mono bg-paper px-2 py-0.5 border border-border text-ink-muted">
-              {isCitizenOnly ? 'CITIZEN ACCESS' : isUniversityOnly ? 'UNIVERSITY ECOSYSTEM · NEP 2020' : 'NEP 2020 / AISHE'}
+              {isCitizenOnly
+                ? 'CITIZEN ACCESS'
+                : isUniversityOnly
+                  ? 'UNIVERSITY ECOSYSTEM · NEP 2020'
+                  : isIndustryOnly
+                    ? 'INDUSTRY & CSR PARTNER'
+                    : 'NEP 2020 / AISHE'}
             </span>
           </div>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-navy mt-1">
@@ -472,19 +600,23 @@ export default function Register() {
               ? 'Citizen Registration / नागरिक पंजीकरण'
               : isUniversityOnly
                 ? 'University Stakeholder Registration / विश्वविद्यालय पंजीकरण'
-                : 'Stakeholder Registration / पंजीकरण'}
+                : isIndustryOnly
+                  ? 'Corporate & CSR Partner Registration / उद्योग पंजीकरण'
+                  : 'Stakeholder Registration / पंजीकरण'}
           </h1>
           <p className="text-xs sm:text-sm text-ink-muted mt-1">
             {isCitizenOnly
               ? 'Register with your verified mobile number and Jharkhand LGD block to report civic issues and track resolution.'
               : isUniversityOnly
                 ? 'Register under your university node as a Student Innovator, Faculty Mentor, or Institution Node.'
-                : 'Official portal to crowdsource societal challenges, civic grievances, and university-industry innovation pipelines.'}
+                : isIndustryOnly
+                  ? 'Register your corporate entity, foundation, or PSU to sponsor student innovations and fund civic problem-solving pipelines.'
+                  : 'Official portal to crowdsource societal challenges, civic grievances, and university-industry innovation pipelines.'}
           </p>
         </div>
 
-        {/* ROLE SELECTOR TABS (Only shown if NOT in citizen-only or university-only mode) */}
-        {!isCitizenOnly && !isUniversityOnly && (
+        {/* ROLE SELECTOR TABS (Only shown if NOT in citizen-only, university-only, or industry-only mode) */}
+        {!isCitizenOnly && !isUniversityOnly && !isIndustryOnly && (
           <div className="mb-6">
             <label className="block text-xs font-bold uppercase tracking-wider text-ink-muted mb-2 font-mono">
               Select Account Type / खाता प्रकार चुनें
@@ -710,11 +842,40 @@ export default function Register() {
                     onChange={(e) => setSelectedUnivId(e.target.value)}
                     className="w-full rounded-[2px] border border-border px-3 py-2 text-sm bg-white text-ink focus:outline-none focus:border-forest"
                   >
-                    {JHARKHAND_UNIVERSITIES.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.name} (AISHE: {u.aisheCode} · {u.city})
-                      </option>
-                    ))}
+                    <optgroup label="Premier Institutes & State Universities (विश्वविद्यालय)">
+                      {universities.filter(
+                        (u) =>
+                          u.category === 'Institute of National Importance' ||
+                          u.category === 'Central University' ||
+                          u.category === 'State University' ||
+                          u.category === 'Deemed University-Private'
+                      ).map((u) => (
+                        <option key={u.id} value={u.id}>
+                          {u.name} ({u.city})
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Government Engineering Colleges (राजकीय इंजीनियरिंग कॉलेज)">
+                      {universities.filter((u) => u.category === 'Govt Engineering').map((u) => (
+                        <option key={u.id} value={u.id}>
+                          {u.name} ({u.city})
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Constituent Colleges (अंगीभूत महाविद्यालय)">
+                      {universities.filter((u) => u.category === 'Constituent Colleges').map((u) => (
+                        <option key={u.id} value={u.id}>
+                          {u.name} ({u.city})
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Affiliated Colleges (संबद्ध महाविद्यालय)">
+                      {universities.filter((u) => u.category === 'Affiliated Colleges').map((u) => (
+                        <option key={u.id} value={u.id}>
+                          {u.name} ({u.city})
+                        </option>
+                      ))}
+                    </optgroup>
                     <option value="__other__">Other Affiliated College / Polytechnic Institute…</option>
                   </select>
 
@@ -732,37 +893,141 @@ export default function Register() {
                   )}
                 </div>
 
-                {/* Academic Department */}
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-ink-muted mb-1">
-                    Department / संकाय <span className="text-urgent">*</span>
-                  </label>
-                  <select
-                    value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
-                    className="w-full rounded-[2px] border border-border px-3 py-2 text-sm bg-white text-ink focus:outline-none focus:border-forest"
-                  >
-                    {JHARKHAND_DEPARTMENTS.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                    <option value="__other__">Other Department / Specialization…</option>
-                  </select>
+                {/* INSTITUTION ROLE: Direct Department Input & MongoDB Management */}
+                {univSubRole === 'institution' ? (
+                  <div className="sm:col-span-2 bg-paper border border-border p-3.5 rounded-[2px] shadow-xs">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-ink">
+                          University Academic Departments / विश्वविद्यालय के विभाग जोड़ें <span className="text-urgent">*</span>
+                        </label>
+                        <p className="text-[11px] text-ink-muted">
+                          Enter official academic departments/faculties for this institution. These save directly to MongoDB Atlas.
+                        </p>
+                      </div>
+                      {institutionDepartments.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleSaveDepartmentsNow}
+                          disabled={isSavingDepts}
+                          className="px-2.5 py-1 bg-forest text-white text-[11px] font-bold rounded-[2px] hover:bg-forest-deep transition-colors flex items-center gap-1 shadow-xs cursor-pointer"
+                        >
+                          <span>💾</span>
+                          <span>{isSavingDepts ? 'Saving…' : 'Save to MongoDB Now'}</span>
+                        </button>
+                      )}
+                    </div>
 
-                  {department === '__other__' && (
-                    <div className="mt-2">
+                    <div className="flex gap-2 mb-2.5">
                       <input
                         type="text"
-                        required
-                        placeholder="Enter your department name"
-                        className="w-full rounded-[2px] border border-border px-3 py-2 text-sm bg-white text-ink focus:outline-none focus:border-forest"
-                        value={customDepartment}
-                        onChange={(e) => setCustomDepartment(e.target.value)}
+                        placeholder="Type department name (e.g. Department of Computer Science, Civil Engineering, Botany)"
+                        className="flex-1 rounded-[2px] border border-border px-3 py-2 text-sm bg-white text-ink focus:outline-none focus:border-forest"
+                        value={newDeptInput}
+                        onChange={(e) => setNewDeptInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddDepartment();
+                          }
+                        }}
                       />
+                      <button
+                        type="button"
+                        onClick={handleAddDepartment}
+                        className="px-4 py-2 bg-navy text-white text-xs font-bold rounded-[2px] hover:bg-navy-deep transition-colors uppercase tracking-wider cursor-pointer"
+                      >
+                        + Add Department
+                      </button>
                     </div>
-                  )}
-                </div>
+
+                    {institutionDepartments.length === 0 ? (
+                      <div className="text-xs text-ink-muted italic py-3 px-3 bg-white border border-dashed border-border text-center rounded-[2px]">
+                        No departments added yet. Type a department name above and click "+ Add Department" to save directly to MongoDB.
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto p-1">
+                          {institutionDepartments.map((dept, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white text-navy text-xs font-medium border border-border shadow-xs rounded-[2px]"
+                            >
+                              <span>🏢 {dept}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveDepartment(dept)}
+                                className="text-urgent hover:text-red-700 font-bold ml-1 text-sm leading-none cursor-pointer"
+                                title="Remove department"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] text-ink-muted px-1">
+                          <span>{institutionDepartments.length} department(s) configured</span>
+                          {deptSaveStatus && (
+                            <span className="text-forest font-semibold animate-pulse">{deptSaveStatus}</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* STUDENT & MENTOR: Department Selection or Direct Input */
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-ink-muted mb-1">
+                      Department / संकाय <span className="text-urgent">*</span>
+                    </label>
+                    {institutionDepartments.length > 0 ? (
+                      <>
+                        <select
+                          value={department}
+                          onChange={(e) => setDepartment(e.target.value)}
+                          className="w-full rounded-[2px] border border-border px-3 py-2 text-sm bg-white text-ink focus:outline-none focus:border-forest"
+                        >
+                          {institutionDepartments.map((d) => (
+                            <option key={d} value={d}>
+                              {d}
+                            </option>
+                          ))}
+                          <option value="__other__">Other Department / Custom…</option>
+                        </select>
+
+                        {department === '__other__' && (
+                          <div className="mt-2">
+                            <input
+                              type="text"
+                              required
+                              placeholder="Enter your specific department name"
+                              className="w-full rounded-[2px] border border-border px-3 py-2 text-sm bg-white text-ink focus:outline-none focus:border-forest"
+                              value={customDepartment}
+                              onChange={(e) => setCustomDepartment(e.target.value)}
+                            />
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Enter your department name (e.g. Computer Science, Civil Engineering, Physics)"
+                          className="w-full rounded-[2px] border border-border px-3 py-2 text-sm bg-white text-ink focus:outline-none focus:border-forest"
+                          value={customDepartment || department}
+                          onChange={(e) => {
+                            setCustomDepartment(e.target.value);
+                            setDepartment(e.target.value);
+                          }}
+                        />
+                        <p className="mt-1 text-[10px] text-ink-muted">
+                          Enter your department at {selectedUnivId === '__other__' ? (customUnivName || 'your university') : (getUniversityById(selectedUnivId)?.shortName || 'your university')}.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* STUDENT SPECIFIC FIELDS */}
                 {univSubRole === 'student' && (
@@ -1252,34 +1517,40 @@ export default function Register() {
           </p>
         </form>
 
-        {/* Existing User Link */}
-        <div className="mt-6 pt-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-ink-muted">
-          <div>
-            <span>Already registered with Samadhan Setu?</span>
-            <Link
-              to={
-                isCitizenOnly
-                  ? '/login?role=citizen&for=submit'
-                  : isUniversityOnly
-                    ? `/login?role=university&type=${univSubRole === 'institution' ? 'dean' : univSubRole}`
-                    : `/login?role=${role}${role === 'university' ? `&type=${univSubRole}` : ''}`
-              }
-              className="font-bold text-navy hover:underline ml-1"
-            >
-              Sign In to Account →
-            </Link>
-          </div>
+        {/* ========================================================================= */}
+        {/* OFFICIAL NIC-STYLE FOOTER: SIGN-IN & PORTAL SWITCHER                      */}
+        {/* ========================================================================= */}
+        <div className="mt-6 pt-3.5 border-t border-border">
+          <div className="bg-[#F8F6F0] border border-border px-3.5 py-2.5 rounded-[2px] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-ink-muted">Already registered with Samadhan Setu?</span>
+              <Link
+                to={
+                  isCitizenOnly
+                    ? '/login?role=citizen&for=submit'
+                    : isUniversityOnly
+                      ? `/login?role=university&type=${univSubRole === 'institution' ? 'dean' : univSubRole}`
+                      : isIndustryOnly
+                        ? '/login?role=industry'
+                        : `/login?role=${role}${role === 'university' ? `&type=${univSubRole}` : ''}`
+                }
+                className="font-bold text-navy hover:text-forest underline decoration-turmeric-deep decoration-2 underline-offset-2 transition-colors whitespace-nowrap"
+              >
+                Sign In to Account / लॉगिन करें →
+              </Link>
+            </div>
 
-          {/* Discreet portal switcher if user arrived at a locked role page by mistake */}
-          {(isCitizenOnly || isUniversityOnly) && (
-            <button
-              type="button"
-              onClick={() => setShowAllRoles(true)}
-              className="text-[11px] text-ink-muted hover:text-navy underline font-mono"
-            >
-              Show all registration options
-            </button>
-          )}
+            {(isCitizenOnly || isUniversityOnly || isIndustryOnly) && (
+              <button
+                type="button"
+                onClick={() => setShowAllRoles(true)}
+                className="text-[11px] text-ink-muted hover:text-navy hover:underline transition-colors flex items-center gap-1 self-start sm:self-auto cursor-pointer font-medium whitespace-nowrap"
+              >
+                <span>🌐</span>
+                <span>Show All Portals</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -4,7 +4,7 @@ import { loginRequestSchema } from '@sih/shared-types';
 import { apiClient, apiErrorMessage } from '../lib/apiClient.js';
 import { useAuthStore } from '../store/authStore.js';
 import { Button } from '../components/Button.js';
-import { JHARKHAND_UNIVERSITIES, getUniversityById } from '../data/jharkhandUniversities.js';
+import { useJharkhandUniversities, getUniversityById } from '../data/jharkhandUniversities.js';
 
 export type LoginRoleTab = 'citizen' | 'university' | 'industry' | 'admin';
 export type UniversitySubRole = 'student' | 'mentor' | 'dean';
@@ -31,20 +31,23 @@ export default function Login() {
   // Role locking logic:
   // 1. If coming from "Submit a Problem" or queryRole=citizen -> Lock to Citizen Mode
   // 2. If coming to University Portal or queryRole=university -> Lock to University Mode
+  // 3. If coming to Industry Portal or queryRole=industry -> Lock to Industry Mode
   const isCitizenTarget = queryRole === 'citizen' || fromPath === '/submit' || queryFor === 'submit';
   const isUniversityTarget = isUniversityRedirect || queryRole === 'university';
+  const isIndustryTarget = queryRole === 'industry' || fromPath?.startsWith('/industry');
 
   const [showAllRoles, setShowAllRoles] = useState(false);
 
-  const isCitizenOnly = !showAllRoles && isCitizenTarget && !isUniversityTarget;
-  const isUniversityOnly = !showAllRoles && isUniversityTarget;
+  const isCitizenOnly = !showAllRoles && isCitizenTarget && !isUniversityTarget && !isIndustryTarget;
+  const isUniversityOnly = !showAllRoles && isUniversityTarget && !isIndustryTarget;
+  const isIndustryOnly = !showAllRoles && isIndustryTarget && !isCitizenTarget && !isUniversityTarget;
 
   // Role Tab selection
   const [activeRole, setActiveRole] = useState<LoginRoleTab>(() => {
     if (isCitizenTarget) return 'citizen';
     if (isUniversityTarget) return 'university';
+    if (isIndustryTarget) return 'industry';
     if (queryRole === 'admin') return 'admin';
-    if (queryRole === 'industry') return 'industry';
     return 'citizen';
   });
 
@@ -56,9 +59,10 @@ export default function Login() {
     return 'student';
   });
 
-  // Selected University
+  // Selected University (loaded dynamically from MongoDB /api/universities)
+  const { universities } = useJharkhandUniversities();
   const [selectedUnivId, setSelectedUnivId] = useState<string>('nitjsr');
-  const selectedUniv = getUniversityById(selectedUnivId) || JHARKHAND_UNIVERSITIES[0];
+  const selectedUniv = universities.find((u) => u.id === selectedUnivId) || getUniversityById(selectedUnivId) || universities[0];
 
   // Form inputs
   const [email, setEmail] = useState('');
@@ -72,6 +76,8 @@ export default function Login() {
       setActiveRole('citizen');
     } else if (isUniversityOnly) {
       setActiveRole('university');
+    } else if (isIndustryOnly) {
+      setActiveRole('industry');
     } else if (queryRole === 'admin') {
       setActiveRole('admin');
     } else if (queryRole === 'industry') {
@@ -83,7 +89,7 @@ export default function Login() {
     if (queryType === 'mentor') setUnivSubRole('mentor');
     else if (queryType === 'dean') setUnivSubRole('dean');
     else if (queryType === 'student') setUnivSubRole('student');
-  }, [queryRole, queryType, isCitizenOnly, isUniversityOnly]);
+  }, [queryRole, queryType, isCitizenOnly, isUniversityOnly, isIndustryOnly]);
 
   // Set default placeholder/value when university role or subrole switches
   useEffect(() => {
@@ -236,10 +242,18 @@ export default function Login() {
                 ? 'झारखंड सरकार · जन शिकायत निवारण पोर्टल'
                 : isUniversityOnly
                   ? 'झारखंड सरकार · उच्च एवं तकनीकी शिक्षा विभाग'
-                  : 'झारखंड सरकार · NIC Authentication Gateway'}
+                  : isIndustryOnly
+                    ? 'झारखंड सरकार · उद्योग एवं सीएसआर सहभागिता'
+                    : 'झारखंड सरकार · NIC Authentication Gateway'}
             </span>
             <span className="text-[10px] font-mono bg-paper px-2 py-0.5 border border-border text-ink-muted">
-              {isCitizenOnly ? 'CITIZEN ACCESS' : isUniversityOnly ? 'UNIVERSITY ECOSYSTEM' : 'NEP 2020'}
+              {isCitizenOnly
+                ? 'CITIZEN ACCESS'
+                : isUniversityOnly
+                  ? 'UNIVERSITY ECOSYSTEM'
+                  : isIndustryOnly
+                    ? 'INDUSTRY & CSR PARTNER'
+                    : 'NEP 2020'}
             </span>
           </div>
 
@@ -248,14 +262,18 @@ export default function Login() {
               ? 'Citizen Portal Login / नागरिक लॉगिन'
               : isUniversityOnly
                 ? 'University Portal Login / विश्वविद्यालय लॉगिन'
-                : 'Official Portal Login'}
+                : isIndustryOnly
+                  ? 'Industry & CSR Portal Login / उद्योग एवं सीएसआर लॉगिन'
+                  : 'Official Portal Login'}
           </h1>
           <p className="text-xs sm:text-sm text-ink-muted mt-1">
             {isCitizenOnly
               ? 'Sign in with your Citizen credentials to report civic issues, upload ground evidence, or track resolution status.'
               : isUniversityOnly
                 ? 'Select your academic role to access the Student Innovator Desk, Faculty Mentor Workspace, or Dean R&D Desk.'
-                : 'Sign in to access departmental triage, university innovation labs, or citizen grievance logs.'}
+                : isIndustryOnly
+                  ? 'Official CSR gateway for corporate partners, PSUs, and foundations to fund vetted student prototypes, adopt civic problems, and deploy field solutions.'
+                  : 'Sign in to access departmental triage, university innovation labs, or citizen grievance logs.'}
           </p>
         </div>
 
@@ -285,8 +303,8 @@ export default function Login() {
           </div>
         )}
 
-        {/* TOP LEVEL ROLE SWITCHER TABS (Only shown if NOT in citizen-only or university-only mode) */}
-        {!isCitizenOnly && !isUniversityOnly && (
+        {/* TOP LEVEL ROLE SWITCHER TABS (Only shown if NOT in citizen-only, university-only, or industry-only mode) */}
+        {!isCitizenOnly && !isUniversityOnly && !isIndustryOnly && (
           <div className="mb-5">
             <label className="block text-[11px] font-mono font-bold uppercase tracking-wider text-ink-muted mb-2">
               Select Portal Access Role / भूमिका चुनें
@@ -402,26 +420,60 @@ export default function Login() {
               </div>
             </div>
 
-            {/* University Picker */}
+            {/* University / College Picker */}
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted mb-1">
-                Select Your Institution / विश्वविद्यालय चुनें
+                Select Your Institution / विश्वविद्यालय एवं महाविद्यालय चुनें
               </label>
               <select
                 value={selectedUnivId}
                 onChange={(e) => setSelectedUnivId(e.target.value)}
                 className="w-full rounded-[2px] border border-border px-3 py-2 text-xs bg-white text-ink focus:outline-none focus:border-forest font-sans"
               >
-                {JHARKHAND_UNIVERSITIES.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.shortName} ({u.aisheCode} · {u.city})
-                  </option>
-                ))}
+                <optgroup label="Premier Institutes & State Universities (विश्वविद्यालय एवं राष्ट्रीय संस्थान)">
+                  {universities.filter(
+                    (u) =>
+                      u.category === 'Institute of National Importance' ||
+                      u.category === 'Central University' ||
+                      u.category === 'State University' ||
+                      u.category === 'Deemed University-Private'
+                  ).map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.name} ({u.city})
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Government Engineering Colleges (राजकीय इंजीनियरिंग महाविद्यालय)">
+                  {universities.filter((u) => u.category === 'Govt Engineering').map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.name} ({u.city})
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Constituent Colleges (अंगीभूत महाविद्यालय)">
+                  {universities.filter((u) => u.category === 'Constituent Colleges').map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.name} ({u.city})
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Affiliated Colleges (संबद्ध महाविद्यालय)">
+                  {universities.filter((u) => u.category === 'Affiliated Colleges').map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.name} ({u.city})
+                    </option>
+                  ))}
+                </optgroup>
               </select>
               {selectedUniv && (
-                <div className="mt-1 flex items-center justify-between text-[10px] font-mono text-ink-muted">
-                  <span>AISHE: {selectedUniv.aisheCode} · District: {selectedUniv.district}</span>
-                  <span className="text-forest font-semibold">Domain: @{selectedUniv.domain}</span>
+                <div className="mt-1.5 flex flex-wrap items-center justify-between gap-1 text-[10px] font-mono text-ink-muted">
+                  <span>
+                    District: <strong className="text-ink">{selectedUniv.district}</strong>
+                    {selectedUniv.parentUniversity ? ` · Parent: ${selectedUniv.parentUniversity}` : ''}
+                  </span>
+                  <span className="text-forest font-semibold">
+                    {selectedUniv.category} {selectedUniv.aisheCode ? `· AISHE: ${selectedUniv.aisheCode}` : ''}
+                  </span>
                 </div>
               )}
             </div>
@@ -569,6 +621,30 @@ export default function Login() {
                 </span>
               </button>
             </div>
+          ) : isIndustryOnly ? (
+            /* Industry Mode: Show only Tata Steel CSR */
+            <div className="grid grid-cols-1 gap-2">
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('tata.csr@tatasteel.com', 'industry')}
+                className="p-3 bg-navy/5 border-2 border-navy hover:bg-navy/15 text-navy rounded-[2px] text-left transition-colors flex items-center justify-between cursor-pointer"
+              >
+                <div>
+                  <div className="text-xs font-bold text-navy flex items-center gap-1.5">
+                    <span>💼</span>
+                    <span>Tata Steel CSR Foundation</span>
+                    <span className="text-[9px] bg-navy text-white px-1.5 py-0.2 rounded font-mono">1-CLICK LOGIN</span>
+                  </div>
+                  <div className="font-mono text-[11px] text-ink-muted mt-0.5">tata.csr@tatasteel.com</div>
+                  <div className="text-[10px] text-forest font-semibold mt-1">
+                    ✓ Verified Corporate CSR Sponsor · Jamshedpur Node
+                  </div>
+                </div>
+                <div className="font-mono text-xs font-bold text-navy">
+                  Launch Industry Portal →
+                </div>
+              </button>
+            </div>
           ) : (
             /* General Mode: Show all roles */
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -605,44 +681,54 @@ export default function Login() {
           )}
         </div>
 
-        {/* Footer Links */}
-        <div className="mt-6 pt-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-ink-muted">
-          <div>
-            {isCitizenOnly ? (
-              <span>New to Samadhan Setu? </span>
-            ) : isUniversityOnly ? (
-              <span>New Student, Mentor, or Institution? </span>
-            ) : (
-              <span>New to the platform? </span>
-            )}
-            <Link
-              to={
-                isCitizenOnly
-                  ? '/register?role=citizen&for=submit'
+        {/* ========================================================================= */}
+        {/* OFFICIAL NIC-STYLE FOOTER: REGISTRATION & PORTAL SWITCHER                 */}
+        {/* ========================================================================= */}
+        <div className="mt-6 pt-3.5 border-t border-border">
+          <div className="bg-[#F8F6F0] border border-border px-3.5 py-2.5 rounded-[2px] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-ink-muted">
+                {isCitizenOnly
+                  ? 'New User / नया उपयोगकर्ता?'
                   : isUniversityOnly
-                    ? `/register?role=university&type=${univSubRole}`
-                    : `/register?role=${activeRole}`
-              }
-              className="font-bold text-navy hover:underline ml-1"
-            >
-              {isCitizenOnly
-                ? 'Register Citizen Account with LGD & Pincode →'
-                : isUniversityOnly
-                  ? 'Register under your University →'
-                  : 'Register an Account →'}
-            </Link>
-          </div>
+                    ? 'New Academic User?'
+                    : isIndustryOnly
+                      ? 'New Corporate Partner?'
+                      : 'New to Samadhan Setu?'}
+              </span>
+              <Link
+                to={
+                  isCitizenOnly
+                    ? '/register?role=citizen&for=submit'
+                    : isUniversityOnly
+                      ? `/register?role=university&type=${univSubRole}`
+                      : isIndustryOnly
+                        ? '/register?role=industry'
+                        : `/register?role=${activeRole}`
+                }
+                className="font-bold text-navy hover:text-forest underline decoration-turmeric-deep decoration-2 underline-offset-2 transition-colors whitespace-nowrap"
+              >
+                {isCitizenOnly
+                  ? 'Register Citizen Account / पंजीकरण करें →'
+                  : isUniversityOnly
+                    ? 'Register University Account →'
+                    : isIndustryOnly
+                      ? 'Register Corporate CSR Entity →'
+                      : 'Register an Account / पंजीकरण →'}
+              </Link>
+            </div>
 
-          {/* Discreet portal switcher if user arrived at a locked role page by mistake */}
-          {(isCitizenOnly || isUniversityOnly) && (
-            <button
-              type="button"
-              onClick={() => setShowAllRoles(true)}
-              className="text-[11px] text-ink-muted hover:text-navy underline font-mono"
-            >
-              Show all portal login options
-            </button>
-          )}
+            {(isCitizenOnly || isUniversityOnly || isIndustryOnly) && (
+              <button
+                type="button"
+                onClick={() => setShowAllRoles(true)}
+                className="text-[11px] text-ink-muted hover:text-navy hover:underline transition-colors flex items-center gap-1 self-start sm:self-auto cursor-pointer font-medium whitespace-nowrap"
+              >
+                <span>🌐</span>
+                <span>Show All Portals</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

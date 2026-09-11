@@ -13,6 +13,7 @@ import MentorDashboard from './pages/MentorDashboard.js';
 import StudentDashboard from './pages/StudentDashboard.js';
 import IndustryPortal from './pages/IndustryPortal.js';
 import ProjectDetail from './pages/ProjectDetail.js';
+import AiAnalytics from './pages/AiAnalytics.js';
 
 export default function App() {
   return (
@@ -23,6 +24,8 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/problems" element={<ProblemList />} />
         <Route path="/problems/:id" element={<ProblemDetail />} />
+        <Route path="/analytics" element={<AiAnalytics />} />
+        <Route path="/ai-analytics" element={<AiAnalytics />} />
 
         <Route element={<ProtectedRoute allow={['citizen', 'admin', 'university']} />}>
           <Route path="/dashboard" element={<UserDashboard />} />

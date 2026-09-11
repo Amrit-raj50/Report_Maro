@@ -209,23 +209,31 @@ export function Layout() {
               ) : (
                 <div className="flex items-center gap-2 relative">
                   {/* PORTAL LOGIN DROPDOWN */}
-                  <div
-                    className="relative"
-                    onMouseEnter={() => setLoginMenuOpen(true)}
-                    onMouseLeave={() => setLoginMenuOpen(false)}
-                  >
+                  <div className="relative">
                     <button
                       type="button"
-                      onClick={() => setLoginMenuOpen((v) => !v)}
-                      className="px-3 py-1.5 bg-white text-navy text-[11px] sm:text-xs font-bold rounded-[2px] border border-navy hover:bg-paper transition-colors uppercase tracking-wide flex items-center gap-1.5 shadow-sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRegisterMenuOpen(false);
+                        setUnivDropdownOpen(false);
+                        setLoginMenuOpen((v) => !v);
+                      }}
+                      className={`px-3 py-1.5 text-[11px] sm:text-xs font-bold rounded-[2px] border transition-all uppercase tracking-wide flex items-center gap-1.5 shadow-sm cursor-pointer select-none ${
+                        loginMenuOpen
+                          ? 'bg-navy text-white border-navy ring-2 ring-navy/20'
+                          : 'bg-white text-navy border-navy hover:bg-paper'
+                      }`}
                       aria-expanded={loginMenuOpen}
                     >
                       <span>PORTAL LOGIN</span>
-                      <span className="text-[9px] transition-transform duration-200">▼</span>
+                      <span className={`text-[9px] transition-transform duration-200 inline-block ${loginMenuOpen ? 'rotate-180' : ''}`}>▼</span>
                     </button>
 
                     {loginMenuOpen && (
-                      <div className="absolute right-0 top-full mt-1 w-64 bg-white border-2 border-navy rounded-[2px] shadow-2xl z-50 py-1 font-sans">
+                      <div
+                        className="absolute right-0 top-full mt-1.5 w-64 bg-white border-2 border-navy rounded-[2px] shadow-2xl z-50 py-1 font-sans"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div className="px-3 py-1 bg-navy text-white text-[10px] font-bold uppercase tracking-wider font-mono">
                           Official Role-Based Login
                         </div>
@@ -303,23 +311,31 @@ export function Layout() {
                   </div>
 
                   {/* REGISTER DROPDOWN */}
-                  <div
-                    className="relative"
-                    onMouseEnter={() => setRegisterMenuOpen(true)}
-                    onMouseLeave={() => setRegisterMenuOpen(false)}
-                  >
+                  <div className="relative">
                     <button
                       type="button"
-                      onClick={() => setRegisterMenuOpen((v) => !v)}
-                      className="px-3 py-1.5 bg-turmeric text-ink text-[11px] sm:text-xs font-bold rounded-[2px] border border-turmeric-deep hover:bg-turmeric-deep transition-colors uppercase tracking-wide flex items-center gap-1.5 shadow-sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setLoginMenuOpen(false);
+                        setUnivDropdownOpen(false);
+                        setRegisterMenuOpen((v) => !v);
+                      }}
+                      className={`px-3 py-1.5 text-[11px] sm:text-xs font-bold rounded-[2px] border transition-all uppercase tracking-wide flex items-center gap-1.5 shadow-sm cursor-pointer select-none ${
+                        registerMenuOpen
+                          ? 'bg-turmeric-deep text-ink border-turmeric-deep ring-2 ring-turmeric/30'
+                          : 'bg-turmeric text-ink border-turmeric-deep hover:bg-turmeric-deep'
+                      }`}
                       aria-expanded={registerMenuOpen}
                     >
                       <span>REGISTER</span>
-                      <span className="text-[9px] transition-transform duration-200">▼</span>
+                      <span className={`text-[9px] transition-transform duration-200 inline-block ${registerMenuOpen ? 'rotate-180' : ''}`}>▼</span>
                     </button>
 
                     {registerMenuOpen && (
-                      <div className="absolute right-0 top-full mt-1 w-64 bg-white border-2 border-turmeric-deep rounded-[2px] shadow-2xl z-50 py-1 font-sans">
+                      <div
+                        className="absolute right-0 top-full mt-1.5 w-64 bg-white border-2 border-turmeric-deep rounded-[2px] shadow-2xl z-50 py-1 font-sans"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div className="px-3 py-1 bg-turmeric text-ink text-[10px] font-bold uppercase tracking-wider font-mono">
                           New User Registration
                         </div>
@@ -470,18 +486,16 @@ export function Layout() {
                 </Link>
 
                 {/* UNIVERSITY PORTAL DROPDOWN IN BAND 3 NAVIGATION */}
-                <div
-                  className="relative whitespace-nowrap"
-                  onMouseEnter={() => setUnivDropdownOpen(true)}
-                  onMouseLeave={() => setUnivDropdownOpen(false)}
-                >
+                <div className="relative whitespace-nowrap">
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
+                      setLoginMenuOpen(false);
+                      setRegisterMenuOpen(false);
                       setUnivDropdownOpen((v) => !v);
                     }}
-                    className={`px-2.5 lg:px-3 py-2.5 transition-colors flex items-center gap-1 uppercase tracking-wider whitespace-nowrap cursor-pointer ${
+                    className={`px-2.5 lg:px-3 py-2.5 transition-colors flex items-center gap-1 uppercase tracking-wider whitespace-nowrap cursor-pointer select-none ${
                       location.pathname.startsWith('/university') || location.pathname === '/student'
                         ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
                         : 'hover:bg-navy-deep text-white'
@@ -489,14 +503,13 @@ export function Layout() {
                     aria-expanded={univDropdownOpen}
                   >
                     <span>University Portal</span>
-                    <span className="text-[9px] opacity-80">▼</span>
+                    <span className={`text-[9px] transition-transform duration-200 inline-block ${univDropdownOpen ? 'rotate-180' : 'opacity-80'}`}>▼</span>
                   </button>
 
                   {univDropdownOpen && (
                     <div
                       className="absolute left-0 top-full mt-0 w-72 bg-navy-deep border-2 border-turmeric text-white shadow-2xl z-50 py-1.5 normal-case font-normal"
                       onClick={(e) => e.stopPropagation()}
-                      onMouseEnter={() => setUnivDropdownOpen(true)}
                     >
                       <div className="px-3 py-1 text-[10px] font-mono uppercase font-bold text-turmeric border-b border-white/10 tracking-wider">
                         Higher Education &amp; Research Desks
@@ -558,9 +571,9 @@ export function Layout() {
                 </div>
 
                 <Link
-                  to="/industry"
+                  to={user?.role === 'industry' ? '/industry' : '/login?role=industry'}
                   className={`px-2.5 lg:px-3 py-2.5 transition-colors whitespace-nowrap ${
-                    location.pathname.startsWith('/industry')
+                    location.pathname.startsWith('/industry') || (location.pathname === '/login' && location.search.includes('role=industry'))
                       ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
                       : 'hover:bg-navy-deep text-white'
                   }`}
@@ -569,9 +582,9 @@ export function Layout() {
                 </Link>
 
                 <Link
-                  to="/admin"
+                  to="/analytics"
                   className={`px-2.5 lg:px-3 py-2.5 transition-colors whitespace-nowrap ${
-                    location.pathname.startsWith('/admin')
+                    location.pathname === '/analytics' || location.pathname === '/ai-analytics'
                       ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
                       : 'hover:bg-navy-deep text-white'
                   }`}
@@ -647,11 +660,14 @@ export function Layout() {
                   </div>
                 </div>
 
-                <Link to="/industry" className="px-3 py-2.5 hover:bg-navy-deep text-white">
-                  ● Industry &amp; Funding
+                <Link
+                  to={user?.role === 'industry' ? '/industry' : '/login?role=industry'}
+                  className="px-3 py-2.5 hover:bg-navy-deep text-white"
+                >
+                  ● Industry &amp; CSR
                 </Link>
-                <Link to="/admin" className="px-3 py-2.5 hover:bg-navy-deep text-white">
-                  ● Analytics &amp; AI Queue
+                <Link to="/analytics" className="px-3 py-2.5 hover:bg-navy-deep text-white">
+                  ● AI Analytics
                 </Link>
                 <a href="/#notices" className="px-3 py-2.5 hover:bg-navy-deep text-white">
                   ● Circulars &amp; Notices
