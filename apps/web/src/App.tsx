@@ -4,7 +4,7 @@ import { ProtectedRoute } from './components/ProtectedRoute.js';
 import Home from './pages/Home.js';
 import Login from './pages/Login.js';
 import Register from './pages/Register.js';
-import SubmitProblem from './pages/SubmitProblem.js';
+import UserDashboard from './pages/UserDashboard.js';
 import ProblemList from './pages/ProblemList.js';
 import ProblemDetail from './pages/ProblemDetail.js';
 import AdminDashboard from './pages/AdminDashboard.js';
@@ -22,8 +22,9 @@ export default function App() {
         <Route path="/problems" element={<ProblemList />} />
         <Route path="/problems/:id" element={<ProblemDetail />} />
 
-        <Route element={<ProtectedRoute allow={['citizen']} />}>
-          <Route path="/submit" element={<SubmitProblem />} />
+        <Route element={<ProtectedRoute allow={['citizen', 'admin']} />}>
+          <Route path="/dashboard" element={<UserDashboard />} />
+          <Route path="/submit" element={<UserDashboard initialTab="report" />} />
         </Route>
         <Route element={<ProtectedRoute allow={['admin']} />}>
           <Route path="/admin" element={<AdminDashboard />} />
