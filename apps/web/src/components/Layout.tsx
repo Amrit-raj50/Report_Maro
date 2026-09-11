@@ -12,10 +12,16 @@ export function Layout() {
   const [fontScale, setFontScale] = useState<number>(1);
   const [lang, setLang] = useState<'en' | 'hi'>('en');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [loginMenuOpen, setLoginMenuOpen] = useState(false);
+  const [registerMenuOpen, setRegisterMenuOpen] = useState(false);
+  const [univDropdownOpen, setUnivDropdownOpen] = useState(false);
 
-  // Close mobile menu on route change
+  // Close all open menus on route change
   useEffect(() => {
     setMobileMenuOpen(false);
+    setLoginMenuOpen(false);
+    setRegisterMenuOpen(false);
+    setUnivDropdownOpen(false);
   }, [location.pathname]);
 
   // Handle font size scaling accessibility toggle
@@ -190,19 +196,183 @@ export function Layout() {
                   </Link>
                 </div>
               ) : (
-                <div className="flex items-center gap-2">
-                  <Link
-                    to="/login"
-                    className="px-3 py-1.5 bg-white text-navy text-[11px] sm:text-xs font-bold rounded-[2px] border border-navy hover:bg-paper transition-colors uppercase tracking-wide"
+                <div className="flex items-center gap-2 relative">
+                  {/* PORTAL LOGIN DROPDOWN */}
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setLoginMenuOpen(true)}
+                    onMouseLeave={() => setLoginMenuOpen(false)}
                   >
-                    PORTAL LOGIN
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="px-3 py-1.5 bg-turmeric text-ink text-[11px] sm:text-xs font-bold rounded-[2px] border border-turmeric-deep hover:bg-turmeric-deep transition-colors uppercase tracking-wide"
+                    <button
+                      type="button"
+                      onClick={() => setLoginMenuOpen((v) => !v)}
+                      className="px-3 py-1.5 bg-white text-navy text-[11px] sm:text-xs font-bold rounded-[2px] border border-navy hover:bg-paper transition-colors uppercase tracking-wide flex items-center gap-1.5 shadow-sm"
+                      aria-expanded={loginMenuOpen}
+                    >
+                      <span>PORTAL LOGIN</span>
+                      <span className="text-[9px] transition-transform duration-200">▼</span>
+                    </button>
+
+                    {loginMenuOpen && (
+                      <div className="absolute right-0 top-full mt-1 w-64 bg-white border-2 border-navy rounded-[2px] shadow-2xl z-50 py-1 font-sans">
+                        <div className="px-3 py-1 bg-navy text-white text-[10px] font-bold uppercase tracking-wider font-mono">
+                          Official Role-Based Login
+                        </div>
+                        <Link
+                          to="/login?role=admin"
+                          className="flex items-start gap-2.5 px-3 py-2 hover:bg-paper text-ink transition-colors border-b border-border/50"
+                          onClick={() => setLoginMenuOpen(false)}
+                        >
+                          <span className="text-base mt-0.5">🏛️</span>
+                          <div>
+                            <div className="text-xs font-bold text-navy">Government / State Admin</div>
+                            <div className="text-[10px] text-ink-muted">AI queue &amp; grievance triage</div>
+                          </div>
+                        </Link>
+                        <Link
+                          to="/login?role=citizen"
+                          className="flex items-start gap-2.5 px-3 py-2 hover:bg-paper text-ink transition-colors border-b border-border/50"
+                          onClick={() => setLoginMenuOpen(false)}
+                        >
+                          <span className="text-base mt-0.5">👥</span>
+                          <div>
+                            <div className="text-xs font-bold text-navy">Citizen Grievance Portal</div>
+                            <div className="text-[10px] text-ink-muted">Track complaints &amp; local issues</div>
+                          </div>
+                        </Link>
+                        <div className="bg-paper-dark/70 px-3 py-1 text-[10px] font-bold text-forest uppercase tracking-wider font-mono border-b border-border/40">
+                          🎓 University Ecosystem
+                        </div>
+                        <Link
+                          to="/login?role=university&type=student"
+                          className="flex items-start gap-2 px-3 py-1.5 hover:bg-paper text-ink transition-colors pl-5 border-b border-border/30"
+                          onClick={() => setLoginMenuOpen(false)}
+                        >
+                          <span className="text-xs mt-0.5">👨‍🎓</span>
+                          <div>
+                            <div className="text-xs font-bold text-navy">Student Innovator Desk</div>
+                            <div className="text-[10px] text-ink-muted">Deliverables, GPS photos &amp; telemetry</div>
+                          </div>
+                        </Link>
+                        <Link
+                          to="/login?role=university&type=mentor"
+                          className="flex items-start gap-2 px-3 py-1.5 hover:bg-paper text-ink transition-colors pl-5 border-b border-border/30"
+                          onClick={() => setLoginMenuOpen(false)}
+                        >
+                          <span className="text-xs mt-0.5">👨‍🏫</span>
+                          <div>
+                            <div className="text-xs font-bold text-navy">Faculty Mentor Workspace</div>
+                            <div className="text-[10px] text-ink-muted">Project review &amp; student messaging</div>
+                          </div>
+                        </Link>
+                        <Link
+                          to="/login?role=university&type=dean"
+                          className="flex items-start gap-2 px-3 py-1.5 hover:bg-paper text-ink transition-colors pl-5 border-b border-border/50"
+                          onClick={() => setLoginMenuOpen(false)}
+                        >
+                          <span className="text-xs mt-0.5">🏛️</span>
+                          <div>
+                            <div className="text-xs font-bold text-navy">Dean R&amp;D / Institutional Admin</div>
+                            <div className="text-[10px] text-ink-muted">Proposal approvals &amp; fund allocations</div>
+                          </div>
+                        </Link>
+                        <Link
+                          to="/login?role=industry"
+                          className="flex items-start gap-2.5 px-3 py-2 hover:bg-paper text-ink transition-colors"
+                          onClick={() => setLoginMenuOpen(false)}
+                        >
+                          <span className="text-base mt-0.5">💼</span>
+                          <div>
+                            <div className="text-xs font-bold text-navy">Industry / CSR Partner</div>
+                            <div className="text-[10px] text-ink-muted">Corporate sponsorship &amp; co-funding</div>
+                          </div>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* REGISTER DROPDOWN */}
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setRegisterMenuOpen(true)}
+                    onMouseLeave={() => setRegisterMenuOpen(false)}
                   >
-                    REGISTER
-                  </Link>
+                    <button
+                      type="button"
+                      onClick={() => setRegisterMenuOpen((v) => !v)}
+                      className="px-3 py-1.5 bg-turmeric text-ink text-[11px] sm:text-xs font-bold rounded-[2px] border border-turmeric-deep hover:bg-turmeric-deep transition-colors uppercase tracking-wide flex items-center gap-1.5 shadow-sm"
+                      aria-expanded={registerMenuOpen}
+                    >
+                      <span>REGISTER</span>
+                      <span className="text-[9px] transition-transform duration-200">▼</span>
+                    </button>
+
+                    {registerMenuOpen && (
+                      <div className="absolute right-0 top-full mt-1 w-64 bg-white border-2 border-turmeric-deep rounded-[2px] shadow-2xl z-50 py-1 font-sans">
+                        <div className="px-3 py-1 bg-turmeric text-ink text-[10px] font-bold uppercase tracking-wider font-mono">
+                          New User Registration
+                        </div>
+                        <Link
+                          to="/register?role=citizen"
+                          className="flex items-start gap-2.5 px-3 py-2 hover:bg-paper text-ink transition-colors border-b border-border/50"
+                          onClick={() => setRegisterMenuOpen(false)}
+                        >
+                          <span className="text-base mt-0.5">👥</span>
+                          <div>
+                            <div className="text-xs font-bold text-navy">Citizen Account</div>
+                            <div className="text-[10px] text-ink-muted">LGD &amp; Pincode-integrated reporting</div>
+                          </div>
+                        </Link>
+                        <div className="bg-paper-dark/70 px-3 py-1 text-[10px] font-bold text-forest uppercase tracking-wider font-mono border-b border-border/40">
+                          🎓 University Onboarding
+                        </div>
+                        <Link
+                          to="/register?role=university&type=student"
+                          className="flex items-start gap-2 px-3 py-1.5 hover:bg-paper text-ink transition-colors pl-5 border-b border-border/30"
+                          onClick={() => setRegisterMenuOpen(false)}
+                        >
+                          <span className="text-xs mt-0.5">👨‍🎓</span>
+                          <div>
+                            <div className="text-xs font-bold text-navy">Student Researcher</div>
+                            <div className="text-[10px] text-ink-muted">Join innovation team with Roll No / APAAR</div>
+                          </div>
+                        </Link>
+                        <Link
+                          to="/register?role=university&type=mentor"
+                          className="flex items-start gap-2 px-3 py-1.5 hover:bg-paper text-ink transition-colors pl-5 border-b border-border/30"
+                          onClick={() => setRegisterMenuOpen(false)}
+                        >
+                          <span className="text-xs mt-0.5">👨‍🏫</span>
+                          <div>
+                            <div className="text-xs font-bold text-navy">Faculty Mentor / PI</div>
+                            <div className="text-[10px] text-ink-muted">Guide students with Vidwan / Faculty ID</div>
+                          </div>
+                        </Link>
+                        <Link
+                          to="/register?role=university&type=institution"
+                          className="flex items-start gap-2 px-3 py-1.5 hover:bg-paper text-ink transition-colors pl-5 border-b border-border/50"
+                          onClick={() => setRegisterMenuOpen(false)}
+                        >
+                          <span className="text-xs mt-0.5">🏛️</span>
+                          <div>
+                            <div className="text-xs font-bold text-navy">University / Institution Node</div>
+                            <div className="text-[10px] text-ink-muted">Register university with AISHE code</div>
+                          </div>
+                        </Link>
+                        <Link
+                          to="/register?role=industry"
+                          className="flex items-start gap-2.5 px-3 py-2 hover:bg-paper text-ink transition-colors"
+                          onClick={() => setRegisterMenuOpen(false)}
+                        >
+                          <span className="text-base mt-0.5">💼</span>
+                          <div>
+                            <div className="text-xs font-bold text-navy">Industry / CSR Partner</div>
+                            <div className="text-[10px] text-ink-muted">Corporate sponsorship &amp; co-funding</div>
+                          </div>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -294,16 +464,87 @@ export function Layout() {
                 >
                   Track Problems
                 </Link>
-                <Link
-                  to="/university"
-                  className={`px-3 py-3 transition-colors ${
-                    location.pathname.startsWith('/university')
-                      ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
-                      : 'hover:bg-navy-deep text-white'
-                  }`}
+
+                {/* UNIVERSITY PORTAL DROPDOWN IN BAND 3 NAVIGATION */}
+                <div
+                  className="relative"
+                  onMouseEnter={() => setUnivDropdownOpen(true)}
+                  onMouseLeave={() => setUnivDropdownOpen(false)}
                 >
-                  University Portal
-                </Link>
+                  <button
+                    type="button"
+                    onClick={() => setUnivDropdownOpen((v) => !v)}
+                    className={`px-3 py-3 transition-colors flex items-center gap-1 ${
+                      location.pathname.startsWith('/university') || location.pathname === '/student'
+                        ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
+                        : 'hover:bg-navy-deep text-white'
+                    }`}
+                  >
+                    <span>University Portal</span>
+                    <span className="text-[9px] opacity-80">▼</span>
+                  </button>
+
+                  {univDropdownOpen && (
+                    <div className="absolute left-0 top-full mt-0 w-72 bg-navy-deep border-2 border-turmeric text-white shadow-2xl z-50 py-1.5 normal-case font-normal animate-in fade-in slide-in-from-top-1 duration-150">
+                      <div className="px-3 py-1 text-[10px] font-mono uppercase font-bold text-turmeric border-b border-white/10 tracking-wider">
+                        Higher Education &amp; Research Desks
+                      </div>
+                      <Link
+                        to="/university"
+                        onClick={() => setUnivDropdownOpen(false)}
+                        className="flex items-start gap-2.5 px-3 py-2 hover:bg-navy text-white transition-colors border-b border-white/10"
+                      >
+                        <span className="text-base mt-0.5">🏛️</span>
+                        <div>
+                          <div className="text-xs font-bold text-turmeric">Dean R&amp;D Desk</div>
+                          <div className="text-[10px] text-white/70">Institutional proposals, MoUs &amp; approvals</div>
+                        </div>
+                      </Link>
+                      <Link
+                        to="/university/mentor"
+                        onClick={() => setUnivDropdownOpen(false)}
+                        className="flex items-start gap-2.5 px-3 py-2 hover:bg-navy text-white transition-colors border-b border-white/10"
+                      >
+                        <span className="text-base mt-0.5">👨‍🏫</span>
+                        <div>
+                          <div className="text-xs font-bold text-turmeric">Faculty Mentor Workspace</div>
+                          <div className="text-[10px] text-white/70">Guide student projects, telemetry &amp; live chat</div>
+                        </div>
+                      </Link>
+                      <Link
+                        to="/student"
+                        onClick={() => setUnivDropdownOpen(false)}
+                        className="flex items-start gap-2.5 px-3 py-2 hover:bg-navy text-white transition-colors border-b border-white/10"
+                      >
+                        <span className="text-base mt-0.5">👨‍🎓</span>
+                        <div>
+                          <div className="text-xs font-bold text-turmeric">Student Innovator Dashboard</div>
+                          <div className="text-[10px] text-white/70">Proof of work, GPS photos &amp; live deliverables</div>
+                        </div>
+                      </Link>
+                      <div className="px-3 pt-2 pb-1 text-[10px] font-mono uppercase font-bold text-white/50 tracking-wider">
+                        University Authentication
+                      </div>
+                      <div className="grid grid-cols-2 gap-1 px-2 pb-1">
+                        <Link
+                          to="/login?role=university"
+                          onClick={() => setUnivDropdownOpen(false)}
+                          className="px-2 py-1.5 bg-white/10 hover:bg-white/20 text-center rounded-[2px] text-[11px] font-bold text-white uppercase tracking-wider"
+                        >
+                          🔑 Sign In
+                        </Link>
+                        <Link
+                          to="/register?role=university"
+                          onClick={() => setUnivDropdownOpen(false)}
+                          className="px-2 py-1.5 bg-turmeric text-ink hover:bg-turmeric-deep text-center rounded-[2px] text-[11px] font-bold uppercase tracking-wider"
+                        >
+                          📝 Register
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <Link
                   to="/industry"
                   className={`px-3 py-3 transition-colors ${
@@ -368,9 +609,34 @@ export function Layout() {
                 <Link to="/problems" className="px-3 py-2.5 hover:bg-navy-deep text-white">
                   ● Track Problems
                 </Link>
-                <Link to="/university" className="px-3 py-2.5 hover:bg-navy-deep text-white">
-                  ● University Portal
-                </Link>
+
+                {/* University Section in Mobile Drawer */}
+                <div className="bg-navy-deep/80 px-3 py-2">
+                  <div className="text-[10px] font-mono text-turmeric font-bold mb-1">
+                    🎓 UNIVERSITY ECOSYSTEM
+                  </div>
+                  <div className="flex flex-col gap-1 pl-2 font-normal normal-case">
+                    <Link to="/university" className="py-1 text-xs text-white hover:text-turmeric flex items-center gap-1.5">
+                      <span>🏛️</span> <span>Dean R&amp;D Desk</span>
+                    </Link>
+                    <Link to="/university/mentor" className="py-1 text-xs text-white hover:text-turmeric flex items-center gap-1.5">
+                      <span>👨‍🏫</span> <span>Faculty Mentor Workspace</span>
+                    </Link>
+                    <Link to="/student" className="py-1 text-xs text-white hover:text-turmeric flex items-center gap-1.5">
+                      <span>👨‍🎓</span> <span>Student Innovator Dashboard</span>
+                    </Link>
+                    <div className="flex items-center gap-2 pt-1 mt-1 border-t border-white/10">
+                      <Link to="/login?role=university" className="text-[11px] font-bold text-turmeric underline">
+                        University Sign In
+                      </Link>
+                      <span className="text-white/40">|</span>
+                      <Link to="/register?role=university" className="text-[11px] font-bold text-turmeric underline">
+                        Register
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+
                 <Link to="/industry" className="px-3 py-2.5 hover:bg-navy-deep text-white">
                   ● Industry &amp; Funding
                 </Link>
@@ -380,6 +646,29 @@ export function Layout() {
                 <a href="/#notices" className="px-3 py-2.5 hover:bg-navy-deep text-white">
                   ● Circulars &amp; Notices
                 </a>
+
+                {/* Quick Role-based Access Links for Mobile */}
+                {!user && (
+                  <div className="p-3 bg-navy-deep/40 flex flex-col gap-2">
+                    <div className="text-[10px] font-mono text-ink-muted uppercase font-bold text-white/70">
+                      QUICK ROLE LOGIN &amp; REGISTER
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Link
+                        to="/login"
+                        className="py-1.5 text-center bg-white text-navy font-bold text-[11px] rounded-[2px]"
+                      >
+                        Sign In Portal
+                      </Link>
+                      <Link
+                        to="/register"
+                        className="py-1.5 text-center bg-turmeric text-ink font-bold text-[11px] rounded-[2px]"
+                      >
+                        Register Account
+                      </Link>
+                    </div>
+                  </div>
+                )}
               </nav>
             )}
             </div>
