@@ -34,10 +34,22 @@ export default function Register() {
   const searchParams = new URLSearchParams(location.search);
   const queryRole = searchParams.get('role');
   const queryType = searchParams.get('type');
+  const queryFor = searchParams.get('for');
+
+  // Role locking logic:
+  // 1. If coming from "Submit a Problem" or queryRole=citizen -> Lock to Citizen Mode
+  // 2. If coming to University Portal or queryRole=university -> Lock to University Mode
+  const isCitizenTarget = queryRole === 'citizen' || queryFor === 'submit';
+  const isUniversityTarget = queryRole === 'university';
+
+  const [showAllRoles, setShowAllRoles] = useState(false);
+
+  const isCitizenOnly = !showAllRoles && isCitizenTarget && !isUniversityTarget;
+  const isUniversityOnly = !showAllRoles && isUniversityTarget;
 
   // Role
   const [role, setRole] = useState<UserRole>(() => {
-    if (queryRole === 'university') return 'university';
+    if (isUniversityTarget) return 'university';
     if (queryRole === 'industry') return 'industry';
     return 'citizen';
   });
@@ -108,14 +120,22 @@ export default function Register() {
 
   // Sync state if URL query params change
   useEffect(() => {
-    if (queryRole === 'university') setRole('university');
-    else if (queryRole === 'industry') setRole('industry');
-    else if (queryRole === 'citizen') setRole('citizen');
+    if (isCitizenOnly) {
+      setRole('citizen');
+    } else if (isUniversityOnly) {
+      setRole('university');
+    } else if (queryRole === 'university') {
+      setRole('university');
+    } else if (queryRole === 'industry') {
+      setRole('industry');
+    } else if (queryRole === 'citizen') {
+      setRole('citizen');
+    }
 
     if (queryType === 'mentor') setUnivSubRole('mentor');
     else if (queryType === 'institution' || queryType === 'dean') setUnivSubRole('institution');
     else if (queryType === 'student') setUnivSubRole('student');
-  }, [queryRole, queryType]);
+  }, [queryRole, queryType, isCitizenOnly, isUniversityOnly]);
 
   // When university is selected, auto-update campus location & AISHE code
   useEffect(() => {
@@ -400,7 +420,11 @@ export default function Register() {
 
       // Smart role-based redirect
       if (role === 'citizen') {
-        navigate('/dashboard');
+        if (queryFor === 'submit') {
+          navigate('/submit');
+        } else {
+          navigate('/dashboard');
+        }
       } else if (role === 'university') {
         if (univSubRole === 'student') {
           navigate('/student');
@@ -433,72 +457,86 @@ export default function Register() {
         <div className="border-b border-border pb-4 mb-6">
           <div className="flex items-center justify-between gap-2">
             <span className="text-[11px] font-mono text-forest uppercase font-bold tracking-wider">
-              झारखंड सरकार · नागरिक एवं संस्था पंजीकरण (NIC &amp; LGD Integrated)
+              {isCitizenOnly
+                ? 'झारखंड सरकार · नागरिक पंजीकरण (NIC & LGD Integrated)'
+                : isUniversityOnly
+                  ? 'झारखंड सरकार · उच्च एवं तकनीकी शिक्षा विभाग'
+                  : 'झारखंड सरकार · नागरिक एवं संस्था पंजीकरण (NIC & LGD Integrated)'}
             </span>
             <span className="text-[10px] font-mono bg-paper px-2 py-0.5 border border-border text-ink-muted">
-              NEP 2020 / AISHE
+              {isCitizenOnly ? 'CITIZEN ACCESS' : isUniversityOnly ? 'UNIVERSITY ECOSYSTEM · NEP 2020' : 'NEP 2020 / AISHE'}
             </span>
           </div>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-navy mt-1">
-            Stakeholder Registration / पंजीकरण
+            {isCitizenOnly
+              ? 'Citizen Registration / नागरिक पंजीकरण'
+              : isUniversityOnly
+                ? 'University Stakeholder Registration / विश्वविद्यालय पंजीकरण'
+                : 'Stakeholder Registration / पंजीकरण'}
           </h1>
           <p className="text-xs sm:text-sm text-ink-muted mt-1">
-            Official portal to crowdsource societal challenges, civic grievances, and university-industry innovation pipelines.
+            {isCitizenOnly
+              ? 'Register with your verified mobile number and Jharkhand LGD block to report civic issues and track resolution.'
+              : isUniversityOnly
+                ? 'Register under your university node as a Student Innovator, Faculty Mentor, or Institution Node.'
+                : 'Official portal to crowdsource societal challenges, civic grievances, and university-industry innovation pipelines.'}
           </p>
         </div>
 
-        {/* ROLE SELECTOR TABS */}
-        <div className="mb-6">
-          <label className="block text-xs font-bold uppercase tracking-wider text-ink-muted mb-2 font-mono">
-            Select Account Type / खाता प्रकार चुनें
-          </label>
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              type="button"
-              onClick={() => setRole('citizen')}
-              className={`p-3 text-xs font-bold rounded-[2px] border transition-colors text-center ${
-                role === 'citizen'
-                  ? 'bg-navy text-white border-navy shadow-sm'
-                  : 'bg-paper text-ink border-border hover:border-navy'
-              }`}
-            >
-              <div className="text-sm mb-0.5">👥 Citizen</div>
-              <div className="text-[10px] font-normal opacity-85">
-                नागरिक / जन प्रतिनिधि
-              </div>
-            </button>
+        {/* ROLE SELECTOR TABS (Only shown if NOT in citizen-only or university-only mode) */}
+        {!isCitizenOnly && !isUniversityOnly && (
+          <div className="mb-6">
+            <label className="block text-xs font-bold uppercase tracking-wider text-ink-muted mb-2 font-mono">
+              Select Account Type / खाता प्रकार चुनें
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setRole('citizen')}
+                className={`p-3 text-xs font-bold rounded-[2px] border transition-colors text-center ${
+                  role === 'citizen'
+                    ? 'bg-navy text-white border-navy shadow-sm'
+                    : 'bg-paper text-ink border-border hover:border-navy'
+                }`}
+              >
+                <div className="text-sm mb-0.5">👥 Citizen</div>
+                <div className="text-[10px] font-normal opacity-85">
+                  नागरिक / जन प्रतिनिधि
+                </div>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setRole('university')}
-              className={`p-3 text-xs font-bold rounded-[2px] border transition-colors text-center ${
-                role === 'university'
-                  ? 'bg-forest text-white border-forest shadow-sm'
-                  : 'bg-paper text-ink border-border hover:border-forest'
-              }`}
-            >
-              <div className="text-sm mb-0.5">🎓 University</div>
-              <div className="text-[10px] font-normal opacity-85">
-                छात्र · संरक्षक · संस्थान
-              </div>
-            </button>
+              <button
+                type="button"
+                onClick={() => setRole('university')}
+                className={`p-3 text-xs font-bold rounded-[2px] border transition-colors text-center ${
+                  role === 'university'
+                    ? 'bg-forest text-white border-forest shadow-sm'
+                    : 'bg-paper text-ink border-border hover:border-forest'
+                }`}
+              >
+                <div className="text-sm mb-0.5">🎓 University</div>
+                <div className="text-[10px] font-normal opacity-85">
+                  छात्र · संरक्षक · संस्थान
+                </div>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setRole('industry')}
-              className={`p-3 text-xs font-bold rounded-[2px] border transition-colors text-center ${
-                role === 'industry'
-                  ? 'bg-navy text-white border-navy shadow-sm'
-                  : 'bg-paper text-ink border-border hover:border-navy'
-              }`}
-            >
-              <div className="text-sm mb-0.5">💼 Industry / CSR</div>
-              <div className="text-[10px] font-normal opacity-85">
-                उद्योग / सीएसआर पार्टनर
-              </div>
-            </button>
+              <button
+                type="button"
+                onClick={() => setRole('industry')}
+                className={`p-3 text-xs font-bold rounded-[2px] border transition-colors text-center ${
+                  role === 'industry'
+                    ? 'bg-navy text-white border-navy shadow-sm'
+                    : 'bg-paper text-ink border-border hover:border-navy'
+                }`}
+              >
+                <div className="text-sm mb-0.5">💼 Industry / CSR</div>
+                <div className="text-[10px] font-normal opacity-85">
+                  उद्योग / सीएसआर पार्टनर
+                </div>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* UNIVERSITY SPECIFIC SUB-ROLE TABS */}
         {role === 'university' && (
@@ -1215,14 +1253,33 @@ export default function Register() {
         </form>
 
         {/* Existing User Link */}
-        <div className="mt-6 pt-4 border-t border-border flex items-center justify-between text-xs text-ink-muted">
-          <span>Already registered with Samadhan Setu?</span>
-          <Link
-            to={`/login?role=${role}${role === 'university' ? `&type=${univSubRole}` : ''}`}
-            className="font-bold text-navy hover:underline"
-          >
-            Sign In to Account →
-          </Link>
+        <div className="mt-6 pt-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-ink-muted">
+          <div>
+            <span>Already registered with Samadhan Setu?</span>
+            <Link
+              to={
+                isCitizenOnly
+                  ? '/login?role=citizen&for=submit'
+                  : isUniversityOnly
+                    ? `/login?role=university&type=${univSubRole === 'institution' ? 'dean' : univSubRole}`
+                    : `/login?role=${role}${role === 'university' ? `&type=${univSubRole}` : ''}`
+              }
+              className="font-bold text-navy hover:underline ml-1"
+            >
+              Sign In to Account →
+            </Link>
+          </div>
+
+          {/* Discreet portal switcher if user arrived at a locked role page by mistake */}
+          {(isCitizenOnly || isUniversityOnly) && (
+            <button
+              type="button"
+              onClick={() => setShowAllRoles(true)}
+              className="text-[11px] text-ink-muted hover:text-navy underline font-mono"
+            >
+              Show all registration options
+            </button>
+          )}
         </div>
       </div>
     </div>

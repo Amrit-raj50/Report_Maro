@@ -17,6 +17,7 @@ export default function Login() {
   const searchParams = new URLSearchParams(location.search);
   const queryRole = searchParams.get('role');
   const queryType = searchParams.get('type');
+  const queryFor = searchParams.get('for');
 
   // Check if user was redirected from a protected route
   const stateObj = location.state as { from?: string; requiredRole?: string; message?: string } | undefined;
@@ -27,10 +28,22 @@ export default function Login() {
     stateObj?.requiredRole === 'university' ||
     queryRole === 'university';
 
+  // Role locking logic:
+  // 1. If coming from "Submit a Problem" or queryRole=citizen -> Lock to Citizen Mode
+  // 2. If coming to University Portal or queryRole=university -> Lock to University Mode
+  const isCitizenTarget = queryRole === 'citizen' || fromPath === '/submit' || queryFor === 'submit';
+  const isUniversityTarget = isUniversityRedirect || queryRole === 'university';
+
+  const [showAllRoles, setShowAllRoles] = useState(false);
+
+  const isCitizenOnly = !showAllRoles && isCitizenTarget && !isUniversityTarget;
+  const isUniversityOnly = !showAllRoles && isUniversityTarget;
+
   // Role Tab selection
   const [activeRole, setActiveRole] = useState<LoginRoleTab>(() => {
+    if (isCitizenTarget) return 'citizen';
+    if (isUniversityTarget) return 'university';
     if (queryRole === 'admin') return 'admin';
-    if (queryRole === 'university' || isUniversityRedirect) return 'university';
     if (queryRole === 'industry') return 'industry';
     return 'citizen';
   });
@@ -55,15 +68,22 @@ export default function Login() {
 
   // Sync state when URL params change
   useEffect(() => {
-    if (queryRole === 'admin') setActiveRole('admin');
-    else if (queryRole === 'university') setActiveRole('university');
-    else if (queryRole === 'industry') setActiveRole('industry');
-    else if (queryRole === 'citizen') setActiveRole('citizen');
+    if (isCitizenOnly) {
+      setActiveRole('citizen');
+    } else if (isUniversityOnly) {
+      setActiveRole('university');
+    } else if (queryRole === 'admin') {
+      setActiveRole('admin');
+    } else if (queryRole === 'industry') {
+      setActiveRole('industry');
+    } else if (queryRole === 'citizen') {
+      setActiveRole('citizen');
+    }
 
     if (queryType === 'mentor') setUnivSubRole('mentor');
     else if (queryType === 'dean') setUnivSubRole('dean');
     else if (queryType === 'student') setUnivSubRole('student');
-  }, [queryRole, queryType]);
+  }, [queryRole, queryType, isCitizenOnly, isUniversityOnly]);
 
   // Set default placeholder/value when university role or subrole switches
   useEffect(() => {
@@ -180,7 +200,11 @@ export default function Login() {
         } else if (role === 'industry') {
           navigate('/industry');
         } else {
-          navigate('/dashboard');
+          if (queryFor === 'submit' || fromPath === '/submit') {
+            navigate('/submit');
+          } else {
+            navigate('/dashboard');
+          }
         }
       }
     } catch (err) {
@@ -208,20 +232,35 @@ export default function Login() {
         <div className="border-b border-border pb-4 mb-6">
           <div className="flex items-center justify-between gap-2">
             <span className="text-[11px] font-mono text-forest uppercase font-bold tracking-wider">
-              झारखंड सरकार · NIC Authentication Gateway
+              {isCitizenOnly
+                ? 'झारखंड सरकार · जन शिकायत निवारण पोर्टल'
+                : isUniversityOnly
+                  ? 'झारखंड सरकार · उच्च एवं तकनीकी शिक्षा विभाग'
+                  : 'झारखंड सरकार · NIC Authentication Gateway'}
             </span>
             <span className="text-[10px] font-mono bg-paper px-2 py-0.5 border border-border text-ink-muted">
-              NEP 2020 / SIH PS 26043
+              {isCitizenOnly ? 'CITIZEN ACCESS' : isUniversityOnly ? 'UNIVERSITY ECOSYSTEM' : 'NEP 2020'}
             </span>
           </div>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-navy mt-1">Official Portal Login</h1>
+
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-navy mt-1">
+            {isCitizenOnly
+              ? 'Citizen Portal Login / नागरिक लॉगिन'
+              : isUniversityOnly
+                ? 'University Portal Login / विश्वविद्यालय लॉगिन'
+                : 'Official Portal Login'}
+          </h1>
           <p className="text-xs sm:text-sm text-ink-muted mt-1">
-            Sign in to access departmental triage, university innovation labs, or citizen grievance logs.
+            {isCitizenOnly
+              ? 'Sign in with your Citizen credentials to report civic issues, upload ground evidence, or track resolution status.'
+              : isUniversityOnly
+                ? 'Select your academic role to access the Student Innovator Desk, Faculty Mentor Workspace, or Dean R&D Desk.'
+                : 'Sign in to access departmental triage, university innovation labs, or citizen grievance logs.'}
           </p>
         </div>
 
-        {/* Redirect Notice */}
-        {isUniversityRedirect && (
+        {/* Redirect Notice for University */}
+        {isUniversityRedirect && !isCitizenOnly && (
           <div className="mb-5 p-3 bg-forest/10 border border-forest/30 rounded-[2px] flex flex-col gap-1 text-xs text-forest">
             <div className="flex items-start gap-1.5 font-bold">
               <span>🏛️ University Access Required:</span>
@@ -246,72 +285,74 @@ export default function Login() {
           </div>
         )}
 
-        {/* TOP LEVEL ROLE SWITCHER TABS */}
-        <div className="mb-5">
-          <label className="block text-[11px] font-mono font-bold uppercase tracking-wider text-ink-muted mb-2">
-            Select Portal Access Role / भूमिका चुनें
-          </label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-paper border border-border rounded-[2px]">
-            <button
-              type="button"
-              onClick={() => setActiveRole('citizen')}
-              className={`py-2 px-2 text-xs font-bold rounded-[2px] transition-all flex flex-col items-center justify-center gap-0.5 ${
-                activeRole === 'citizen'
-                  ? 'bg-navy text-white shadow-sm'
-                  : 'text-ink-muted hover:text-navy hover:bg-white/60'
-              }`}
-            >
-              <span className="text-sm">👥</span>
-              <span className="text-[11px]">Citizen</span>
-            </button>
+        {/* TOP LEVEL ROLE SWITCHER TABS (Only shown if NOT in citizen-only or university-only mode) */}
+        {!isCitizenOnly && !isUniversityOnly && (
+          <div className="mb-5">
+            <label className="block text-[11px] font-mono font-bold uppercase tracking-wider text-ink-muted mb-2">
+              Select Portal Access Role / भूमिका चुनें
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-paper border border-border rounded-[2px]">
+              <button
+                type="button"
+                onClick={() => setActiveRole('citizen')}
+                className={`py-2 px-2 text-xs font-bold rounded-[2px] transition-all flex flex-col items-center justify-center gap-0.5 ${
+                  activeRole === 'citizen'
+                    ? 'bg-navy text-white shadow-sm'
+                    : 'text-ink-muted hover:text-navy hover:bg-white/60'
+                }`}
+              >
+                <span className="text-sm">👥</span>
+                <span className="text-[11px]">Citizen</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setActiveRole('university')}
-              className={`py-2 px-2 text-xs font-bold rounded-[2px] transition-all flex flex-col items-center justify-center gap-0.5 ${
-                activeRole === 'university'
-                  ? 'bg-navy text-white shadow-sm'
-                  : 'text-ink-muted hover:text-navy hover:bg-white/60'
-              }`}
-            >
-              <span className="text-sm">🎓</span>
-              <span className="text-[11px]">University</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => setActiveRole('university')}
+                className={`py-2 px-2 text-xs font-bold rounded-[2px] transition-all flex flex-col items-center justify-center gap-0.5 ${
+                  activeRole === 'university'
+                    ? 'bg-navy text-white shadow-sm'
+                    : 'text-ink-muted hover:text-navy hover:bg-white/60'
+                }`}
+              >
+                <span className="text-sm">🎓</span>
+                <span className="text-[11px]">University</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setActiveRole('industry')}
-              className={`py-2 px-2 text-xs font-bold rounded-[2px] transition-all flex flex-col items-center justify-center gap-0.5 ${
-                activeRole === 'industry'
-                  ? 'bg-navy text-white shadow-sm'
-                  : 'text-ink-muted hover:text-navy hover:bg-white/60'
-              }`}
-            >
-              <span className="text-sm">💼</span>
-              <span className="text-[11px]">Industry</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => setActiveRole('industry')}
+                className={`py-2 px-2 text-xs font-bold rounded-[2px] transition-all flex flex-col items-center justify-center gap-0.5 ${
+                  activeRole === 'industry'
+                    ? 'bg-navy text-white shadow-sm'
+                    : 'text-ink-muted hover:text-navy hover:bg-white/60'
+                }`}
+              >
+                <span className="text-sm">💼</span>
+                <span className="text-[11px]">Industry</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setActiveRole('admin')}
-              className={`py-2 px-2 text-xs font-bold rounded-[2px] transition-all flex flex-col items-center justify-center gap-0.5 ${
-                activeRole === 'admin'
-                  ? 'bg-navy text-white shadow-sm'
-                  : 'text-ink-muted hover:text-navy hover:bg-white/60'
-              }`}
-            >
-              <span className="text-sm">🏛️</span>
-              <span className="text-[11px]">Government</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => setActiveRole('admin')}
+                className={`py-2 px-2 text-xs font-bold rounded-[2px] transition-all flex flex-col items-center justify-center gap-0.5 ${
+                  activeRole === 'admin'
+                    ? 'bg-navy text-white shadow-sm'
+                    : 'text-ink-muted hover:text-navy hover:bg-white/60'
+                }`}
+              >
+                <span className="text-sm">🏛️</span>
+                <span className="text-[11px]">Government</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* UNIVERSITY-SPECIFIC NESTED SELECTORS */}
-        {activeRole === 'university' && (
+        {/* UNIVERSITY-SPECIFIC NESTED SELECTORS (Rendered when in university mode) */}
+        {(activeRole === 'university' || isUniversityOnly) && (
           <div className="mb-5 p-3.5 bg-paper-dark/60 border-2 border-forest/30 rounded-[2px] space-y-3">
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-bold uppercase tracking-wider text-forest flex items-center gap-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-forest flex items-center gap-1 font-mono">
                   <span>🎓</span>
                   <span>Select University Role / पदनाम</span>
                 </span>
@@ -330,7 +371,7 @@ export default function Login() {
                   }`}
                 >
                   <div className="text-xs">👨‍🎓 Student</div>
-                  <div className="text-[9px] font-normal opacity-80 truncate">Innovator / Team</div>
+                  <div className="text-[9px] font-normal opacity-80 truncate">Innovator Desk</div>
                 </button>
 
                 <button
@@ -343,7 +384,7 @@ export default function Login() {
                   }`}
                 >
                   <div className="text-xs">👨‍🏫 Mentor</div>
-                  <div className="text-[9px] font-normal opacity-80 truncate">Faculty / PI</div>
+                  <div className="text-[9px] font-normal opacity-80 truncate">Faculty Workspace</div>
                 </button>
 
                 <button
@@ -355,8 +396,8 @@ export default function Login() {
                       : 'bg-white text-ink border-border hover:border-forest'
                   }`}
                 >
-                  <div className="text-xs">🏛️ Dean / Admin</div>
-                  <div className="text-[9px] font-normal opacity-80 truncate">R&amp;D Institutional</div>
+                  <div className="text-xs">🏛️ Dean R&amp;D</div>
+                  <div className="text-[9px] font-normal opacity-80 truncate">Institutional Admin</div>
                 </button>
               </div>
             </div>
@@ -391,19 +432,19 @@ export default function Login() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-ink-muted mb-1">
-              {activeRole === 'university'
+              {isUniversityOnly || activeRole === 'university'
                 ? `Institutional Email (${selectedUniv?.domain || 'ac.in'})`
                 : activeRole === 'admin'
                   ? 'Official NIC Administrator Email'
                   : activeRole === 'industry'
                     ? 'Corporate / CSR Registered Email'
-                    : 'Citizen Mobile or Email / ईमेल या मोबाइल'}
+                    : 'Citizen Mobile or Email / मोबाइल या ईमेल'}
               <span className="text-urgent"> *</span>
             </label>
             <input
               type="email"
               placeholder={
-                activeRole === 'university'
+                isUniversityOnly || activeRole === 'university'
                   ? `e.g. yourname@${selectedUniv?.domain || 'nitjsr.ac.in'}`
                   : 'e.g. user@example.com'
               }
@@ -444,13 +485,15 @@ export default function Login() {
           >
             {loading
               ? 'Authenticating Credentials…'
-              : activeRole === 'university'
-                ? `Sign In as ${univSubRole === 'student' ? 'Student Innovator' : univSubRole === 'mentor' ? 'Faculty Mentor' : 'Dean R&D'} →`
-                : `Sign In to ${activeRole.toUpperCase()} Portal →`}
+              : isCitizenOnly
+                ? 'Sign In to Submit Problem →'
+                : isUniversityOnly || activeRole === 'university'
+                  ? `Sign In as ${univSubRole === 'student' ? 'Student Innovator' : univSubRole === 'mentor' ? 'Faculty Mentor' : 'Dean R&D'} →`
+                  : `Sign In to ${activeRole.toUpperCase()} Portal →`}
           </Button>
         </form>
 
-        {/* FAST 1-CLICK DEMO ACCOUNTS FOR EVALUATION */}
+        {/* 1-CLICK DEMO ACCOUNTS FOR EVALUATION */}
         <div className="mt-8 pt-5 border-t border-border">
           <div className="flex items-center justify-between mb-2.5">
             <span className="font-mono text-[11px] text-ink font-bold uppercase tracking-wider flex items-center gap-1">
@@ -460,103 +503,146 @@ export default function Login() {
             <span className="text-[10px] text-forest font-mono">No password required</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {activeRole === 'university' ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemo('himmat@nitjsr.ac.in', 'student')}
-                  className="p-2.5 bg-turmeric/10 border border-turmeric-deep hover:bg-turmeric/20 text-ink rounded-[2px] text-left transition-colors"
-                >
-                  <div className="text-[11px] font-bold text-navy flex items-center justify-between">
-                    <span>👨‍🎓 Student Innovator</span>
-                    <span className="text-[9px] bg-turmeric px-1 py-0.2 rounded-[2px]">3rd Yr CSE</span>
-                  </div>
-                  <div className="font-mono text-[10px] text-ink-muted truncate mt-0.5">himmat@nitjsr.ac.in</div>
-                  <span className="text-[9px] font-bold uppercase text-turmeric-deep block mt-1">
-                    → Student Desk (/student)
-                  </span>
-                </button>
+          {/* If Citizen Only: Show single Asha Devi button */}
+          {isCitizenOnly ? (
+            <button
+              type="button"
+              onClick={() => handleQuickDemo('asha.devi@example.com', 'citizen')}
+              className="w-full p-2.5 bg-paper border border-navy/30 hover:border-navy hover:bg-white text-ink rounded-[2px] text-left transition-colors flex items-center justify-between"
+            >
+              <div>
+                <div className="text-xs font-bold text-navy flex items-center gap-1.5">
+                  <span>👥 Asha Devi (Citizen Grievant)</span>
+                  <span className="text-[9px] bg-paper-dark px-1.5 py-0.5 rounded-[2px] border border-border">Ranchi District</span>
+                </div>
+                <div className="font-mono text-[10px] text-ink-muted mt-0.5">asha.devi@example.com</div>
+              </div>
+              <span className="text-xs font-bold text-forest uppercase tracking-wider">
+                → Click to Sign In &amp; Continue
+              </span>
+            </button>
+          ) : isUniversityOnly || activeRole === 'university' ? (
+            /* If University Only: Show the 3 University sub-roles only */
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('himmat@nitjsr.ac.in', 'student')}
+                className="p-2.5 bg-turmeric/10 border border-turmeric-deep hover:bg-turmeric/20 text-ink rounded-[2px] text-left transition-colors"
+              >
+                <div className="text-[11px] font-bold text-navy flex items-center justify-between">
+                  <span>👨‍🎓 Student Innovator</span>
+                  <span className="text-[9px] bg-turmeric px-1 py-0.2 rounded-[2px]">3rd Yr CSE</span>
+                </div>
+                <div className="font-mono text-[10px] text-ink-muted truncate mt-0.5">himmat@nitjsr.ac.in</div>
+                <span className="text-[9px] font-bold uppercase text-turmeric-deep block mt-1">
+                  → Student Desk (/student)
+                </span>
+              </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemo('rsharma.env@nitjsr.ac.in', 'mentor')}
-                  className="p-2.5 bg-forest/10 border border-forest hover:bg-forest/20 text-forest rounded-[2px] text-left transition-colors"
-                >
-                  <div className="text-[11px] font-bold text-forest flex items-center justify-between">
-                    <span>👨‍🏫 Faculty Mentor</span>
-                    <span className="text-[9px] bg-forest text-white px-1 py-0.2 rounded-[2px]">PI Guide</span>
-                  </div>
-                  <div className="font-mono text-[10px] text-forest/90 truncate mt-0.5">rsharma.env@nitjsr.ac.in</div>
-                  <span className="text-[9px] font-bold uppercase text-forest block mt-1">
-                    → Mentor Workspace (/university/mentor)
-                  </span>
-                </button>
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('rsharma.env@nitjsr.ac.in', 'mentor')}
+                className="p-2.5 bg-forest/10 border border-forest hover:bg-forest/20 text-forest rounded-[2px] text-left transition-colors"
+              >
+                <div className="text-[11px] font-bold text-forest flex items-center justify-between">
+                  <span>👨‍🏫 Faculty Mentor</span>
+                  <span className="text-[9px] bg-forest text-white px-1 py-0.2 rounded-[2px]">PI Guide</span>
+                </div>
+                <div className="font-mono text-[10px] text-forest/90 truncate mt-0.5">rsharma.env@nitjsr.ac.in</div>
+                <span className="text-[9px] font-bold uppercase text-forest block mt-1">
+                  → Mentor Workspace (/university/mentor)
+                </span>
+              </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemo('dean@nitjsr.ac.in', 'dean')}
-                  className="p-2.5 bg-navy/5 border border-navy hover:bg-navy/15 text-navy rounded-[2px] text-left transition-colors"
-                >
-                  <div className="text-[11px] font-bold text-navy flex items-center justify-between">
-                    <span>🏛️ Dean R&amp;D Desk</span>
-                    <span className="text-[9px] bg-navy text-white px-1 py-0.2 rounded-[2px]">NIT JSR</span>
-                  </div>
-                  <div className="font-mono text-[10px] text-navy/90 truncate mt-0.5">dean@nitjsr.ac.in</div>
-                  <span className="text-[9px] font-bold uppercase text-navy block mt-1">
-                    → University Admin (/university)
-                  </span>
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemo('asha.devi@example.com', 'citizen')}
-                  className="p-2.5 bg-paper border border-border hover:border-navy hover:bg-white text-ink rounded-[2px] text-left transition-colors"
-                >
-                  <div className="text-[11px] font-bold text-ink">👥 Citizen Grievant</div>
-                  <div className="font-mono text-[10px] text-ink-muted truncate">asha.devi@example.com</div>
-                  <span className="text-[9px] font-bold text-navy block mt-1">→ Citizen Dashboard</span>
-                </button>
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('dean@nitjsr.ac.in', 'dean')}
+                className="p-2.5 bg-navy/5 border border-navy hover:bg-navy/15 text-navy rounded-[2px] text-left transition-colors"
+              >
+                <div className="text-[11px] font-bold text-navy flex items-center justify-between">
+                  <span>🏛️ Dean R&amp;D Desk</span>
+                  <span className="text-[9px] bg-navy text-white px-1 py-0.2 rounded-[2px]">NIT JSR</span>
+                </div>
+                <div className="font-mono text-[10px] text-navy/90 truncate mt-0.5">dean@nitjsr.ac.in</div>
+                <span className="text-[9px] font-bold uppercase text-navy block mt-1">
+                  → University Admin (/university)
+                </span>
+              </button>
+            </div>
+          ) : (
+            /* General Mode: Show all roles */
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('asha.devi@example.com', 'citizen')}
+                className="p-2.5 bg-paper border border-border hover:border-navy hover:bg-white text-ink rounded-[2px] text-left transition-colors"
+              >
+                <div className="text-[11px] font-bold text-ink">👥 Citizen Grievant</div>
+                <div className="font-mono text-[10px] text-ink-muted truncate">asha.devi@example.com</div>
+                <span className="text-[9px] font-bold text-navy block mt-1">→ Citizen Dashboard</span>
+              </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemo('tata.csr@tatasteel.com', 'industry')}
-                  className="p-2.5 bg-paper border border-border hover:border-navy hover:bg-white text-ink rounded-[2px] text-left transition-colors"
-                >
-                  <div className="text-[11px] font-bold text-ink">💼 Tata Steel CSR</div>
-                  <div className="font-mono text-[10px] text-ink-muted truncate">tata.csr@tatasteel.com</div>
-                  <span className="text-[9px] font-bold text-navy block mt-1">→ Industry Portal</span>
-                </button>
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('tata.csr@tatasteel.com', 'industry')}
+                className="p-2.5 bg-paper border border-border hover:border-navy hover:bg-white text-ink rounded-[2px] text-left transition-colors"
+              >
+                <div className="text-[11px] font-bold text-ink">💼 Tata Steel CSR</div>
+                <div className="font-mono text-[10px] text-ink-muted truncate">tata.csr@tatasteel.com</div>
+                <span className="text-[9px] font-bold text-navy block mt-1">→ Industry Portal</span>
+              </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemo('admin@sihportal.dev', 'admin')}
-                  className="p-2.5 bg-paper border border-navy/40 hover:border-navy hover:bg-white text-navy rounded-[2px] text-left transition-colors"
-                >
-                  <div className="text-[11px] font-bold text-navy">🏛️ Govt. Administrator</div>
-                  <div className="font-mono text-[10px] text-ink-muted truncate">admin@sihportal.dev</div>
-                  <span className="text-[9px] font-bold text-urgent block mt-1">→ AI Queue &amp; Triage</span>
-                </button>
-              </>
-            )}
-          </div>
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('admin@sihportal.dev', 'admin')}
+                className="p-2.5 bg-paper border border-navy/40 hover:border-navy hover:bg-white text-navy rounded-[2px] text-left transition-colors"
+              >
+                <div className="text-[11px] font-bold text-navy">🏛️ Govt. Administrator</div>
+                <div className="font-mono text-[10px] text-ink-muted truncate">admin@sihportal.dev</div>
+                <span className="text-[9px] font-bold text-urgent block mt-1">→ AI Queue &amp; Triage</span>
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Footer Link */}
-        <div className="mt-6 pt-4 border-t border-border flex items-center justify-between text-xs text-ink-muted">
-          <span>
-            {activeRole === 'university'
-              ? `New ${univSubRole === 'student' ? 'Student' : univSubRole === 'mentor' ? 'Mentor' : 'Institution'}?`
-              : 'New to Samadhan Setu?'}
-          </span>
-          <Link
-            to={`/register?role=${activeRole}${activeRole === 'university' ? `&type=${univSubRole}` : ''}`}
-            className="font-bold text-navy hover:underline flex items-center gap-1"
-          >
-            <span>Register an Account →</span>
-          </Link>
+        {/* Footer Links */}
+        <div className="mt-6 pt-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-ink-muted">
+          <div>
+            {isCitizenOnly ? (
+              <span>New to Samadhan Setu? </span>
+            ) : isUniversityOnly ? (
+              <span>New Student, Mentor, or Institution? </span>
+            ) : (
+              <span>New to the platform? </span>
+            )}
+            <Link
+              to={
+                isCitizenOnly
+                  ? '/register?role=citizen&for=submit'
+                  : isUniversityOnly
+                    ? `/register?role=university&type=${univSubRole}`
+                    : `/register?role=${activeRole}`
+              }
+              className="font-bold text-navy hover:underline ml-1"
+            >
+              {isCitizenOnly
+                ? 'Register Citizen Account with LGD & Pincode →'
+                : isUniversityOnly
+                  ? 'Register under your University →'
+                  : 'Register an Account →'}
+            </Link>
+          </div>
+
+          {/* Discreet portal switcher if user arrived at a locked role page by mistake */}
+          {(isCitizenOnly || isUniversityOnly) && (
+            <button
+              type="button"
+              onClick={() => setShowAllRoles(true)}
+              className="text-[11px] text-ink-muted hover:text-navy underline font-mono"
+            >
+              Show all portal login options
+            </button>
+          )}
         </div>
       </div>
     </div>

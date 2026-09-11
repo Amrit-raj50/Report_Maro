@@ -24,6 +24,17 @@ export function Layout() {
     setUnivDropdownOpen(false);
   }, [location.pathname]);
 
+  // Global click outside listener to reliably close dropdowns
+  useEffect(() => {
+    const handleGlobalClick = () => {
+      setLoginMenuOpen(false);
+      setRegisterMenuOpen(false);
+      setUnivDropdownOpen(false);
+    };
+    window.addEventListener('click', handleGlobalClick);
+    return () => window.removeEventListener('click', handleGlobalClick);
+  }, []);
+
   // Handle font size scaling accessibility toggle
   useEffect(() => {
     document.documentElement.style.setProperty('--font-scale', fontScale.toString());
@@ -381,7 +392,7 @@ export function Layout() {
 
         {/* BAND 3: PRIMARY NAVIGATION (NAVY BAND - Public & Citizen Pages Only) */}
         {!isUniversity && (
-          <div className="w-full bg-navy text-white">
+          <div className="w-full bg-navy text-white relative z-30">
             <div className="max-w-7xl mx-auto px-3 sm:px-4">
               {/* Mobile Nav Header */}
               <div className="flex md:hidden items-center justify-between py-2 border-b border-navy-deep">
@@ -399,7 +410,7 @@ export function Layout() {
 
                 <div className="flex items-center gap-1.5">
                   <Link
-                    to="/submit"
+                    to={user ? "/submit" : "/login?role=citizen&for=submit"}
                     className="px-2.5 py-1 bg-turmeric text-ink font-bold text-[11px] uppercase tracking-wider rounded-[2px] border border-turmeric-deep"
                   >
                     SUBMIT ISSUE
@@ -415,7 +426,7 @@ export function Layout() {
 
             {/* Desktop Navigation Links - Single Row with Strict Alignment */}
             <div className="hidden md:flex flex-row items-center justify-between min-h-[42px]">
-              <nav className="flex items-center space-x-0.5 lg:space-x-1 text-[11px] lg:text-xs font-bold uppercase tracking-wider whitespace-nowrap overflow-x-auto">
+              <nav className="flex items-center space-x-0.5 lg:space-x-1 text-[11px] lg:text-xs font-bold uppercase tracking-wider whitespace-nowrap">
                 <Link
                   to="/"
                   className={`px-2.5 lg:px-3 py-2.5 transition-colors whitespace-nowrap ${
@@ -466,19 +477,27 @@ export function Layout() {
                 >
                   <button
                     type="button"
-                    onClick={() => setUnivDropdownOpen((v) => !v)}
-                    className={`px-2.5 lg:px-3 py-2.5 transition-colors flex items-center gap-1 uppercase tracking-wider whitespace-nowrap ${
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setUnivDropdownOpen((v) => !v);
+                    }}
+                    className={`px-2.5 lg:px-3 py-2.5 transition-colors flex items-center gap-1 uppercase tracking-wider whitespace-nowrap cursor-pointer ${
                       location.pathname.startsWith('/university') || location.pathname === '/student'
                         ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
                         : 'hover:bg-navy-deep text-white'
                     }`}
+                    aria-expanded={univDropdownOpen}
                   >
                     <span>University Portal</span>
                     <span className="text-[9px] opacity-80">▼</span>
                   </button>
 
                   {univDropdownOpen && (
-                    <div className="absolute left-0 top-full mt-0 w-72 bg-navy-deep border-2 border-turmeric text-white shadow-2xl z-50 py-1.5 normal-case font-normal animate-in fade-in slide-in-from-top-1 duration-150">
+                    <div
+                      className="absolute left-0 top-full mt-0 w-72 bg-navy-deep border-2 border-turmeric text-white shadow-2xl z-50 py-1.5 normal-case font-normal"
+                      onClick={(e) => e.stopPropagation()}
+                      onMouseEnter={() => setUnivDropdownOpen(true)}
+                    >
                       <div className="px-3 py-1 text-[10px] font-mono uppercase font-bold text-turmeric border-b border-white/10 tracking-wider">
                         Higher Education &amp; Research Desks
                       </div>
@@ -571,7 +590,7 @@ export function Layout() {
               {/* Single Right CTA Button */}
               <div className="flex items-center shrink-0 ml-3 py-1.5">
                 <Link
-                  to="/submit"
+                  to={user ? "/submit" : "/login?role=citizen&for=submit"}
                   className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-turmeric text-ink font-bold text-xs uppercase tracking-wider rounded-[2px] border border-turmeric-deep hover:bg-turmeric-deep transition-all shadow-sm whitespace-nowrap"
                 >
                   <span className="text-sm font-black leading-none">+</span>
@@ -589,7 +608,7 @@ export function Layout() {
                 <a href="/#about-scheme" className="px-3 py-2.5 hover:bg-navy-deep text-white">
                   ● About the Scheme
                 </a>
-                <Link to="/submit" className="px-3 py-2.5 hover:bg-navy-deep text-turmeric">
+                <Link to={user ? "/submit" : "/login?role=citizen&for=submit"} className="px-3 py-2.5 hover:bg-navy-deep text-turmeric font-bold">
                   ● Submit a Problem
                 </Link>
                 {user?.role === 'citizen' && (
@@ -673,7 +692,7 @@ export function Layout() {
       {!isUniversity && (
         <>
           <Link
-            to="/submit"
+            to={user ? "/submit" : "/login?role=citizen&for=submit"}
             className="fixed right-0 top-1/2 -translate-y-1/2 z-40 hidden md:flex items-center bg-turmeric text-ink border-l-2 border-t-2 border-b-2 border-turmeric-deep px-2 py-4 shadow-sm hover:bg-turmeric-deep transition-all group"
             title="Quickly Submit a Civic Problem"
           >
@@ -687,7 +706,7 @@ export function Layout() {
 
           {/* Mobile Floating Action Button */}
           <Link
-            to="/submit"
+            to={user ? "/submit" : "/login?role=citizen&for=submit"}
             className="md:hidden fixed bottom-5 right-5 z-40 w-12 h-12 rounded-full bg-turmeric text-ink font-bold flex items-center justify-center border-2 border-turmeric-deep shadow-lg active:scale-95"
             title="Submit a Problem"
           >
