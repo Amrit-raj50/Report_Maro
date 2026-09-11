@@ -413,12 +413,12 @@ export function Layout() {
                 </div>
               </div>
 
-            {/* Desktop Navigation Links */}
-            <div className="hidden md:flex flex-row items-center justify-between">
-              <nav className="flex flex-wrap items-center text-xs font-bold uppercase tracking-wider">
+            {/* Desktop Navigation Links - Single Row with Strict Alignment */}
+            <div className="hidden md:flex flex-row items-center justify-between min-h-[42px]">
+              <nav className="flex items-center space-x-0.5 lg:space-x-1 text-[11px] lg:text-xs font-bold uppercase tracking-wider whitespace-nowrap overflow-x-auto">
                 <Link
                   to="/"
-                  className={`px-3 py-3 transition-colors ${
+                  className={`px-2.5 lg:px-3 py-2.5 transition-colors whitespace-nowrap ${
                     location.pathname === '/'
                       ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
                       : 'hover:bg-navy-deep text-white'
@@ -426,26 +426,18 @@ export function Layout() {
                 >
                   Home
                 </Link>
+
                 <a
                   href="/#about-scheme"
-                  className="px-3 py-3 hover:bg-navy-deep text-white transition-colors"
+                  className="px-2.5 lg:px-3 py-2.5 hover:bg-navy-deep text-white transition-colors whitespace-nowrap"
                 >
-                  About the Scheme
+                  About Scheme
                 </a>
-                <Link
-                  to="/submit"
-                  className={`px-3 py-3 transition-colors ${
-                    location.pathname === '/submit'
-                      ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
-                      : 'hover:bg-navy-deep text-white'
-                  }`}
-                >
-                  Submit a Problem
-                </Link>
+
                 {user?.role === 'citizen' && (
                   <Link
                     to="/dashboard"
-                    className={`px-3 py-3 transition-colors ${
+                    className={`px-2.5 lg:px-3 py-2.5 transition-colors whitespace-nowrap ${
                       location.pathname === '/dashboard'
                         ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
                         : 'hover:bg-navy-deep text-white'
@@ -454,9 +446,10 @@ export function Layout() {
                     Citizen Dashboard
                   </Link>
                 )}
+
                 <Link
                   to="/problems"
-                  className={`px-3 py-3 transition-colors ${
+                  className={`px-2.5 lg:px-3 py-2.5 transition-colors whitespace-nowrap ${
                     location.pathname === '/problems'
                       ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
                       : 'hover:bg-navy-deep text-white'
@@ -467,14 +460,14 @@ export function Layout() {
 
                 {/* UNIVERSITY PORTAL DROPDOWN IN BAND 3 NAVIGATION */}
                 <div
-                  className="relative"
+                  className="relative whitespace-nowrap"
                   onMouseEnter={() => setUnivDropdownOpen(true)}
                   onMouseLeave={() => setUnivDropdownOpen(false)}
                 >
                   <button
                     type="button"
                     onClick={() => setUnivDropdownOpen((v) => !v)}
-                    className={`px-3 py-3 transition-colors flex items-center gap-1 ${
+                    className={`px-2.5 lg:px-3 py-2.5 transition-colors flex items-center gap-1 uppercase tracking-wider whitespace-nowrap ${
                       location.pathname.startsWith('/university') || location.pathname === '/student'
                         ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
                         : 'hover:bg-navy-deep text-white'
@@ -547,44 +540,42 @@ export function Layout() {
 
                 <Link
                   to="/industry"
-                  className={`px-3 py-3 transition-colors ${
+                  className={`px-2.5 lg:px-3 py-2.5 transition-colors whitespace-nowrap ${
                     location.pathname.startsWith('/industry')
                       ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
                       : 'hover:bg-navy-deep text-white'
                   }`}
                 >
-                  Industry &amp; Funding
+                  Industry &amp; CSR
                 </Link>
+
                 <Link
                   to="/admin"
-                  className={`px-3 py-3 transition-colors ${
+                  className={`px-2.5 lg:px-3 py-2.5 transition-colors whitespace-nowrap ${
                     location.pathname.startsWith('/admin')
                       ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
                       : 'hover:bg-navy-deep text-white'
                   }`}
                 >
-                  Analytics &amp; AI Queue
+                  AI Analytics
                 </Link>
+
                 <a
                   href="/#notices"
-                  className="px-3 py-3 hover:bg-navy-deep text-white transition-colors"
+                  className="px-2.5 lg:px-3 py-2.5 hover:bg-navy-deep text-white transition-colors whitespace-nowrap"
                 >
-                  Circulars &amp; Notices
+                  Notices
                 </a>
               </nav>
 
-              <div className="flex items-center gap-2 py-2">
+              {/* Single Right CTA Button */}
+              <div className="flex items-center shrink-0 ml-3 py-1.5">
                 <Link
                   to="/submit"
-                  className="inline-flex items-center justify-center px-3.5 py-1.5 bg-turmeric text-ink font-bold text-xs uppercase tracking-wider rounded-[2px] border border-turmeric-deep hover:bg-turmeric-deep transition-colors"
+                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-turmeric text-ink font-bold text-xs uppercase tracking-wider rounded-[2px] border border-turmeric-deep hover:bg-turmeric-deep transition-all shadow-sm whitespace-nowrap"
                 >
-                  SUBMIT A PROBLEM
-                </Link>
-                <Link
-                  to="/problems"
-                  className="inline-flex items-center justify-center px-3 py-1.5 bg-transparent text-white font-semibold text-xs uppercase tracking-wider rounded-[2px] border border-white/60 hover:bg-white/10 transition-colors"
-                >
-                  TRACK STATUS
+                  <span className="text-sm font-black leading-none">+</span>
+                  <span>SUBMIT A PROBLEM</span>
                 </Link>
               </div>
             </div>
