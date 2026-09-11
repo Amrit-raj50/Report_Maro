@@ -9,7 +9,7 @@ function getRedisClient() {
     console.log('Connecting to Redis at:', redisUri.replace(/:[^@]*@/, ':****@')); // Hide password in logs
 
     redisClient = new Redis(redisUri, {
-      maxRetriesPerRequest: 3,
+      maxRetriesPerRequest: null,
       retryStrategy: (times) => {
         if (times > 3) {
           console.error('Redis retry exhausted, stopping.');

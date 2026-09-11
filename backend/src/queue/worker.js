@@ -65,7 +65,7 @@ const analyzeProblemWithAI = async (text, imageUrls = []) => {
     return fallbackClassify(text);
   }
 
-  const modelName = process.env.NVIDIA_MODEL_NAME || 'meta/llama-3.1-8b-instruct';
+  const modelName = process.env.NVIDIA_MODEL_NAME || 'meta/llama-3.2-11b-vision-instruct';
 
   const systemPrompt = `You are an AI classifier for civic problem reports in Jharkhand (SIH Report_Maro portal).
 Analyze the citizen report and return a JSON object with:
