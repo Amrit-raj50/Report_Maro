@@ -26,12 +26,12 @@ current contract and docs/ARCHITECTURE.md for why it's shaped this way.
 
 ## AI (owns `backend/src/queue/worker.js`)
 
-- [ ] Replace the dummy keyword-count `classifyText()` with real
+- [x] Replace the dummy keyword-count `classifyText()` with real
       classification — the queue/producer/internal-callback plumbing
       already works end-to-end (BullMQ job → worker → `PATCH
       /api/internal/problems/:id`), so this is a drop-in swap of the
       function body, not a new integration.
-- [ ] Same for `getPriority()` — currently a fixed urgent-keyword list.
+- [x] Same for `getPriority()` — currently a fixed urgent-keyword list.
 - [ ] Consider a confidence threshold below which a human (admin) reviews
       before the problem is marked `verified` (today, `confidence` is
       always hardcoded to `0.85`).
