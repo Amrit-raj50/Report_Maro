@@ -1075,20 +1075,50 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               </div>
 
               {/* Discussion Stream */}
-              <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
-                {comments.map((com) => (
-                  <div key={com.id} className="border border-border bg-paper p-3 space-y-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <span>{com.avatar}</span>
+              <div className="border border-border bg-paper p-3 space-y-3 max-h-72 overflow-y-auto pr-1">
+                {comments.map((com) => {
+                  const isMe =
+                    com.author.toLowerCase().includes('himmat') ||
+                    com.author.toLowerCase() === profile.name.toLowerCase();
+                  const isMentor =
+                    com.isMentor ||
+                    com.author.toLowerCase().includes('sharma') ||
+                    com.role.toLowerCase().includes('mentor');
+
+                  return (
+                    <div
+                      key={com.id}
+                      className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
+                    >
+                      <div className="flex items-center gap-1 text-[10px] text-ink-muted mb-0.5">
+                        <span className="text-xs">{com.avatar}</span>
                         <strong className="text-navy">{com.author}</strong>
-                        <span className="text-ink-muted font-mono text-[10px]">({com.role})</span>
+                        <span className="font-mono">({com.role})</span>
+                        {isMe && (
+                          <span className="text-[8px] bg-forest/10 text-forest border border-forest/30 px-1 rounded-[2px] font-bold">
+                            You
+                          </span>
+                        )}
+                        {isMentor && (
+                          <span className="text-[8px] bg-turmeric/20 text-ink border border-turmeric/40 px-1 rounded-[2px] font-bold">
+                            Faculty Guide
+                          </span>
+                        )}
+                        <span>·</span>
+                        <span className="font-mono">{com.timestamp}</span>
                       </div>
-                      <span className="text-[10px] text-ink-muted font-mono">{com.timestamp}</span>
+                      <div
+                        className={`max-w-md p-2.5 text-xs leading-relaxed ${
+                          isMe
+                            ? 'bg-navy text-white border border-navy shadow-sm'
+                            : 'bg-white text-ink border border-border shadow-xs'
+                        }`}
+                      >
+                        <p>{com.message}</p>
+                      </div>
                     </div>
-                    <p className="text-xs text-ink leading-relaxed pt-1">{com.message}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Add Comment Input */}
@@ -1577,59 +1607,88 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               </div>
             </div>
 
-            <div className="border border-border bg-white p-5 space-y-4">
-              <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="border-2 border-border bg-white p-5 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-border pb-3">
+                <div>
+                  <h3 className="font-display text-base font-bold text-navy flex items-center gap-2">
+                    <span>Namkum Block Research Cohort</span>
+                    <span className="text-xs font-mono font-normal text-forest bg-forest/10 px-2 py-0.5 border border-forest/20">
+                      {comments.length} Messages
+                    </span>
+                  </h3>
+                  <p className="text-xs text-ink-muted">
+                    Lead Mentor: <strong>Dr. Rajesh Sharma (BIT Mesra)</strong> · Student Investigator: <strong>{profile.name}</strong>
+                  </p>
+                </div>
+              </div>
+
+              {/* Chat Thread */}
+              <div className="border border-border bg-paper p-4 space-y-3 max-h-[460px] overflow-y-auto">
                 {comments.map((c) => {
-                  const isMentor = c.isMentor || c.author.toLowerCase().includes('sharma') || c.role.toLowerCase().includes('mentor');
-                  const isHimmat = c.author.toLowerCase().includes('himmat');
+                  const isMe =
+                    c.author.toLowerCase().includes('himmat') ||
+                    c.author.toLowerCase() === profile.name.toLowerCase();
+                  const isMentor =
+                    c.isMentor ||
+                    c.author.toLowerCase().includes('sharma') ||
+                    c.role.toLowerCase().includes('mentor');
+
                   return (
                     <div
                       key={c.id}
-                      className={`border p-4 space-y-1 transition ${
-                        isMentor
-                          ? 'border-turmeric/50 bg-turmeric/5'
-                          : isHimmat
-                          ? 'border-navy/30 bg-white'
-                          : 'border-border bg-paper'
-                      }`}
+                      className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
                     >
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2">
-                          <span>{c.avatar}</span>
-                          <strong className="text-navy">{c.author}</strong>
-                          <span className="text-[10px] text-ink-muted font-mono">({c.role})</span>
-                          {isMentor && (
-                            <span className="text-[9px] bg-turmeric/20 text-ink border border-turmeric/40 px-1.5 py-0.2 rounded-[2px] font-bold uppercase">
-                              Faculty Guide
-                            </span>
-                          )}
-                          {isHimmat && (
-                            <span className="text-[9px] bg-navy/10 text-navy border border-navy/20 px-1.5 py-0.2 rounded-[2px] font-bold uppercase">
-                              You
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-[10px] text-ink-muted font-mono">{c.timestamp}</span>
+                      <div className="flex items-center gap-1.5 text-[11px] text-ink-muted mb-1">
+                        <span className="text-sm">{c.avatar}</span>
+                        <strong className="text-navy">{c.author}</strong>
+                        <span className="font-mono">({c.role})</span>
+                        {isMe && (
+                          <span className="text-[9px] bg-forest/10 text-forest border border-forest/30 px-1.5 py-0.2 rounded-[2px] font-bold">
+                            You / Student
+                          </span>
+                        )}
+                        {isMentor && (
+                          <span className="text-[9px] bg-turmeric/20 text-ink border border-turmeric/40 px-1.5 py-0.2 rounded-[2px] font-bold">
+                            Faculty Guide
+                          </span>
+                        )}
+                        {!isMe && !isMentor && (
+                          <span className="text-[9px] bg-paper text-ink-muted border border-border px-1.5 py-0.2 rounded-[2px] font-medium">
+                            Team Member
+                          </span>
+                        )}
+                        <span>·</span>
+                        <span className="font-mono">{c.timestamp}</span>
                       </div>
-                      <p className="text-xs text-ink mt-1 leading-relaxed">{c.message}</p>
+                      <div
+                        className={`max-w-xl p-3 text-xs leading-relaxed ${
+                          isMe
+                            ? 'bg-navy text-white border border-navy shadow-sm'
+                            : 'bg-white text-ink border border-border shadow-xs'
+                        }`}
+                      >
+                        <p>{c.message}</p>
+                      </div>
                     </div>
                   );
                 })}
               </div>
 
-              <form onSubmit={handlePostComment} className="flex gap-2 pt-2 border-t border-border">
+              {/* Message Composer Form */}
+              <form onSubmit={handlePostComment} className="pt-2 flex gap-2">
                 <input
                   type="text"
                   value={newCommentText}
                   onChange={(e) => setNewCommentText(e.target.value)}
                   placeholder="Message Dr. Sharma or project team..."
-                  className="flex-1 border border-border bg-paper px-3 py-2 text-xs"
+                  className="flex-1 border border-border bg-paper px-3 py-2 text-xs font-medium text-ink focus:border-navy focus:bg-white"
                 />
                 <button
                   type="submit"
-                  className="border border-navy bg-navy px-4 py-2 text-xs font-bold text-white hover:bg-navy-deep"
+                  className="flex items-center gap-1.5 border border-navy bg-navy px-5 py-2 text-xs font-bold text-white hover:bg-navy-deep transition"
                 >
-                  Send
+                  <Send className="h-3.5 w-3.5" />
+                  <span>Send</span>
                 </button>
               </form>
             </div>
