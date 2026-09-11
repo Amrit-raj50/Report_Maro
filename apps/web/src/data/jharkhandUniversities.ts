@@ -237,6 +237,22 @@ export const JHARKHAND_UNIVERSITIES: JharkhandUniversity[] = [
   },
 ];
 
+interface RawUniversityDoc {
+  code?: string;
+  _id?: string;
+  name: string;
+  short_name?: string;
+  aishe_code?: string;
+  category?: string;
+  parent_university?: string;
+  college_name?: string;
+  city?: string;
+  district: string;
+  pincode?: string;
+  official_source?: string;
+  departments?: string[];
+}
+
 /**
  * Hook to dynamically load all 229+ official Jharkhand Universities & Colleges
  * from the MongoDB Atlas database via the backend /api/universities API.
@@ -253,8 +269,8 @@ export function useJharkhandUniversities() {
         if (!active) return;
         const raw = res.data?.data;
         if (Array.isArray(raw) && raw.length > 0) {
-          const mapped: JharkhandUniversity[] = raw.map((u: any) => ({
-            id: u.code || u._id,
+          const mapped: JharkhandUniversity[] = raw.map((u: RawUniversityDoc) => ({
+            id: u.code || u._id || 'univ',
             name: u.name,
             shortName: u.short_name || u.name,
             aisheCode: u.aishe_code || '',
@@ -273,7 +289,7 @@ export function useJharkhandUniversities() {
                         : u.category === 'Affiliated Colleges'
                           ? 'Affiliated'
                           : 'State',
-            category: u.category,
+            category: u.category || 'State University',
             parentUniversity: u.parent_university || u.name,
             collegeName: u.college_name || undefined,
             city: u.city || u.district,

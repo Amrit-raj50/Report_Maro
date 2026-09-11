@@ -1,4 +1,4 @@
-import { ProjectItem, ChallengeItem } from '../components/university/universityData.js';
+import { type ProjectItem, type ChallengeItem } from '../components/university/universityData.js';
 
 export interface DossierRecord {
   projectCode: string;

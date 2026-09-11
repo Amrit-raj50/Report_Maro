@@ -8,11 +8,11 @@ import {
   TEAM_MEMBERS,
   INITIAL_STUDENT_DELIVERABLES,
   STUDENT_ACHIEVEMENTS,
-  StudentProject,
-  StudentTaskItem,
-  ExploreChallenge,
-  StudentDeliverable,
-  ProofOfWork,
+  type StudentProject,
+  type StudentTaskItem,
+  type ExploreChallenge,
+  type StudentDeliverable,
+  type ProofOfWork,
 } from './studentData.js';
 import { useProjectMessages } from '../../utils/projectMessaging.js';
 import {
@@ -1180,7 +1180,15 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                       <label className="block font-semibold text-navy mb-1">Type *</label>
                       <select
                         value={submitType}
-                        onChange={(e) => setSubmitType(e.target.value as any)}
+                        onChange={(e) =>
+                          setSubmitType(
+                            e.target.value as
+                              | 'Prototype'
+                              | 'Technical Report'
+                              | 'Code Repository'
+                              | 'Dataset',
+                          )
+                        }
                         className="w-full border border-border bg-paper p-2.5 text-xs font-medium"
                       >
                         <option value="Prototype">Prototype ▼</option>

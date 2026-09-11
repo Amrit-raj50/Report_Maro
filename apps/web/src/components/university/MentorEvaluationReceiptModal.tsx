@@ -1,5 +1,5 @@
 import React from 'react';
-import { EvaluationReceipt } from './mentorData.js';
+import { type EvaluationReceipt } from './mentorData.js';
 import { triggerDossierPrint } from '../../utils/dossierExporter.js';
 import {
   X,

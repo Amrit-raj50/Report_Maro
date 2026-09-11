@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { TeamComment, INITIAL_TEAM_COMMENTS } from '../components/student/studentData';
+import { type TeamComment, INITIAL_TEAM_COMMENTS } from '../components/student/studentData';
 
 export const STORAGE_KEY_PROJECT_MESSAGES = 'samadhansetu_project_communications';
 export const EVENT_MESSAGES_UPDATED = 'samadhansetu_messages_updated';

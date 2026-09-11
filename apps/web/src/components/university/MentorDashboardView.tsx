@@ -7,14 +7,14 @@ import {
   INITIAL_PROJECT_TIMELINE,
   INITIAL_INDUSTRY_MESSAGES,
   MENTOR_DOCUMENTS,
-  MentorProject,
-  MentorStudent,
-  MentorTask,
-  MentorSubmission,
-  MentorMilestone,
-  IndustryMessage,
-  EvaluationRubric,
-  EvaluationReceipt,
+  type MentorProject,
+  type MentorStudent,
+  type MentorTask,
+  type MentorSubmission,
+  type MentorMilestone,
+  type IndustryMessage,
+  type EvaluationRubric,
+  type EvaluationReceipt,
   calculateGradeBand,
 } from './mentorData.js';
 import { MentorEvaluationReceiptModal } from './MentorEvaluationReceiptModal.js';
@@ -2407,7 +2407,11 @@ export const MentorDashboardView: React.FC<MentorDashboardViewProps> = ({
                   <label className="block font-semibold text-navy mb-1">Priority</label>
                   <select
                     value={newTaskPriority}
-                    onChange={(e) => setNewTaskPriority(e.target.value as any)}
+                    onChange={(e) =>
+                      setNewTaskPriority(
+                        e.target.value as 'High' | 'Medium' | 'Critical',
+                      )
+                    }
                     className="w-full border border-border bg-paper p-2 text-xs"
                   >
                     <option value="Critical">Critical</option>

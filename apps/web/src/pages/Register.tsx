@@ -410,8 +410,8 @@ export default function Register() {
     }
 
     // 3. Citizen-specific geographic validations
-    let effectiveTaluka = taluka === '__other__' ? customTaluka.trim() : taluka.trim();
-    let effectiveVillage = villageOrCity === '__custom__' ? customVillage.trim() : villageOrCity.trim();
+    const effectiveTaluka = taluka === '__other__' ? customTaluka.trim() : taluka.trim();
+    const effectiveVillage = villageOrCity === '__custom__' ? customVillage.trim() : villageOrCity.trim();
 
     if (role === 'citizen') {
       if (pincode && !/^\d{6}$/.test(pincode.trim())) {

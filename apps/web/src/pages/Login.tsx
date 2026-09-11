@@ -122,7 +122,7 @@ export default function Login() {
       let res;
       try {
         res = await apiClient.post('/auth/login', parsed.data);
-      } catch (err: any) {
+      } catch (err) {
         // Self-healing fallback for Hackathon demo evaluation accounts if not yet in MongoDB
         if (loginEmail === 'dean@nitjsr.ac.in' || loginEmail.startsWith('dean@')) {
           await apiClient.post('/auth/register', {

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import {
-  ProjectItem,
-  ChallengeItem,
+  type ProjectItem,
+  type ChallengeItem,
 } from './universityData.js';
 import {
   compileDossierRecords,
