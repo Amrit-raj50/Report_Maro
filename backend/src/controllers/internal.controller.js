@@ -7,7 +7,17 @@ const AuditLog = require('../models/auditlog.model');
 const updateProblemAI = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { category, priority, confidence, status } = req.body;
+    const {
+      category,
+      sub_category,
+      priority,
+      confidence,
+      ai_reasoning,
+      required_expertise,
+      duplicate_check,
+      recommended_universities,
+      status,
+    } = req.body;
 
     console.log(`🔑 [Internal] Updating problem ${id}`);
 
@@ -22,8 +32,13 @@ const updateProblemAI = async (req, res, next) => {
 
     // Update AI fields
     if (category) problem.category = category;
+    if (sub_category !== undefined) problem.sub_category = sub_category;
     if (priority) problem.priority = priority;
-    if (confidence) problem.ai_confidence = confidence;
+    if (confidence !== undefined) problem.ai_confidence = confidence;
+    if (ai_reasoning !== undefined) problem.ai_reasoning = ai_reasoning;
+    if (required_expertise !== undefined) problem.required_expertise = required_expertise;
+    if (duplicate_check !== undefined) problem.duplicate_check = duplicate_check;
+    if (recommended_universities !== undefined) problem.recommended_universities = recommended_universities;
 
     // If status is 'verified', update and notify admin
     if (status === 'verified' && problem.status === 'submitted') {
@@ -32,7 +47,17 @@ const updateProblemAI = async (req, res, next) => {
       // Audit log
       await AuditLog.create({
         eventType: 'PROBLEM_AI_VERIFIED',
-        payload: { problemId: problem._id, category, priority, confidence },
+        payload: {
+          problemId: problem._id,
+          category,
+          sub_category,
+          priority,
+          confidence,
+          ai_reasoning,
+          required_expertise,
+          duplicate_check,
+          recommended_universities,
+        },
         source: 'ai_worker',
       }).catch(err => console.error('AuditLog error:', err.message));
 
@@ -51,6 +76,7 @@ const updateProblemAI = async (req, res, next) => {
           problemId: problem._id,
           title: problem.title,
           category: problem.category,
+          sub_category: problem.sub_category,
           priority: problem.priority,
         });
       }
@@ -65,8 +91,13 @@ const updateProblemAI = async (req, res, next) => {
       message: 'Problem updated successfully',
       data: {
         category: problem.category,
+        sub_category: problem.sub_category,
         priority: problem.priority,
         confidence: problem.ai_confidence,
+        ai_reasoning: problem.ai_reasoning,
+        required_expertise: problem.required_expertise,
+        duplicate_check: problem.duplicate_check,
+        recommended_universities: problem.recommended_universities,
         status: problem.status,
       },
     });

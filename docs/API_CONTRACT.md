@@ -65,7 +65,7 @@ Project `status` values: `proposed → under_review → active → completed`.
 
 | Method | Path                         | Auth                        | Notes                                                                                                                                        |
 | ------ | ---------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| PATCH  | `/api/internal/problems/:id` | `x-internal-api-key` header | Called by the AI worker (`backend/src/queue/worker.js`) with `{ category, priority, confidence, status }`. Never call this from the browser. |
+| PATCH  | `/api/internal/problems/:id` | `x-internal-api-key` header | Called by the AI worker (`backend/src/queue/worker.js`) with `{ category, sub_category, priority, confidence, ai_reasoning, required_expertise, duplicate_check, recommended_universities, status }`. Never call this from the browser. |
 
 ## Socket.io events
 

@@ -32,6 +32,8 @@ current contract and docs/ARCHITECTURE.md for why it's shaped this way.
     /api/internal/problems/:id`), so this is a drop-in swap of the
       function body, not a new integration.
 - [x] Same for `getPriority()` — currently a fixed urgent-keyword list.
+- [x] Issue #30 Core AI Functions: Sub-categorization, prioritization reasoning,
+      semantic duplicate detection, expertise extraction, and university matching.
 - [ ] Consider a confidence threshold below which a human (admin) reviews
       before the problem is marked `verified` (today, `confidence` is
       always hardcoded to `0.85`).
