@@ -58,6 +58,16 @@ export interface ExploreChallenge {
   estimatedDuration: string;
 }
 
+export interface ProofOfWork {
+  liveDemoUrl?: string;
+  githubRepoUrl?: string;
+  videoWalkthroughUrl?: string;
+  fieldPhotoName?: string;
+  fieldPhotoUrl?: string;
+  gpsCoordinates?: string;
+  photoCaption?: string;
+}
+
 export interface StudentDeliverable {
   id: string;
   project: string;
@@ -69,6 +79,7 @@ export interface StudentDeliverable {
   submittedAt: string;
   status: 'Pending Review' | 'Approved' | 'Changes Requested';
   mentorFeedback?: string;
+  proofOfWork?: ProofOfWork;
 }
 
 export interface TeamMember {
@@ -386,6 +397,14 @@ export const INITIAL_STUDENT_DELIVERABLES: StudentDeliverable[] = [
       'Implemented rural monitoring dashboard with live sensor telemetry gauges, fluoride hazard indicator, and offline SQLite cache.',
     submittedAt: '10 Sept, 4:45 PM',
     status: 'Pending Review',
+    proofOfWork: {
+      liveDemoUrl: 'https://samadhansetu-water-telemetry.vercel.app',
+      githubRepoUrl: 'https://github.com/himmat07/water-telemetry-firmware',
+      videoWalkthroughUrl: 'https://loom.com/share/water-monitoring-prototype-demo',
+      fieldPhotoName: 'namkum_borewell_fluoride_test.jpg',
+      gpsCoordinates: '23.3441° N, 85.3096° E (Birla Chowk, Namkum)',
+      photoCaption: 'Sample extraction from tube-well cluster exhibiting 3.2 mg/L fluoride precipitation.',
+    },
   },
   {
     id: 'del-02',
@@ -399,6 +418,11 @@ export const INITIAL_STUDENT_DELIVERABLES: StudentDeliverable[] = [
     submittedAt: '04 Sept, 2:15 PM',
     status: 'Approved',
     mentorFeedback: 'Approved by Dr. Sharma. Great attention to multi-lingual labeling for village operators.',
+    proofOfWork: {
+      githubRepoUrl: 'https://github.com/himmat07/panchayat-kiosk-specs',
+      gpsCoordinates: '23.4682° N, 85.0934° E (Mandar Kisan Kendra)',
+      photoCaption: 'Tablet interface usability testing with panchayat committee representatives.',
+    },
   },
 ];
 

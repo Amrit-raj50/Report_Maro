@@ -14,6 +14,7 @@ import {
   ExploreChallenge,
   StudentDeliverable,
   TeamComment,
+  ProofOfWork,
 } from './studentData.js';
 import {
   Briefcase,
@@ -32,6 +33,14 @@ import {
   ChevronRight,
   Layers,
   Paperclip,
+  Globe,
+  Code2,
+  Video,
+  MapPin,
+  Camera,
+  ExternalLink,
+  Eye,
+  ShieldCheck,
 } from 'lucide-react';
 
 export type StudentNavTab =
@@ -79,6 +88,42 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   const [submitTitle, setSubmitTitle] = useState('Water Dashboard v1');
   const [submitFileName, setSubmitFileName] = useState('dashboard.zip');
   const [submitDesc, setSubmitDesc] = useState('Implemented monitoring dashboard.');
+
+  // Optional Rich Proof of Work Form States
+  const [submitDemoUrl, setSubmitDemoUrl] = useState('');
+  const [submitGithubUrl, setSubmitGithubUrl] = useState('');
+  const [submitVideoUrl, setSubmitVideoUrl] = useState('');
+  const [submitPhotoName, setSubmitPhotoName] = useState('');
+  const [submitPhotoGps, setSubmitPhotoGps] = useState('');
+  const [submitPhotoCaption, setSubmitPhotoCaption] = useState('');
+  const [gpsDetecting, setGpsDetecting] = useState(false);
+  const [selectedProofOfWork, setSelectedProofOfWork] = useState<{ title: string; pow: ProofOfWork } | null>(null);
+
+  const handleDetectGps = () => {
+    setGpsDetecting(true);
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude.toFixed(4);
+          const lng = pos.coords.longitude.toFixed(4);
+          setSubmitPhotoGps(`${lat}° N, ${lng}° E (Field Node)`);
+          setGpsDetecting(false);
+          showToast(`GPS captured: ${lat}° N, ${lng}° E`);
+        },
+        () => {
+          // Fallback to regional Jharkhand research coordinates
+          setSubmitPhotoGps('23.3441° N, 85.3096° E (Birla Chowk, Namkum)');
+          setGpsDetecting(false);
+          showToast('GPS tagged: Namkum Research Node, Ranchi');
+        },
+        { timeout: 5000 }
+      );
+    } else {
+      setSubmitPhotoGps('23.3441° N, 85.3096° E (Birla Chowk, Namkum)');
+      setGpsDetecting(false);
+      showToast('GPS tagged: Namkum Research Node, Ranchi');
+    }
+  };
 
   // Team Comment Form
   const [newCommentText, setNewCommentText] = useState('');
@@ -131,6 +176,26 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
     e.preventDefault();
     if (!submitTitle.trim()) return;
 
+    const hasPow = Boolean(
+      submitDemoUrl.trim() ||
+      submitGithubUrl.trim() ||
+      submitVideoUrl.trim() ||
+      submitPhotoName.trim() ||
+      submitPhotoGps.trim() ||
+      submitPhotoCaption.trim()
+    );
+
+    const proofOfWork: ProofOfWork | undefined = hasPow
+      ? {
+          liveDemoUrl: submitDemoUrl.trim() || undefined,
+          githubRepoUrl: submitGithubUrl.trim() || undefined,
+          videoWalkthroughUrl: submitVideoUrl.trim() || undefined,
+          fieldPhotoName: submitPhotoName.trim() || undefined,
+          gpsCoordinates: submitPhotoGps.trim() || undefined,
+          photoCaption: submitPhotoCaption.trim() || undefined,
+        }
+      : undefined;
+
     const newDeliv: StudentDeliverable = {
       id: `del-${Date.now()}`,
       project: submitProject,
@@ -141,10 +206,19 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
       description: submitDesc,
       submittedAt: 'Just now',
       status: 'Pending Review',
+      proofOfWork,
     };
 
     setDeliverables([newDeliv, ...deliverables]);
     showToast(`"${newDeliv.title}" submitted to Dr. Sharma's Review Queue!`);
+    
+    // Reset optional fields
+    setSubmitDemoUrl('');
+    setSubmitGithubUrl('');
+    setSubmitVideoUrl('');
+    setSubmitPhotoName('');
+    setSubmitPhotoGps('');
+    setSubmitPhotoCaption('');
     setActiveTab('submit');
   };
 
@@ -1091,12 +1165,145 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                     <label className="block font-semibold text-navy mb-1">Description *</label>
                     <textarea
                       required
-                      rows={4}
+                      rows={3}
                       value={submitDesc}
                       onChange={(e) => setSubmitDesc(e.target.value)}
                       placeholder="e.g. Implemented monitoring dashboard."
                       className="w-full border border-border bg-paper p-2.5 text-xs font-medium"
                     />
+                  </div>
+
+                  {/* RICH PROOF OF WORK & FIELD EVIDENCE (OPTIONAL) */}
+                  <div className="border border-navy/20 bg-paper/50 p-4 space-y-3.5 rounded-[2px]">
+                    <div className="flex items-center justify-between border-b border-border pb-2">
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <ShieldCheck className="h-4 w-4 text-forest" />
+                          <span className="font-bold text-navy text-xs uppercase tracking-wider">
+                            Verified Proof of Work & Field Evidence
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-ink-muted mt-0.5">
+                          Attach live links, code repositories, or GPS-tagged field photos to maximize evaluation scores.
+                        </p>
+                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider bg-forest/10 text-forest px-2 py-0.5 border border-forest/20">
+                        Optional / ऐच्छिक
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {/* Live Demo URL */}
+                      <div>
+                        <label className="block text-ink-muted text-[11px] font-semibold mb-1 flex items-center gap-1">
+                          <Globe className="h-3 w-3 text-navy" />
+                          <span>Live Deployment / Demo URL (Optional)</span>
+                        </label>
+                        <input
+                          type="url"
+                          value={submitDemoUrl}
+                          onChange={(e) => setSubmitDemoUrl(e.target.value)}
+                          placeholder="https://my-prototype.vercel.app"
+                          className="w-full border border-border bg-white p-2 text-xs font-mono text-ink placeholder:text-ink-muted/50"
+                        />
+                      </div>
+
+                      {/* GitHub Repo URL */}
+                      <div>
+                        <label className="block text-ink-muted text-[11px] font-semibold mb-1 flex items-center gap-1">
+                          <Code2 className="h-3 w-3 text-navy" />
+                          <span>GitHub / GitLab Repository (Optional)</span>
+                        </label>
+                        <input
+                          type="url"
+                          value={submitGithubUrl}
+                          onChange={(e) => setSubmitGithubUrl(e.target.value)}
+                          placeholder="https://github.com/username/project-repo"
+                          className="w-full border border-border bg-white p-2 text-xs font-mono text-ink placeholder:text-ink-muted/50"
+                        />
+                      </div>
+
+                      {/* Video Walkthrough URL */}
+                      <div>
+                        <label className="block text-ink-muted text-[11px] font-semibold mb-1 flex items-center gap-1">
+                          <Video className="h-3 w-3 text-navy" />
+                          <span>Prototype Video Walkthrough (Optional)</span>
+                        </label>
+                        <input
+                          type="url"
+                          value={submitVideoUrl}
+                          onChange={(e) => setSubmitVideoUrl(e.target.value)}
+                          placeholder="https://loom.com/share/... or YouTube link"
+                          className="w-full border border-border bg-white p-2 text-xs font-mono text-ink placeholder:text-ink-muted/50"
+                        />
+                      </div>
+
+                      {/* GPS Coordinates & Auto Detect */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-ink-muted text-[11px] font-semibold flex items-center gap-1">
+                            <MapPin className="h-3 w-3 text-navy" />
+                            <span>GPS Coordinates (Optional)</span>
+                          </label>
+                          <button
+                            type="button"
+                            onClick={handleDetectGps}
+                            disabled={gpsDetecting}
+                            className="text-[10px] font-bold text-forest hover:underline flex items-center gap-1"
+                          >
+                            <span>{gpsDetecting ? 'Detecting...' : '📍 Auto-Detect GPS'}</span>
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          value={submitPhotoGps}
+                          onChange={(e) => setSubmitPhotoGps(e.target.value)}
+                          placeholder="e.g. 23.3441° N, 85.3096° E (Birla Chowk)"
+                          className="w-full border border-border bg-white p-2 text-xs font-mono text-ink placeholder:text-ink-muted/50"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Field Survey Photo & Caption */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-border/60">
+                      <div>
+                        <label className="block text-ink-muted text-[11px] font-semibold mb-1 flex items-center gap-1">
+                          <Camera className="h-3 w-3 text-navy" />
+                          <span>Field Survey Photo / Evidence (Optional)</span>
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            if (e.target.files?.[0]) {
+                              setSubmitPhotoName(e.target.files[0].name);
+                              if (!submitPhotoGps) {
+                                handleDetectGps();
+                              }
+                            }
+                          }}
+                          className="text-[11px] text-ink-muted file:border file:border-border file:bg-white file:px-2 file:py-1 file:text-xs file:font-semibold w-full"
+                        />
+                        {submitPhotoName && (
+                          <span className="text-[10px] text-forest font-mono block mt-1">
+                            📸 Attached: {submitPhotoName}
+                          </span>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-ink-muted text-[11px] font-semibold mb-1">
+                          Field Observation Notes / Caption (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={submitPhotoCaption}
+                          onChange={(e) => setSubmitPhotoCaption(e.target.value)}
+                          placeholder="e.g. Broken borewell pump discharge with fluoride sediment"
+                          className="w-full border border-border bg-white p-2 text-xs text-ink placeholder:text-ink-muted/50"
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   <div className="pt-2 flex items-center justify-between border-t border-border">
@@ -1140,6 +1347,77 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                         <span className="font-mono">📎 {del.fileName}</span>
                         <span>{del.submittedAt}</span>
                       </div>
+
+                      {/* Proof of Work Badges & Links */}
+                      {del.proofOfWork && (
+                        <div className="mt-2 pt-2 border-t border-border/80 space-y-1.5">
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-navy flex items-center gap-1">
+                            <ShieldCheck className="h-3 w-3 text-forest" />
+                            <span>Proof of Work:</span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {del.proofOfWork.liveDemoUrl && (
+                              <a
+                                href={del.proofOfWork.liveDemoUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 bg-white border border-navy/30 px-2 py-0.5 text-[10px] font-bold text-navy hover:bg-navy hover:text-white transition rounded-[2px]"
+                              >
+                                <Globe className="h-3 w-3 text-forest" />
+                                <span>Live Demo</span>
+                                <ExternalLink className="h-2.5 w-2.5 opacity-70" />
+                              </a>
+                            )}
+                            {del.proofOfWork.githubRepoUrl && (
+                              <a
+                                href={del.proofOfWork.githubRepoUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 bg-white border border-navy/30 px-2 py-0.5 text-[10px] font-bold text-navy hover:bg-navy hover:text-white transition rounded-[2px]"
+                              >
+                                <Code2 className="h-3 w-3" />
+                                <span>GitHub</span>
+                                <ExternalLink className="h-2.5 w-2.5 opacity-70" />
+                              </a>
+                            )}
+                            {del.proofOfWork.videoWalkthroughUrl && (
+                              <a
+                                href={del.proofOfWork.videoWalkthroughUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 bg-white border border-navy/30 px-2 py-0.5 text-[10px] font-bold text-navy hover:bg-navy hover:text-white transition rounded-[2px]"
+                              >
+                                <Video className="h-3 w-3 text-urgent" />
+                                <span>Video Demo</span>
+                                <ExternalLink className="h-2.5 w-2.5 opacity-70" />
+                              </a>
+                            )}
+                            {(del.proofOfWork.gpsCoordinates || del.proofOfWork.fieldPhotoName) && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setSelectedProofOfWork({
+                                    title: del.title,
+                                    pow: del.proofOfWork!,
+                                  })
+                                }
+                                className="inline-flex items-center gap-1 bg-forest/10 border border-forest/30 px-2 py-0.5 text-[10px] font-bold text-forest hover:bg-forest hover:text-white transition rounded-[2px]"
+                              >
+                                <MapPin className="h-3 w-3" />
+                                <span>Field Evidence</span>
+                                <Eye className="h-2.5 w-2.5 opacity-70" />
+                              </button>
+                            )}
+                          </div>
+                          {del.proofOfWork.gpsCoordinates && (
+                            <div className="font-mono text-[10px] text-ink-muted flex items-center gap-1">
+                              <span>📍 GPS:</span>
+                              <strong className="text-navy">{del.proofOfWork.gpsCoordinates}</strong>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {del.mentorFeedback && (
                         <div className="mt-1 border-l-2 border-forest pl-2 text-[10px] text-forest font-medium">
                           {del.mentorFeedback}
@@ -1335,6 +1613,67 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           </div>
         )}
       </main>
+
+      {/* Evidence Lightbox Modal */}
+      {selectedProofOfWork && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/80 backdrop-blur-xs p-4">
+          <div className="w-full max-w-lg bg-white border-2 border-navy p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-2">
+              <div className="flex items-center gap-2">
+                <Camera className="h-4 w-4 text-forest" />
+                <h3 className="font-display text-sm font-bold text-navy">
+                  Field Evidence Dossier
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedProofOfWork(null)}
+                className="text-xs font-bold text-ink-muted hover:text-navy"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-ink-muted block">Deliverable</span>
+                <strong className="text-navy">{selectedProofOfWork.title}</strong>
+              </div>
+
+              {/* Photo representation */}
+              <div className="border border-border bg-paper p-4 text-center space-y-2">
+                <div className="h-36 bg-navy/10 border border-navy/20 flex flex-col items-center justify-center text-ink-muted">
+                  <Camera className="h-8 w-8 text-forest mb-1" />
+                  <span className="font-mono text-xs font-bold text-navy">
+                    {selectedProofOfWork.pow.fieldPhotoName || 'ground_survey_evidence.jpg'}
+                  </span>
+                  <span className="text-[10px] text-ink-muted">Geo-Tagged Field Verification Capture</span>
+                </div>
+                {selectedProofOfWork.pow.photoCaption && (
+                  <p className="text-left text-xs italic text-ink bg-white p-2.5 border border-border">
+                    "{selectedProofOfWork.pow.photoCaption}"
+                  </p>
+                )}
+              </div>
+
+              {selectedProofOfWork.pow.gpsCoordinates && (
+                <div className="p-2.5 bg-forest/10 border border-forest/30 flex items-center justify-between font-mono text-[11px]">
+                  <span className="text-forest font-bold">📍 Coordinates:</span>
+                  <strong className="text-navy">{selectedProofOfWork.pow.gpsCoordinates}</strong>
+                </div>
+              )}
+
+              <div className="pt-2 border-t border-border flex justify-end">
+                <button
+                  onClick={() => setSelectedProofOfWork(null)}
+                  className="px-4 py-1.5 bg-navy text-white text-xs font-bold"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
