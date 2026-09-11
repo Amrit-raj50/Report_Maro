@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   HIMMAT_PROFILE,
   STUDENT_PROJECTS,
@@ -41,6 +41,7 @@ import {
   ExternalLink,
   Eye,
   ShieldCheck,
+  X,
 } from 'lucide-react';
 
 export type StudentNavTab =
@@ -98,6 +99,14 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   const [submitPhotoCaption, setSubmitPhotoCaption] = useState('');
   const [gpsDetecting, setGpsDetecting] = useState(false);
   const [selectedProofOfWork, setSelectedProofOfWork] = useState<{ title: string; pow: ProofOfWork } | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCancelPhoto = () => {
+    setSubmitPhotoName('');
+    if (photoInputRef.current) {
+      photoInputRef.current.value = '';
+    }
+  };
 
   const handleDetectGps = () => {
     setGpsDetecting(true);
@@ -217,6 +226,9 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
     setSubmitGithubUrl('');
     setSubmitVideoUrl('');
     setSubmitPhotoName('');
+    if (photoInputRef.current) {
+      photoInputRef.current.value = '';
+    }
     setSubmitPhotoGps('');
     setSubmitPhotoCaption('');
     setActiveTab('submit');
@@ -1245,14 +1257,26 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                             <MapPin className="h-3 w-3 text-navy" />
                             <span>GPS Coordinates (Optional)</span>
                           </label>
-                          <button
-                            type="button"
-                            onClick={handleDetectGps}
-                            disabled={gpsDetecting}
-                            className="text-[10px] font-bold text-forest hover:underline flex items-center gap-1"
-                          >
-                            <span>{gpsDetecting ? 'Detecting...' : '📍 Auto-Detect GPS'}</span>
-                          </button>
+                          <div className="flex items-center gap-2">
+                            {submitPhotoGps && (
+                              <button
+                                type="button"
+                                onClick={() => setSubmitPhotoGps('')}
+                                className="text-[10px] font-bold text-urgent hover:underline"
+                                title="Clear GPS coordinates"
+                              >
+                                Clear
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={handleDetectGps}
+                              disabled={gpsDetecting}
+                              className="text-[10px] font-bold text-forest hover:underline flex items-center gap-1"
+                            >
+                              <span>{gpsDetecting ? 'Detecting...' : '📍 Auto-Detect GPS'}</span>
+                            </button>
+                          </div>
                         </div>
                         <input
                           type="text"
@@ -1267,11 +1291,25 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                     {/* Field Survey Photo & Caption */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-border/60">
                       <div>
-                        <label className="block text-ink-muted text-[11px] font-semibold mb-1 flex items-center gap-1">
-                          <Camera className="h-3 w-3 text-navy" />
-                          <span>Field Survey Photo / Evidence (Optional)</span>
-                        </label>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-ink-muted text-[11px] font-semibold flex items-center gap-1">
+                            <Camera className="h-3 w-3 text-navy" />
+                            <span>Field Survey Photo / Evidence (Optional)</span>
+                          </label>
+                          {submitPhotoName && (
+                            <button
+                              type="button"
+                              onClick={handleCancelPhoto}
+                              className="text-[10px] font-bold text-urgent hover:underline flex items-center gap-0.5"
+                              title="Cancel and remove selected photo"
+                            >
+                              <X className="h-3 w-3" />
+                              <span>Cancel</span>
+                            </button>
+                          )}
+                        </div>
                         <input
+                          ref={photoInputRef}
                           type="file"
                           accept="image/*"
                           onChange={(e) => {
@@ -1285,9 +1323,20 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                           className="text-[11px] text-ink-muted file:border file:border-border file:bg-white file:px-2 file:py-1 file:text-xs file:font-semibold w-full"
                         />
                         {submitPhotoName && (
-                          <span className="text-[10px] text-forest font-mono block mt-1">
-                            📸 Attached: {submitPhotoName}
-                          </span>
+                          <div className="flex items-center justify-between bg-forest/10 border border-forest/30 px-2 py-1 mt-1.5 rounded-[2px]">
+                            <span className="text-[10px] text-forest font-mono truncate max-w-[190px] flex items-center gap-1">
+                              <span>📸 {submitPhotoName}</span>
+                            </span>
+                            <button
+                              type="button"
+                              onClick={handleCancelPhoto}
+                              className="text-[10px] font-bold text-urgent hover:bg-urgent/10 px-1.5 py-0.5 border border-urgent/30 flex items-center gap-0.5 transition"
+                              title="Cancel and remove photo"
+                            >
+                              <X className="h-3 w-3" />
+                              <span>Cancel</span>
+                            </button>
+                          </div>
                         )}
                       </div>
 
