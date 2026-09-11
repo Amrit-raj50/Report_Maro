@@ -19,6 +19,7 @@ import {
 import { ChallengeEvaluationModal } from '../components/university/ChallengeEvaluationModal.js';
 import { TeamManagementModal } from '../components/university/TeamManagementModal.js';
 import { ProposalSubmissionModal } from '../components/university/ProposalSubmissionModal.js';
+import { GovtDossierReportModal } from '../components/university/GovtDossierReportModal.js';
 import { MentorDashboardView } from '../components/university/MentorDashboardView.js';
 import { StudentDashboardView } from '../components/student/StudentDashboardView.js';
 import {
@@ -36,6 +37,7 @@ import {
   Clock,
   MapPin,
   Plus,
+  Printer,
   Search,
   ShieldCheck,
   Zap,
@@ -76,6 +78,7 @@ export default function UniversityDashboard() {
   const [evaluatingChallenge, setEvaluatingChallenge] = useState<ChallengeItem | null>(null);
   const [editingTeamProject, setEditingTeamProject] = useState<ProjectItem | null>(null);
   const [showProposalModal, setShowProposalModal] = useState(false);
+  const [showGovtDossierModal, setShowGovtDossierModal] = useState(false);
 
   // Success Notification Toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -296,6 +299,14 @@ export default function UniversityDashboard() {
               </span>
             </button>
             <button
+              onClick={() => setShowGovtDossierModal(true)}
+              className="flex items-center gap-1.5 border border-forest bg-forest text-white px-2.5 sm:px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition hover:bg-forest/90 rounded-[2px]"
+              title="Generate Official Jharkhand State Department PDF / CSV Progress Dossier"
+            >
+              <Printer className="h-3.5 w-3.5 text-turmeric" />
+              <span>Govt Dossier</span>
+            </button>
+            <button
               onClick={() => setShowProposalModal(true)}
               className="flex items-center gap-1.5 border border-turmeric bg-turmeric px-3 py-1.5 text-xs font-bold text-ink uppercase tracking-wider transition hover:bg-turmeric-deep rounded-[2px]"
             >
@@ -469,6 +480,13 @@ export default function UniversityDashboard() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowGovtDossierModal(true)}
+                    className="flex items-center gap-1.5 border border-forest bg-forest px-3.5 py-2 text-xs font-bold text-white uppercase tracking-wider hover:bg-forest/90"
+                  >
+                    <Printer className="h-3.5 w-3.5 text-turmeric" />
+                    Govt Dossier (PDF/CSV)
+                  </button>
                   <button
                     onClick={() => setActiveTab('challenges')}
                     className="flex items-center gap-1.5 border border-turmeric bg-turmeric px-4 py-2 text-xs font-bold text-ink uppercase tracking-wider hover:bg-turmeric-deep"
@@ -1505,6 +1523,36 @@ export default function UniversityDashboard() {
                 </div>
               </div>
             </div>
+
+            {/* State Department Reporting Dossier Callout in Analytics */}
+            <div className="border border-navy/30 bg-paper p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center border border-navy bg-navy text-white font-bold text-sm shrink-0">
+                  JH
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="bg-forest px-1.5 py-0.2 text-[9px] font-bold uppercase tracking-widest text-white">
+                      Official State Integration
+                    </span>
+                    <span className="text-[11px] text-ink-muted">DHTE & GFR Compliance</span>
+                  </div>
+                  <h3 className="text-sm font-bold text-navy mt-0.5">
+                    Official State Department Executive Progress Dossier
+                  </h3>
+                  <p className="text-xs text-ink-muted">
+                    Generate the official bilingual progress report for the Department of Higher & Technical Education, Drinking Water & Sanitation, Agriculture, and Health.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowGovtDossierModal(true)}
+                className="flex items-center gap-1.5 border border-navy bg-navy px-4 py-2 text-xs font-bold text-white uppercase tracking-wider hover:bg-navy-deep shrink-0 transition"
+              >
+                <Printer className="h-3.5 w-3.5 text-turmeric" />
+                <span>Open Dossier Generator</span>
+              </button>
+            </div>
           </div>
         )}
 
@@ -1584,6 +1632,17 @@ export default function UniversityDashboard() {
           mentors={mentors}
           onClose={() => setShowProposalModal(false)}
           onSubmit={handleSubmitProposal}
+        />
+      )}
+
+      {showGovtDossierModal && (
+        <GovtDossierReportModal
+          isOpen={showGovtDossierModal}
+          onClose={() => setShowGovtDossierModal(false)}
+          projects={projects}
+          challenges={challenges}
+          institutionName={institutionName}
+          institutionAishe={institutionAishe}
         />
       )}
     </div>
