@@ -8,7 +8,8 @@ function getRedisClient() {
     
     console.log('Connecting to Redis at:', redisUri.replace(/:[^@]*@/, ':****@')); // Hide password in logs
 
-    redisClient = new Redis(redisUri, {
+    const isUpstash = redisUri && (redisUri.includes('upstash.io') || redisUri.startsWith('rediss://'));
+    const options = {
       maxRetriesPerRequest: 3,
       retryStrategy: (times) => {
         if (times > 3) {
@@ -18,14 +19,13 @@ function getRedisClient() {
         return Math.min(times * 100, 3000);
       },
       lazyConnect: false,
-      // Upstash requires TLS
-      tls: {
-        rejectUnauthorized: false
-      },
-      // For Upstash, we need to use the correct port
-      port: 6379,
-      host: 'knowing-sunbird-83863.upstash.io'
-    });
+    };
+
+    if (isUpstash) {
+      options.tls = { rejectUnauthorized: false };
+    }
+
+    redisClient = new Redis(redisUri, options);
 
     redisClient.on('connect', () => {
       console.log('Redis connected successfully (singleton)');
