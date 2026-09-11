@@ -6,7 +6,18 @@ const User = require('../models/user.model');
 // 📝 REGISTER - Create a new user
 const register = async (req, res) => {
   try {
-    const { full_name, email, password, role, organization } = req.body;
+    const {
+      full_name,
+      email,
+      password,
+      role,
+      organization,
+      phone,
+      district,
+      taluka,
+      village_or_city,
+      pincode,
+    } = req.body;
 
     // 1. Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -28,6 +39,11 @@ const register = async (req, res) => {
       password_hash,
       role: role || 'citizen', // default citizen
       organization: organization || null,
+      phone: phone || null,
+      district: district || null,
+      taluka: taluka || null,
+      village_or_city: village_or_city || null,
+      pincode: pincode || null,
     });
 
     // 4. Generate JWT Token
@@ -48,6 +64,11 @@ const register = async (req, res) => {
         email: user.email,
         role: user.role,
         organization: user.organization,
+        phone: user.phone,
+        district: user.district,
+        taluka: user.taluka,
+        village_or_city: user.village_or_city,
+        pincode: user.pincode,
       },
     });
   } catch (error) {

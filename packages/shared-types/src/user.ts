@@ -8,7 +8,12 @@ export const userSchema = z.object({
   full_name: z.string(),
   email: z.string().email(),
   role: userRoleSchema,
-  organization: z.string().nullable(),
+  organization: z.string().nullable().optional(),
+  phone: z.string().nullable().optional(),
+  district: z.string().nullable().optional(),
+  taluka: z.string().nullable().optional(),
+  village_or_city: z.string().nullable().optional(),
+  pincode: z.string().nullable().optional(),
 });
 export type User = z.infer<typeof userSchema>;
 
@@ -19,8 +24,12 @@ export const registerRequestSchema = z.object({
   email: z.string().email().toLowerCase().trim(),
   password: passwordSchema,
   role: userRoleSchema.default('citizen'),
-  /** Free-text org name today (backend/src/models/user.model.js has no Organization collection). */
   organization: z.string().trim().optional(),
+  phone: z.string().trim().optional(),
+  district: z.string().trim().optional(),
+  taluka: z.string().trim().optional(),
+  village_or_city: z.string().trim().optional(),
+  pincode: z.string().trim().optional(),
 });
 export type RegisterRequest = z.infer<typeof registerRequestSchema>;
 
