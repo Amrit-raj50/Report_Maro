@@ -5,5 +5,6 @@ export * from './problem.js';
 export * from './project.js';
 export * from './notification.js';
 export * from './socket.js';
+export * from './lgd.js';
 
 export const API_CONTRACT_VERSION = '2.0.0-backend-first';

@@ -55,6 +55,14 @@ const UserSchema = new mongoose.Schema(
       trim: true,
       default: null,
     },
+    lgd_district_code: {
+      type: Number,
+      default: null,
+    },
+    lgd_block_code: {
+      type: Number,
+      default: null,
+    },
   },
   {
     timestamps: {

@@ -14,6 +14,8 @@ export const userSchema = z.object({
   taluka: z.string().nullable().optional(),
   village_or_city: z.string().nullable().optional(),
   pincode: z.string().nullable().optional(),
+  lgd_district_code: z.number().nullable().optional(),
+  lgd_block_code: z.number().nullable().optional(),
 });
 export type User = z.infer<typeof userSchema>;
 
@@ -30,6 +32,8 @@ export const registerRequestSchema = z.object({
   taluka: z.string().trim().optional(),
   village_or_city: z.string().trim().optional(),
   pincode: z.string().trim().optional(),
+  lgd_district_code: z.number().optional(),
+  lgd_block_code: z.number().optional(),
 });
 export type RegisterRequest = z.infer<typeof registerRequestSchema>;
 

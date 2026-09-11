@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Outer Gold/Turmeric Ring -->
+  <circle cx="32" cy="32" r="31" fill="#0B2545" stroke="#E7A614" stroke-width="2"/>
+  
+  <!-- Forest Green Inner Circle -->
+  <circle cx="32" cy="32" r="27" fill="#14532D" stroke="#E7A614" stroke-width="1.5"/>
+  
+  <!-- Decorative Chakra Spokes / Sunburst -->
+  <circle cx="32" cy="32" r="23" fill="#FBF9F4" stroke="#0B2545" stroke-width="1"/>
+  
+  <!-- Ashoka Chakra / Jharkhand Emblem Stylized Center -->
+  <circle cx="32" cy="32" r="16" fill="#0B2545"/>
+  
+  <!-- Central Emblem Elements -->
+  <!-- 4-Petal / Star Emblem in Gold -->
+  <path d="M32 18 L34.5 27 L43.5 29.5 L34.5 32 L32 41 L29.5 32 L20.5 29.5 L29.5 27 Z" fill="#E7A614"/>
+  <circle cx="32" cy="32" r="4.5" fill="#FFFFFF"/>
+  <circle cx="32" cy="32" r="2.5" fill="#14532D"/>
+  
+  <!-- Top & Bottom Arc Dots representing State Rings -->
+  <circle cx="32" cy="8" r="1.5" fill="#E7A614"/>
+  <circle cx="24" cy="9.5" r="1.2" fill="#E7A614"/>
+  <circle cx="40" cy="9.5" r="1.2" fill="#E7A614"/>
+  <circle cx="17" cy="14" r="1.2" fill="#E7A614"/>
+  <circle cx="47" cy="14" r="1.2" fill="#E7A614"/>
+  
+  <circle cx="32" cy="56" r="1.5" fill="#E7A614"/>
+  <circle cx="24" cy="54.5" r="1.2" fill="#E7A614"/>
+  <circle cx="40" cy="54.5" r="1.2" fill="#E7A614"/>
+</svg>
