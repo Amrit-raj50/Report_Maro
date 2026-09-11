@@ -55,14 +55,16 @@ export default function Home() {
 
   // Helper to extract category count dynamically
   const getCategoryCount = (categoryKey: string, baselineCount: number) => {
-    if (!stats?.byCategory) return baselineCount;
-    const found = stats.byCategory.find((c) => c._id.toLowerCase() === categoryKey.toLowerCase());
+    if (!stats?.byCategory || !Array.isArray(stats.byCategory)) return baselineCount;
+    const found = stats.byCategory.find(
+      (c) => typeof c?._id === 'string' && c._id.toLowerCase() === categoryKey.toLowerCase()
+    );
     return found ? found.count : baselineCount;
   };
 
-  const totalProblemsCount = stats ? stats.total : 4821;
-  const verifiedCount = stats?.byStatus?.find((s) => s._id === 'verified')?.count ?? 142;
-  const districtCoverage = stats?.byDistrict?.length
+  const totalProblemsCount = stats?.total ?? 4821;
+  const verifiedCount = stats?.byStatus?.find((s) => s?._id === 'verified')?.count ?? 142;
+  const districtCoverage = stats?.byDistrict && Array.isArray(stats.byDistrict) && stats.byDistrict.length > 0
     ? `${Math.max(stats.byDistrict.length, 24)} / 24`
     : '24 / 24';
 
