@@ -208,7 +208,33 @@ const getGovernmentChallenges = async (req, res, next) => {
   }
 };
 
+const exportCsv = async (req, res) => {
+  try {
+    const problems = await Problem.find().populate('submitted_by', 'full_name');
+    
+    let csv = 'ID,Title,Category,District,Status,Priority,Upvotes\n';
+    problems.forEach(p => {
+      const id = p._id.toString().substring(0, 8);
+      const title = `"${(p.title || '').replace(/"/g, '""')}"`;
+      const category = p.category || 'N/A';
+      const district = p.location?.district || 'N/A';
+      const status = p.status || 'N/A';
+      const priority = p.priority || 'N/A';
+      const upvotes = p.upvotes || 0;
+      csv += `${id},${title},${category},${district},${status},${priority},${upvotes}\n`;
+    });
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="sih_state_data_export.csv"');
+    res.status(200).send(csv);
+  } catch (error) {
+    console.error('Error exporting CSV:', error);
+    res.status(500).send('Error generating CSV');
+  }
+};
+
 module.exports = {
   getGovernmentStats,
-  getGovernmentChallenges
+  getGovernmentChallenges,
+  exportCsv
 };

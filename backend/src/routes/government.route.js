@@ -1,10 +1,15 @@
 const express = require('express');
-const { getGovernmentStats, getGovernmentChallenges } = require('../controllers/government.controller');
+const { getGovernmentStats, getGovernmentChallenges, exportCsv } = require('../controllers/government.controller');
 
 const router = express.Router();
 
-// Public endpoint for the hackathon demo dashboard
+// GET /api/government/dashboard-stats
 router.get('/dashboard-stats', getGovernmentStats);
+
+// GET /api/government/challenges
 router.get('/challenges', getGovernmentChallenges);
+
+// GET /api/government/export-csv
+router.get('/export-csv', exportCsv);
 
 module.exports = router;

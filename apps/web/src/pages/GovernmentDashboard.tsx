@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import type { GovernmentDashboardStats } from '@sih/shared-types';
 import { apiClient } from '../lib/apiClient.js';
+import { io } from 'socket.io-client';
 
 /* ─────────────────────────────────────────────────────────
    Type definitions
@@ -317,7 +318,40 @@ export default function GovernmentDashboard() {
   };
 
   const [liveChallenges, setLiveChallenges] = useState<any[]>([]);
-  const searchPage = 1;
+  const [searchPage, setSearchPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [liveFeed, setLiveFeed] = useState<{id: string, text: React.ReactNode, time: string, color: string}[]>([
+    { id: 'f1', text: <><span className="font-medium">Industry Partner</span> funded JH-ENR-2026</>, time: '2 mins ago', color: 'turmeric' },
+    { id: 'f2', text: <><span className="font-medium">Ranchi Univ</span> deployed Arsenic Filter</>, time: '14 mins ago', color: 'forest' }
+  ]);
+
+  /* Real-time WebSockets */
+  useEffect(() => {
+    if (!backendLive) return;
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const socket = io(apiUrl);
+    
+    // Listen to global events. (Assuming backend emits these. If it uses rooms, we may need to join them, but for demo we can just listen)
+    socket.on('problem_submitted', (data) => {
+      setLiveFeed(prev => [{
+        id: Date.now().toString(),
+        text: <><span className="font-medium">Citizen</span> submitted a new issue in {data?.district || 'Jharkhand'}</>,
+        time: 'Just now',
+        color: 'navy'
+      }, ...prev].slice(0, 5));
+    });
+
+    socket.on('problem_verified', (data) => {
+      setLiveFeed(prev => [{
+        id: Date.now().toString(),
+        text: <><span className="font-medium">Admin</span> verified issue #{data?.problemId?.substring(0,6) || 'XYZ'}</>,
+        time: 'Just now',
+        color: 'forest'
+      }, ...prev].slice(0, 5));
+    });
+
+    return () => { socket.disconnect(); };
+  }, [backendLive]);
 
   /* Challenge search / filter logic */
   useEffect(() => {
@@ -343,6 +377,7 @@ export default function GovernmentDashboard() {
             priority: c.priority === 'high' ? 'High' : c.priority === 'medium' ? 'Medium' : 'Low',
             status: c.status
           })));
+          setTotalPages(res.data.pagination?.pages || 1);
         }
       })
       .catch(() => {
@@ -368,6 +403,11 @@ export default function GovernmentDashboard() {
 
   /* CSV export */
   const exportCsv = (filename = 'jharkhand-challenges-export.csv') => {
+    if (backendLive) {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+      window.open(`${apiUrl}/government/export-csv`, '_blank');
+      return;
+    }
     const hdr = ['Ref. No.', 'Title', 'District', 'Domain', 'Priority', 'Status'];
     const rows = filteredChallenges.map((c) =>
       [c.id, `"${c.title}"`, c.district, c.domain, c.priority, c.status],
@@ -416,21 +456,19 @@ export default function GovernmentDashboard() {
           ))}
         </nav>
 
-        {/* Live Feed (Simulated for Demo) */}
+        {/* Live Feed */}
         <div className="border-t border-border bg-paper/50 px-4 py-3">
           <div className="flex items-center gap-1.5 mb-2">
             <span className="block h-1.5 w-1.5 rounded-full bg-forest animate-pulse"></span>
             <span className="text-[10px] font-semibold uppercase text-ink-muted tracking-wider">Live Activity</span>
           </div>
           <div className="space-y-2 text-[11px] text-ink">
-            <div className="border-l-2 border-turmeric pl-2">
-              <span className="font-medium">Industry Partner</span> funded JH-ENR-2026
-              <div className="text-[9px] text-ink-muted mt-0.5">2 mins ago</div>
-            </div>
-            <div className="border-l-2 border-forest pl-2">
-              <span className="font-medium">Ranchi Univ</span> deployed Arsenic Filter
-              <div className="text-[9px] text-ink-muted mt-0.5">14 mins ago</div>
-            </div>
+            {liveFeed.map((item) => (
+              <div key={item.id} className={`border-l-2 border-${item.color} pl-2 transition-all`}>
+                {item.text}
+                <div className="text-[9px] text-ink-muted mt-0.5">{item.time}</div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -988,6 +1026,31 @@ export default function GovernmentDashboard() {
                     )}
                   </tbody>
                 </table>
+
+                {/* Pagination Controls */}
+                {backendLive && totalPages > 1 && (
+                  <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
+                    <div className="text-[11px] text-ink-muted">
+                      Page {searchPage} of {totalPages}
+                    </div>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setSearchPage(p => Math.max(1, p - 1))}
+                        disabled={searchPage === 1}
+                        className="px-3 py-1 text-[11px] font-medium border border-border rounded-[3px] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-navy/5"
+                      >
+                        Previous
+                      </button>
+                      <button 
+                        onClick={() => setSearchPage(p => Math.min(totalPages, p + 1))}
+                        disabled={searchPage === totalPages}
+                        className="px-3 py-1 text-[11px] font-medium border border-border rounded-[3px] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-navy/5"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
 
