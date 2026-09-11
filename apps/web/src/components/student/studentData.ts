@@ -63,6 +63,7 @@ export interface ProofOfWork {
   githubRepoUrl?: string;
   videoWalkthroughUrl?: string;
   fieldPhotoName?: string;
+  fieldPhotoNames?: string[];
   fieldPhotoUrl?: string;
   gpsCoordinates?: string;
   photoCaption?: string;

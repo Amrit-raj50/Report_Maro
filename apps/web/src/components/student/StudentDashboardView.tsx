@@ -94,17 +94,40 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   const [submitDemoUrl, setSubmitDemoUrl] = useState('');
   const [submitGithubUrl, setSubmitGithubUrl] = useState('');
   const [submitVideoUrl, setSubmitVideoUrl] = useState('');
-  const [submitPhotoName, setSubmitPhotoName] = useState('');
+  const [submitPhotoNames, setSubmitPhotoNames] = useState<string[]>([]);
   const [submitPhotoGps, setSubmitPhotoGps] = useState('');
   const [submitPhotoCaption, setSubmitPhotoCaption] = useState('');
   const [gpsDetecting, setGpsDetecting] = useState(false);
   const [selectedProofOfWork, setSelectedProofOfWork] = useState<{ title: string; pow: ProofOfWork } | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
-  const handleCancelPhoto = () => {
-    setSubmitPhotoName('');
+  const handlePhotoFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const selected = Array.from(e.target.files).map((f) => f.name);
+      setSubmitPhotoNames((prev) => {
+        const next = [...prev];
+        selected.forEach((name) => {
+          if (!next.includes(name)) next.push(name);
+        });
+        return next;
+      });
+      if (!submitPhotoGps) {
+        handleDetectGps();
+      }
+    }
     if (photoInputRef.current) {
       photoInputRef.current.value = '';
+    }
+  };
+
+  const handleCancelPhoto = (indexToRemove?: number) => {
+    if (typeof indexToRemove === 'number') {
+      setSubmitPhotoNames((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+    } else {
+      setSubmitPhotoNames([]);
+      if (photoInputRef.current) {
+        photoInputRef.current.value = '';
+      }
     }
   };
 
@@ -189,7 +212,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
       submitDemoUrl.trim() ||
       submitGithubUrl.trim() ||
       submitVideoUrl.trim() ||
-      submitPhotoName.trim() ||
+      submitPhotoNames.length > 0 ||
       submitPhotoGps.trim() ||
       submitPhotoCaption.trim()
     );
@@ -199,7 +222,8 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           liveDemoUrl: submitDemoUrl.trim() || undefined,
           githubRepoUrl: submitGithubUrl.trim() || undefined,
           videoWalkthroughUrl: submitVideoUrl.trim() || undefined,
-          fieldPhotoName: submitPhotoName.trim() || undefined,
+          fieldPhotoName: submitPhotoNames[0] || undefined,
+          fieldPhotoNames: submitPhotoNames.length > 0 ? submitPhotoNames : undefined,
           gpsCoordinates: submitPhotoGps.trim() || undefined,
           photoCaption: submitPhotoCaption.trim() || undefined,
         }
@@ -225,7 +249,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
     setSubmitDemoUrl('');
     setSubmitGithubUrl('');
     setSubmitVideoUrl('');
-    setSubmitPhotoName('');
+    setSubmitPhotoNames([]);
     if (photoInputRef.current) {
       photoInputRef.current.value = '';
     }
@@ -1294,48 +1318,83 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                         <div className="flex items-center justify-between mb-1">
                           <label className="text-ink-muted text-[11px] font-semibold flex items-center gap-1">
                             <Camera className="h-3 w-3 text-navy" />
-                            <span>Field Survey Photo / Evidence (Optional)</span>
+                            <span>Field Survey Photos (Optional)</span>
                           </label>
-                          {submitPhotoName && (
+                          {submitPhotoNames.length > 0 && (
                             <button
                               type="button"
-                              onClick={handleCancelPhoto}
+                              onClick={() => handleCancelPhoto()}
                               className="text-[10px] font-bold text-urgent hover:underline flex items-center gap-0.5"
-                              title="Cancel and remove selected photo"
+                              title="Clear all attached photos"
                             >
                               <X className="h-3 w-3" />
-                              <span>Cancel</span>
+                              <span>Clear All ({submitPhotoNames.length})</span>
                             </button>
                           )}
                         </div>
+
                         <input
                           ref={photoInputRef}
                           type="file"
+                          multiple
                           accept="image/*"
-                          onChange={(e) => {
-                            if (e.target.files?.[0]) {
-                              setSubmitPhotoName(e.target.files[0].name);
-                              if (!submitPhotoGps) {
-                                handleDetectGps();
-                              }
-                            }
-                          }}
-                          className="text-[11px] text-ink-muted file:border file:border-border file:bg-white file:px-2 file:py-1 file:text-xs file:font-semibold w-full"
+                          onChange={handlePhotoFilesSelected}
+                          className="hidden"
                         />
-                        {submitPhotoName && (
-                          <div className="flex items-center justify-between bg-forest/10 border border-forest/30 px-2 py-1 mt-1.5 rounded-[2px]">
-                            <span className="text-[10px] text-forest font-mono truncate max-w-[190px] flex items-center gap-1">
-                              <span>📸 {submitPhotoName}</span>
+
+                        {submitPhotoNames.length === 0 ? (
+                          <button
+                            type="button"
+                            onClick={() => photoInputRef.current?.click()}
+                            className="w-full border border-dashed border-navy/30 bg-white hover:bg-forest/5 hover:border-forest p-3 text-center transition group flex flex-col items-center justify-center gap-1 cursor-pointer rounded-[2px]"
+                          >
+                            <div className="flex items-center gap-1.5 text-navy group-hover:text-forest transition">
+                              <Camera className="h-4 w-4" />
+                              <span className="text-xs font-semibold">Attach Survey Photos</span>
+                            </div>
+                            <span className="text-[10px] text-ink-muted">
+                              Select one or multiple images (PNG, JPG, JPEG)
                             </span>
-                            <button
-                              type="button"
-                              onClick={handleCancelPhoto}
-                              className="text-[10px] font-bold text-urgent hover:bg-urgent/10 px-1.5 py-0.5 border border-urgent/30 flex items-center gap-0.5 transition"
-                              title="Cancel and remove photo"
-                            >
-                              <X className="h-3 w-3" />
-                              <span>Cancel</span>
-                            </button>
+                          </button>
+                        ) : (
+                          <div className="space-y-1.5 bg-white border border-border p-2 rounded-[2px]">
+                            <div className="flex items-center justify-between pb-1 border-b border-border/60">
+                              <span className="text-[11px] font-bold text-forest flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3" />
+                                <span>{submitPhotoNames.length} Photo{submitPhotoNames.length > 1 ? 's' : ''} Attached</span>
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => photoInputRef.current?.click()}
+                                className="text-[10px] font-bold text-navy hover:text-forest flex items-center gap-0.5 hover:underline"
+                              >
+                                <span>+ Add More</span>
+                              </button>
+                            </div>
+
+                            <div className="max-h-28 overflow-y-auto space-y-1 pr-0.5">
+                              {submitPhotoNames.map((name, idx) => (
+                                <div
+                                  key={`${name}-${idx}`}
+                                  className="flex items-center justify-between bg-paper px-2 py-1 text-xs border border-border/70 hover:border-navy/40 transition rounded-[2px]"
+                                >
+                                  <div className="flex items-center gap-1.5 min-w-0 pr-2">
+                                    <Camera className="h-3 w-3 text-forest flex-shrink-0" />
+                                    <span className="font-mono text-[11px] text-navy truncate" title={name}>
+                                      {name}
+                                    </span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCancelPhoto(idx)}
+                                    className="text-ink-muted hover:text-urgent p-0.5 transition flex-shrink-0"
+                                    title="Remove this photo"
+                                  >
+                                    <X className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -1441,7 +1500,9 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                                 <ExternalLink className="h-2.5 w-2.5 opacity-70" />
                               </a>
                             )}
-                            {(del.proofOfWork.gpsCoordinates || del.proofOfWork.fieldPhotoName) && (
+                            {(del.proofOfWork.gpsCoordinates ||
+                              del.proofOfWork.fieldPhotoName ||
+                              (del.proofOfWork.fieldPhotoNames && del.proofOfWork.fieldPhotoNames.length > 0)) && (
                               <button
                                 type="button"
                                 onClick={() =>
@@ -1453,7 +1514,12 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                                 className="inline-flex items-center gap-1 bg-forest/10 border border-forest/30 px-2 py-0.5 text-[10px] font-bold text-forest hover:bg-forest hover:text-white transition rounded-[2px]"
                               >
                                 <MapPin className="h-3 w-3" />
-                                <span>Field Evidence</span>
+                                <span>
+                                  Field Evidence
+                                  {del.proofOfWork.fieldPhotoNames && del.proofOfWork.fieldPhotoNames.length > 1
+                                    ? ` (${del.proofOfWork.fieldPhotoNames.length})`
+                                    : ''}
+                                </span>
                                 <Eye className="h-2.5 w-2.5 opacity-70" />
                               </button>
                             )}
@@ -1689,14 +1755,36 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               </div>
 
               {/* Photo representation */}
-              <div className="border border-border bg-paper p-4 text-center space-y-2">
-                <div className="h-36 bg-navy/10 border border-navy/20 flex flex-col items-center justify-center text-ink-muted">
-                  <Camera className="h-8 w-8 text-forest mb-1" />
-                  <span className="font-mono text-xs font-bold text-navy">
-                    {selectedProofOfWork.pow.fieldPhotoName || 'ground_survey_evidence.jpg'}
-                  </span>
-                  <span className="text-[10px] text-ink-muted">Geo-Tagged Field Verification Capture</span>
-                </div>
+              <div className="border border-border bg-paper p-3 text-center space-y-2">
+                {selectedProofOfWork.pow.fieldPhotoNames && selectedProofOfWork.pow.fieldPhotoNames.length > 1 ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-[11px] font-bold text-navy px-1">
+                      <span>Attached Field Evidence ({selectedProofOfWork.pow.fieldPhotoNames.length} Photos)</span>
+                      <span className="text-[10px] text-forest font-mono">Geo-Tagged Field Verification</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1">
+                      {selectedProofOfWork.pow.fieldPhotoNames.map((photoName, pIdx) => (
+                        <div key={pIdx} className="h-24 bg-navy/10 border border-navy/20 flex flex-col items-center justify-center p-2 text-ink-muted rounded-[2px]">
+                          <Camera className="h-5 w-5 text-forest mb-1" />
+                          <span className="font-mono text-[10px] font-bold text-navy truncate max-w-full px-1" title={photoName}>
+                            {photoName}
+                          </span>
+                          <span className="text-[9px] text-ink-muted">Evidence Frame #{pIdx + 1}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-32 bg-navy/10 border border-navy/20 flex flex-col items-center justify-center text-ink-muted rounded-[2px]">
+                    <Camera className="h-8 w-8 text-forest mb-1" />
+                    <span className="font-mono text-xs font-bold text-navy truncate max-w-full px-3">
+                      {selectedProofOfWork.pow.fieldPhotoName ||
+                        (selectedProofOfWork.pow.fieldPhotoNames && selectedProofOfWork.pow.fieldPhotoNames[0]) ||
+                        'ground_survey_evidence.jpg'}
+                    </span>
+                    <span className="text-[10px] text-ink-muted">Geo-Tagged Field Verification Capture</span>
+                  </div>
+                )}
                 {selectedProofOfWork.pow.photoCaption && (
                   <p className="text-left text-xs italic text-ink bg-white p-2.5 border border-border">
                     "{selectedProofOfWork.pow.photoCaption}"
