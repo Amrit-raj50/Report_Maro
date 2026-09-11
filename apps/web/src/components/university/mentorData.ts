@@ -25,6 +25,55 @@ export interface MentorTask {
   description: string;
 }
 
+export interface EvaluationRubric {
+  technicalFeasibility: number; // 1-5
+  civicImpact: number; // 1-5
+  codePrototypeQuality: number; // 1-5
+  fieldTestingData: number; // 1-5
+  totalScore: number; // 4 - 20
+  scorePercentage: number; // 20% - 100%
+  gradeBand: string; // 'Grade A+ (Exemplary)', etc.
+  evaluatedAt?: string;
+  evaluatorName?: string;
+  receiptNumber?: string;
+}
+
+export interface EvaluationReceipt {
+  receiptId: string;
+  submissionId: string;
+  submissionNumber: number;
+  studentName: string;
+  studentRole: string;
+  projectTitle: string;
+  deliverableTitle: string;
+  evaluatedAt: string;
+  evaluatorName: string;
+  evaluatorTitle: string;
+  evaluatorDept: string;
+  institutionName: string;
+  rubric: EvaluationRubric;
+  decision: 'approved' | 'changes_requested';
+  feedbackText: string;
+  verificationHash: string;
+}
+
+export function calculateGradeBand(totalScore: number): {
+  gradeBand: string;
+  color: string;
+} {
+  if (totalScore >= 18) {
+    return { gradeBand: 'Grade A+ (Exemplary / State Honors)', color: 'text-forest' };
+  } else if (totalScore >= 15) {
+    return { gradeBand: 'Grade A (Commended / Pilot Ready)', color: 'text-forest' };
+  } else if (totalScore >= 12) {
+    return { gradeBand: 'Grade B+ (Satisfactory / Minor Revisions)', color: 'text-turmeric-deep' };
+  } else if (totalScore >= 9) {
+    return { gradeBand: 'Grade B (Marginal / Revisions Mandated)', color: 'text-urgent' };
+  } else {
+    return { gradeBand: 'Grade C (Unsatisfactory / Rework Required)', color: 'text-urgent' };
+  }
+}
+
 export interface MentorSubmission {
   id: string;
   submissionNumber: number;
@@ -43,6 +92,8 @@ export interface MentorSubmission {
   };
   professorFeedback?: string;
   grade?: string;
+  rubric?: EvaluationRubric;
+  evaluationReceipt?: EvaluationReceipt;
 }
 
 export interface MentorMilestone {

@@ -13,7 +13,11 @@ import {
   MentorSubmission,
   MentorMilestone,
   IndustryMessage,
+  EvaluationRubric,
+  EvaluationReceipt,
+  calculateGradeBand,
 } from './mentorData.js';
+import { MentorEvaluationReceiptModal } from './MentorEvaluationReceiptModal.js';
 import {
   Briefcase,
   Users,
@@ -34,6 +38,7 @@ import {
   UserPlus,
   Shield,
   ChevronRight,
+  Award,
 } from 'lucide-react';
 
 export type MentorNavTab =
@@ -79,6 +84,11 @@ export const MentorDashboardView: React.FC<MentorDashboardViewProps> = ({
   // Modals & Drawers
   const [selectedSubmission, setSelectedSubmission] = useState<MentorSubmission | null>(null);
   const [feedbackText, setFeedbackText] = useState('');
+  const [rubricFeasibility, setRubricFeasibility] = useState<number>(4);
+  const [rubricCivicImpact, setRubricCivicImpact] = useState<number>(5);
+  const [rubricCodeQuality, setRubricCodeQuality] = useState<number>(4);
+  const [rubricFieldData, setRubricFieldData] = useState<number>(4);
+  const [viewingReceipt, setViewingReceipt] = useState<EvaluationReceipt | null>(null);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
   const [editingStudentRole, setEditingStudentRole] = useState<MentorStudent | null>(null);
@@ -167,42 +177,154 @@ export const MentorDashboardView: React.FC<MentorDashboardViewProps> = ({
   };
 
   // Handlers for Review & Approvals
+  const handleOpenGradingModal = (sub: MentorSubmission) => {
+    setSelectedSubmission(sub);
+    if (sub.rubric) {
+      setRubricFeasibility(sub.rubric.technicalFeasibility);
+      setRubricCivicImpact(sub.rubric.civicImpact);
+      setRubricCodeQuality(sub.rubric.codePrototypeQuality);
+      setRubricFieldData(sub.rubric.fieldTestingData);
+    } else {
+      setRubricFeasibility(4);
+      setRubricCivicImpact(5);
+      setRubricCodeQuality(4);
+      setRubricFieldData(4);
+    }
+    setFeedbackText(sub.professorFeedback || '');
+  };
+
   const handleApproveSubmission = (submissionId: string) => {
+    const sub = submissions.find((s) => s.id === submissionId);
+    if (!sub) return;
+
+    const totalScore = rubricFeasibility + rubricCivicImpact + rubricCodeQuality + rubricFieldData;
+    const scorePercentage = Math.round((totalScore / 20) * 100);
+    const { gradeBand: finalGrade } = calculateGradeBand(totalScore);
+
+    const nowStr =
+      new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) +
+      ', ' +
+      new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    const rubricData: EvaluationRubric = {
+      technicalFeasibility: rubricFeasibility,
+      civicImpact: rubricCivicImpact,
+      codePrototypeQuality: rubricCodeQuality,
+      fieldTestingData: rubricFieldData,
+      totalScore,
+      scorePercentage,
+      gradeBand: finalGrade,
+      evaluatedAt: nowStr,
+      evaluatorName: 'Dr. Rajesh Sharma',
+      receiptNumber: `JH-MTR-EV-2026-0${sub.submissionNumber}`,
+    };
+
+    const receiptData: EvaluationReceipt = {
+      receiptId: `JH-MTR-EV-2026-0${sub.submissionNumber}`,
+      submissionId: sub.id,
+      submissionNumber: sub.submissionNumber,
+      studentName: sub.studentName,
+      studentRole: sub.studentRole,
+      projectTitle: sub.projectTitle,
+      deliverableTitle: sub.deliverableTitle,
+      evaluatedAt: nowStr,
+      evaluatorName: 'Dr. Rajesh Sharma',
+      evaluatorTitle: 'Professor & Dean (R&D)',
+      evaluatorDept: 'Dept. of Environmental Science & Engg',
+      institutionName: 'Birla Institute of Technology (BIT) Mesra, Ranchi',
+      rubric: rubricData,
+      decision: 'approved',
+      feedbackText:
+        feedbackText ||
+        'Approved with commendation. Demonstrates rigorous field testing and alignment with state civic priorities.',
+      verificationHash: 'SHA-256: 7f8a91c2e45b08d2' + sub.submissionNumber + 'a9e4c107',
+    };
+
     setSubmissions((prev) =>
       prev.map((s) =>
         s.id === submissionId
           ? {
               ...s,
               status: 'approved',
-              professorFeedback: feedbackText || 'Approved by Dr. Sharma with commendation. Quality meets CPCB standard.',
-              grade: 'A+ (Exemplary)',
+              professorFeedback: receiptData.feedbackText,
+              grade: finalGrade,
+              rubric: rubricData,
+              evaluationReceipt: receiptData,
             }
           : s
       )
     );
-    showToast(`Submission #${selectedSubmission?.submissionNumber || ''} approved successfully!`);
+
+    showToast(`Submission #${sub.submissionNumber} approved! Official Receipt #${receiptData.receiptId} generated.`);
     setSelectedSubmission(null);
-    setFeedbackText('');
+    setViewingReceipt(receiptData);
   };
 
   const handleRequestChanges = (submissionId: string) => {
+    const sub = submissions.find((s) => s.id === submissionId);
+    if (!sub) return;
+
+    const totalScore = rubricFeasibility + rubricCivicImpact + rubricCodeQuality + rubricFieldData;
+    const scorePercentage = Math.round((totalScore / 20) * 100);
+    const { gradeBand: finalGrade } = calculateGradeBand(totalScore);
+
+    const nowStr =
+      new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) +
+      ', ' +
+      new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    const rubricData: EvaluationRubric = {
+      technicalFeasibility: rubricFeasibility,
+      civicImpact: rubricCivicImpact,
+      codePrototypeQuality: rubricCodeQuality,
+      fieldTestingData: rubricFieldData,
+      totalScore,
+      scorePercentage,
+      gradeBand: finalGrade,
+      evaluatedAt: nowStr,
+      evaluatorName: 'Dr. Rajesh Sharma',
+      receiptNumber: `JH-MTR-EV-2026-0${sub.submissionNumber}`,
+    };
+
+    const receiptData: EvaluationReceipt = {
+      receiptId: `JH-MTR-EV-2026-0${sub.submissionNumber}`,
+      submissionId: sub.id,
+      submissionNumber: sub.submissionNumber,
+      studentName: sub.studentName,
+      studentRole: sub.studentRole,
+      projectTitle: sub.projectTitle,
+      deliverableTitle: sub.deliverableTitle,
+      evaluatedAt: nowStr,
+      evaluatorName: 'Dr. Rajesh Sharma',
+      evaluatorTitle: 'Professor & Dean (R&D)',
+      evaluatorDept: 'Dept. of Environmental Science & Engg',
+      institutionName: 'Birla Institute of Technology (BIT) Mesra, Ranchi',
+      rubric: rubricData,
+      decision: 'changes_requested',
+      feedbackText:
+        feedbackText ||
+        'Revisions requested: Please append cross-calibration sensor data curves and re-submit by tomorrow.',
+      verificationHash: 'SHA-256: 3c1b82e9f014a5d7' + sub.submissionNumber + 'f6a2b801',
+    };
+
     setSubmissions((prev) =>
       prev.map((s) =>
         s.id === submissionId
           ? {
               ...s,
               status: 'changes_requested',
-              professorFeedback:
-                feedbackText ||
-                'Revisions requested: Please append cross-calibration sensor data curves and re-submit by tomorrow.',
-              grade: 'Needs Revision',
+              professorFeedback: receiptData.feedbackText,
+              grade: 'Needs Revision (' + finalGrade + ')',
+              rubric: rubricData,
+              evaluationReceipt: receiptData,
             }
           : s
       )
     );
-    showToast(`Changes requested for submission #${selectedSubmission?.submissionNumber || ''}.`);
+
+    showToast(`Changes requested for submission #${sub.submissionNumber}. Official Rubric logged.`);
     setSelectedSubmission(null);
-    setFeedbackText('');
+    setViewingReceipt(receiptData);
   };
 
   // Handlers for Student Team
@@ -1471,38 +1593,61 @@ export const MentorDashboardView: React.FC<MentorDashboardViewProps> = ({
                           )}
                         </div>
                       )}
+
+                      {/* Rubric Breakdown Scorecards if evaluated */}
+                      {sub.rubric && (
+                        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs border border-border bg-paper/40 p-2.5">
+                          <span className="font-bold text-navy flex items-center gap-1">
+                            <Award className="h-3.5 w-3.5 text-forest" />
+                            <span>Rubric Breakdown:</span>
+                          </span>
+                          <span className="bg-white px-2 py-0.5 border border-border text-[11px]">
+                            Technical: <strong>{sub.rubric.technicalFeasibility}/5</strong>
+                          </span>
+                          <span className="bg-white px-2 py-0.5 border border-border text-[11px]">
+                            Civic Impact: <strong>{sub.rubric.civicImpact}/5</strong>
+                          </span>
+                          <span className="bg-white px-2 py-0.5 border border-border text-[11px]">
+                            Code Quality: <strong>{sub.rubric.codePrototypeQuality}/5</strong>
+                          </span>
+                          <span className="bg-white px-2 py-0.5 border border-border text-[11px]">
+                            Field Data: <strong>{sub.rubric.fieldTestingData}/5</strong>
+                          </span>
+                          <span className="font-mono font-bold text-forest bg-forest/10 border border-forest/30 px-2 py-0.5 text-[11px]">
+                            Total: {sub.rubric.totalScore}/20 ({sub.rubric.scorePercentage}%)
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Actions: View Document, Approve, Request Changes */}
+                    {/* Actions: View Document, Grade with Rubric, View Official Receipt */}
                     <div className="mt-4 pt-3 border-t border-border flex flex-wrap items-center justify-between gap-2">
-                      <button
-                        onClick={() => setSelectedSubmission(sub)}
-                        className="flex items-center gap-1.5 border border-navy bg-white px-4 py-2 text-xs font-bold text-navy hover:bg-paper"
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                        [View Document]
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleOpenGradingModal(sub)}
+                          className="flex items-center gap-1.5 border border-navy bg-navy text-white px-3.5 py-1.5 text-xs font-bold hover:bg-navy-deep transition"
+                        >
+                          <Award className="h-3.5 w-3.5 text-turmeric" />
+                          <span>{sub.status === 'pending' ? 'Grade with Rubric' : 'Re-Evaluate Rubric'}</span>
+                        </button>
+                        {sub.evaluationReceipt && (
+                          <button
+                            onClick={() => setViewingReceipt(sub.evaluationReceipt || null)}
+                            className="flex items-center gap-1.5 border border-forest bg-white text-forest px-3 py-1.5 text-xs font-bold hover:bg-forest/10 transition"
+                          >
+                            <FileText className="h-3.5 w-3.5" />
+                            <span>View Official Receipt</span>
+                          </button>
+                        )}
+                      </div>
 
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => {
-                            setSelectedSubmission(sub);
-                            handleRequestChanges(sub.id);
-                          }}
-                          className="flex items-center gap-1.5 border border-urgent bg-white px-4 py-2 text-xs font-bold text-urgent hover:bg-urgent/10"
+                          onClick={() => handleOpenGradingModal(sub)}
+                          className="flex items-center gap-1.5 border border-border bg-paper px-3 py-1.5 text-xs font-bold text-ink hover:border-navy transition"
                         >
-                          <RotateCcw className="h-3.5 w-3.5" />
-                          [↻ Request Changes]
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedSubmission(sub);
-                            handleApproveSubmission(sub.id);
-                          }}
-                          className="flex items-center gap-1.5 border border-forest bg-forest px-4 py-2 text-xs font-bold text-white hover:bg-forest/90"
-                        >
-                          <Check className="h-3.5 w-3.5" />
-                          [✓ Approve]
+                          <Eye className="h-3.5 w-3.5" />
+                          <span>Inspect Document</span>
                         </button>
                       </div>
                     </div>
@@ -1826,18 +1971,155 @@ export const MentorDashboardView: React.FC<MentorDashboardViewProps> = ({
               </div>
             </div>
 
-            {/* Professor Feedback Box */}
-            <div className="space-y-2">
-              <label className="block text-xs font-bold text-navy">
-                Professor Evaluation Feedback & Revision Notes:
-              </label>
-              <textarea
-                value={feedbackText}
-                onChange={(e) => setFeedbackText(e.target.value)}
-                placeholder="Enter official evaluation remarks, revision requirements, or commendation..."
-                rows={3}
-                className="w-full border border-border bg-paper p-2.5 text-xs text-ink focus:border-navy focus:bg-white"
-              />
+            {/* STRUCTURED 4-CRITERIA RUBRIC EVALUATION FORM */}
+            <div className="border-2 border-navy/20 bg-paper/30 p-4 space-y-4">
+              <div className="flex items-center justify-between border-b border-border pb-2">
+                <div>
+                  <h4 className="font-display text-sm font-bold text-navy flex items-center gap-1.5">
+                    <Award className="h-4 w-4 text-forest" />
+                    <span>Structured 5-Point Peer Evaluation Rubric</span>
+                  </h4>
+                  <p className="text-[11px] text-ink-muted">
+                    Score student deliverable across 4 official academic dimensions (1–5 points each).
+                  </p>
+                </div>
+                {/* Live Cumulative Score Badge */}
+                <div className="text-right border border-navy bg-white px-3 py-1.5">
+                  <span className="text-[9px] font-bold uppercase text-ink-muted block">Score</span>
+                  <div className="font-mono text-base font-bold text-forest">
+                    {rubricFeasibility + rubricCivicImpact + rubricCodeQuality + rubricFieldData} / 20
+                  </div>
+                  <span className="text-[10px] font-bold text-navy">
+                    {calculateGradeBand(rubricFeasibility + rubricCivicImpact + rubricCodeQuality + rubricFieldData).gradeBand.split('(')[0]}
+                  </span>
+                </div>
+              </div>
+
+              {/* Criterion 1: Technical Feasibility */}
+              <div className="bg-white border border-border p-3 space-y-1.5">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                  <div>
+                    <span className="text-xs font-bold text-navy">1. Technical Feasibility</span>
+                    <span className="text-[11px] text-ink-muted block">
+                      Architecture soundness, sensor telemetry, edge latency & error handling
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 self-start sm:self-auto">
+                    {[1, 2, 3, 4, 5].map((val) => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setRubricFeasibility(val)}
+                        className={`h-7 w-7 text-xs font-bold transition border ${
+                          rubricFeasibility === val
+                            ? 'bg-navy text-white border-navy shadow-xs'
+                            : 'bg-paper text-ink hover:border-navy border-border'
+                        }`}
+                      >
+                        {val}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Criterion 2: Civic Impact / State Problem Solved */}
+              <div className="bg-white border border-border p-3 space-y-1.5">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                  <div>
+                    <span className="text-xs font-bold text-navy">2. Civic Impact / State Problem Solved</span>
+                    <span className="text-[11px] text-ink-muted block">
+                      Direct remediation efficacy for Jharkhand fluorosis/blight/civic grievances
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 self-start sm:self-auto">
+                    {[1, 2, 3, 4, 5].map((val) => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setRubricCivicImpact(val)}
+                        className={`h-7 w-7 text-xs font-bold transition border ${
+                          rubricCivicImpact === val
+                            ? 'bg-navy text-white border-navy shadow-xs'
+                            : 'bg-paper text-ink hover:border-navy border-border'
+                        }`}
+                      >
+                        {val}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Criterion 3: Code & Prototype Quality */}
+              <div className="bg-white border border-border p-3 space-y-1.5">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                  <div>
+                    <span className="text-xs font-bold text-navy">3. Code & Prototype Quality</span>
+                    <span className="text-[11px] text-ink-muted block">
+                      Modularity, unit tests, model quantization & repository documentation
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 self-start sm:self-auto">
+                    {[1, 2, 3, 4, 5].map((val) => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setRubricCodeQuality(val)}
+                        className={`h-7 w-7 text-xs font-bold transition border ${
+                          rubricCodeQuality === val
+                            ? 'bg-navy text-white border-navy shadow-xs'
+                            : 'bg-paper text-ink hover:border-navy border-border'
+                        }`}
+                      >
+                        {val}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Criterion 4: Field Testing Data */}
+              <div className="bg-white border border-border p-3 space-y-1.5">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                  <div>
+                    <span className="text-xs font-bold text-navy">4. Field Testing Data</span>
+                    <span className="text-[11px] text-ink-muted block">
+                      Ground-truth assay rigor, CPCB standard calibration & sample verification
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 self-start sm:self-auto">
+                    {[1, 2, 3, 4, 5].map((val) => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setRubricFieldData(val)}
+                        className={`h-7 w-7 text-xs font-bold transition border ${
+                          rubricFieldData === val
+                            ? 'bg-navy text-white border-navy shadow-xs'
+                            : 'bg-paper text-ink hover:border-navy border-border'
+                        }`}
+                      >
+                        {val}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Written Remarks */}
+              <div className="space-y-1.5 pt-1">
+                <label className="block text-xs font-bold text-navy">
+                  Faculty Mentor Technical Appraisal & Directives:
+                </label>
+                <textarea
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  placeholder="Enter specific commendations, test verification remarks, or mandated revisions..."
+                  rows={3}
+                  className="w-full border border-border bg-white p-2.5 text-xs text-ink focus:border-navy"
+                />
+              </div>
             </div>
 
             {/* Modal Actions */}
@@ -1852,17 +2134,17 @@ export const MentorDashboardView: React.FC<MentorDashboardViewProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleRequestChanges(selectedSubmission.id)}
-                  className="flex items-center gap-1.5 border border-urgent bg-white px-4 py-2 text-xs font-bold text-urgent hover:bg-urgent/10"
+                  className="flex items-center gap-1.5 border border-urgent bg-white px-4 py-2 text-xs font-bold text-urgent hover:bg-urgent/10 transition"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
-                  [↻ Request Changes]
+                  <span>[↻ Request Changes with Rubric]</span>
                 </button>
                 <button
                   onClick={() => handleApproveSubmission(selectedSubmission.id)}
-                  className="flex items-center gap-1.5 border border-forest bg-forest px-4 py-2 text-xs font-bold text-white hover:bg-forest/90"
+                  className="flex items-center gap-1.5 border border-forest bg-forest px-4 py-2 text-xs font-bold text-white hover:bg-forest/90 transition shadow-xs"
                 >
                   <Check className="h-3.5 w-3.5" />
-                  [✓ Approve Deliverable]
+                  <span>[✓ Approve & Generate Receipt]</span>
                 </button>
               </div>
             </div>
@@ -2114,6 +2396,15 @@ export const MentorDashboardView: React.FC<MentorDashboardViewProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* FORMAL MENTOR EVALUATION RECEIPT MODAL */}
+      {viewingReceipt && (
+        <MentorEvaluationReceiptModal
+          isOpen={Boolean(viewingReceipt)}
+          onClose={() => setViewingReceipt(null)}
+          receipt={viewingReceipt}
+        />
       )}
     </div>
   );
