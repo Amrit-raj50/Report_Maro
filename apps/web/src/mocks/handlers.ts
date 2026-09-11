@@ -34,6 +34,8 @@ export const handlers = [
       taluka?: string;
       village_or_city?: string;
       pincode?: string;
+      lgd_district_code?: number;
+      lgd_block_code?: number;
     };
     return HttpResponse.json(
       {
@@ -51,6 +53,8 @@ export const handlers = [
           taluka: body.taluka ?? null,
           village_or_city: body.village_or_city ?? null,
           pincode: body.pincode ?? null,
+          lgd_district_code: body.lgd_district_code ?? null,
+          lgd_block_code: body.lgd_block_code ?? null,
         },
       },
       { status: 201 },

@@ -84,7 +84,7 @@ export default function Login() {
         } else if (role === 'industry') {
           navigate('/industry');
         } else {
-          navigate('/problems');
+          navigate('/dashboard');
         }
       }
     } catch (err) {
