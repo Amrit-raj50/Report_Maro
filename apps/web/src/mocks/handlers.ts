@@ -29,6 +29,13 @@ export const handlers = [
       full_name: string;
       role: string;
       organization?: string;
+      phone?: string;
+      district?: string;
+      taluka?: string;
+      village_or_city?: string;
+      pincode?: string;
+      lgd_district_code?: number;
+      lgd_block_code?: number;
     };
     return HttpResponse.json(
       {
@@ -41,6 +48,13 @@ export const handlers = [
           email: body.email,
           role: body.role,
           organization: body.organization ?? null,
+          phone: body.phone ?? null,
+          district: body.district ?? null,
+          taluka: body.taluka ?? null,
+          village_or_city: body.village_or_city ?? null,
+          pincode: body.pincode ?? null,
+          lgd_district_code: body.lgd_district_code ?? null,
+          lgd_block_code: body.lgd_block_code ?? null,
         },
       },
       { status: 201 },

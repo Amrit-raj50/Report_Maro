@@ -258,6 +258,18 @@ export function Layout() {
                 >
                   Submit a Problem
                 </Link>
+                {user?.role === 'citizen' && (
+                  <Link
+                    to="/dashboard"
+                    className={`px-3 py-3 transition-colors ${
+                      location.pathname === '/dashboard'
+                        ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
+                        : 'hover:bg-navy-deep text-white'
+                    }`}
+                  >
+                    Citizen Dashboard
+                  </Link>
+                )}
                 <Link
                   to="/problems"
                   className={`px-3 py-3 transition-colors ${
@@ -344,6 +356,11 @@ export function Layout() {
                 <Link to="/submit" className="px-3 py-2.5 hover:bg-navy-deep text-turmeric">
                   ● Submit a Problem
                 </Link>
+                {user?.role === 'citizen' && (
+                  <Link to="/dashboard" className="px-3 py-2.5 hover:bg-navy-deep text-turmeric font-bold">
+                    ● Citizen Dashboard
+                  </Link>
+                )}
                 <Link to="/problems" className="px-3 py-2.5 hover:bg-navy-deep text-white">
                   ● Track Problems
                 </Link>
