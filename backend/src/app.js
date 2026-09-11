@@ -11,6 +11,7 @@ const projectRoutes = require('./routes/project.route');
 const internalRoutes = require('./routes/internal.route');
 const notificationRoutes = require('./routes/notification.route');
 const userRoutes = require('./routes/user.route'); // additive — see controllers/user.controller.js
+const universityRoutes = require('./routes/university.route');
 
 // ✅ Import error handler (optional but recommended)
 const { errorHandler } = require('./middleware/errorHandler.middleware');
@@ -27,6 +28,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/internal', internalRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/universities', universityRoutes);
 
 // Health check (optional)
 app.get('/health', (req, res) => {

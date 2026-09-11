@@ -55,14 +55,16 @@ export default function Home() {
 
   // Helper to extract category count dynamically
   const getCategoryCount = (categoryKey: string, baselineCount: number) => {
-    if (!stats?.byCategory) return baselineCount;
-    const found = stats.byCategory.find((c) => c._id.toLowerCase() === categoryKey.toLowerCase());
+    if (!stats?.byCategory || !Array.isArray(stats.byCategory)) return baselineCount;
+    const found = stats.byCategory.find(
+      (c) => typeof c?._id === 'string' && c._id.toLowerCase() === categoryKey.toLowerCase()
+    );
     return found ? found.count : baselineCount;
   };
 
-  const totalProblemsCount = stats ? stats.total : 4821;
-  const verifiedCount = stats?.byStatus?.find((s) => s._id === 'verified')?.count ?? 142;
-  const districtCoverage = stats?.byDistrict?.length
+  const totalProblemsCount = stats?.total ?? 4821;
+  const verifiedCount = stats?.byStatus?.find((s) => s?._id === 'verified')?.count ?? 142;
+  const districtCoverage = stats?.byDistrict && Array.isArray(stats.byDistrict) && stats.byDistrict.length > 0
     ? `${Math.max(stats.byDistrict.length, 24)} / 24`
     : '24 / 24';
 
@@ -122,13 +124,19 @@ export default function Home() {
                 >
                   SUBMIT A PROBLEM →
                 </Link>
+                <Link
+                  to="/university"
+                  className="inline-flex items-center gap-1.5 px-3.5 sm:px-5 py-2.5 sm:py-3 bg-white/15 hover:bg-white/25 text-white font-semibold text-xs sm:text-sm border border-white/30 transition-colors rounded-[2px]"
+                >
+                  <span>🏛️ University Portal</span>
+                </Link>
                 <button
                   type="button"
                   onClick={() => setVideoModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3.5 sm:px-5 py-2.5 sm:py-3 bg-white/15 hover:bg-white/25 text-white font-semibold text-xs sm:text-sm border border-white/30 transition-colors rounded-[2px]"
+                  className="inline-flex items-center gap-1.5 px-3.5 sm:px-5 py-2.5 sm:py-3 bg-transparent hover:bg-white/10 text-white/90 font-medium text-xs sm:text-sm border border-white/20 transition-colors rounded-[2px]"
                 >
                   <span className="text-turmeric text-sm">▶</span>
-                  <span>How It Works (Watch Video Guide)</span>
+                  <span>Video Guide</span>
                 </button>
               </div>
 
@@ -739,7 +747,7 @@ export default function Home() {
                   </span>
                   <div>
                     <Link
-                      to="/problems"
+                      to="/university"
                       className="font-semibold text-navy hover:underline block leading-snug"
                     >
                       Guidelines for University Faculty Mentors on Submitting R&amp;D Project
@@ -748,9 +756,12 @@ export default function Home() {
                     <div className="font-mono text-[11px] text-ink-muted mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
                       <span className="font-bold text-forest">[Ref: DHTE/NOT/2026/042]</span>
                       <span>Directorate of Technical Education</span>
-                      <span className="text-forest font-semibold bg-forest/10 px-1.5 py-0.2 rounded">
-                        PDF (1.2 MB)
-                      </span>
+                      <Link
+                        to="/university"
+                        className="text-forest font-semibold bg-forest/10 px-1.5 py-0.2 rounded hover:underline"
+                      >
+                        Launch R&amp;D Portal →
+                      </Link>
                     </div>
                   </div>
                 </div>

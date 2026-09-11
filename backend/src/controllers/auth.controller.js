@@ -2,6 +2,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
+const University = require('../models/university.model');
 
 // 📝 REGISTER - Create a new user
 const register = async (req, res) => {
@@ -19,6 +20,8 @@ const register = async (req, res) => {
       pincode,
       lgd_district_code,
       lgd_block_code,
+      departments,
+      university_code,
     } = req.body;
 
     // 1. Check if user already exists
@@ -49,6 +52,23 @@ const register = async (req, res) => {
       lgd_district_code: lgd_district_code || null,
       lgd_block_code: lgd_block_code || null,
     });
+
+    // 3.1 If registering university with departments, persist departments directly to MongoDB
+    if (role === 'university' && (departments || university_code)) {
+      const codeOrName = university_code || organization;
+      const deptList = Array.isArray(departments)
+        ? departments.map((d) => String(d).trim()).filter(Boolean)
+        : typeof departments === 'string'
+          ? departments.split(',').map((d) => d.trim()).filter(Boolean)
+          : [];
+
+      if (codeOrName && deptList.length > 0) {
+        await University.findOneAndUpdate(
+          { $or: [{ code: codeOrName }, { name: new RegExp(`^${codeOrName}$`, 'i') }] },
+          { $addToSet: { departments: { $each: deptList } } }
+        ).catch(() => null);
+      }
+    }
 
     // 4. Generate JWT Token
     const token = jwt.sign(

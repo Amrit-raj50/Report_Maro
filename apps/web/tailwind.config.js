@@ -22,13 +22,25 @@ export default {
       colors: {
         // Hard government tokens
         paper: '#FBF9F4',
-        ink: '#1C1B19',
+        ink: {
+          DEFAULT: '#1C1B19',
+          muted: '#55524B',
+        },
         'ink-muted': '#55524B',
         border: '#D9D4C7',
-        navy: '#0B2545',
+        navy: {
+          DEFAULT: '#0B2545',
+          deep: '#081B33',
+        },
         'navy-deep': '#081B33',
-        forest: '#14532D',
-        turmeric: '#E7A614',
+        forest: {
+          DEFAULT: '#14532D',
+          deep: '#0F3D21',
+        },
+        turmeric: {
+          DEFAULT: '#E7A614',
+          deep: '#C48A0A',
+        },
         'turmeric-deep': '#C48A0A',
 
         // Workflow state tokens
