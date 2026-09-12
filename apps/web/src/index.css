@@ -4,17 +4,43 @@
 
 :root {
   color-scheme: light;
+
+  /* Base palette */
   --paper: #FBF9F4;
   --ink: #1C1B19;
   --ink-muted: #55524B;
   --border: #D9D4C7;
+
+  /* Institutional core */
   --navy: #0B2545;
   --navy-deep: #081B33;
   --forest: #14532D;
+
+  /* Accent */
   --turmeric: #E7A614;
   --turmeric-deep: #C48A0A;
 
-  /* Font scaling state */
+  /* Workflow & Status tokens */
+  --submitted: #6B7280;
+  --under-review: #B45309;
+  --routed: #1D4ED8;
+  --in-progress: #7C3AED;
+  --funded: #0F766E;
+  --resolved: #15803D;
+  --urgent: #B91C1C;
+
+  /* Domain & Category tokens */
+  --cat-education: #1D4ED8;
+  --cat-health: #BE123C;
+  --cat-agriculture: #4D7C0F;
+  --cat-water: #0891B2;
+  --cat-environment: #15803D;
+  --cat-energy: #B45309;
+  --cat-urban: #7C3AED;
+  --cat-accessibility: #0F766E;
+  --cat-livelihood: #92400E;
+
+  /* Accessibility Font Scaling */
   --font-scale: 1;
 }
 
@@ -28,6 +54,7 @@ body {
   font-family: 'Inter', sans-serif;
   margin: 0;
   padding: 0;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Government standard accessible focus outline */

@@ -22,15 +22,26 @@ export default {
       colors: {
         /* Base */
         paper: '#FBF9F4',
-        ink: { DEFAULT: '#1C1B19', muted: '#55524B' },
+        ink: {
+          DEFAULT: '#1C1B19',
+          muted: '#55524B',
+        },
+        'ink-muted': '#55524B',
         border: '#D9D4C7',
-
-        /* Institutional core */
-        navy: { DEFAULT: '#0B2545', deep: '#081B33' },
-        forest: '#14532D',
-
-        /* Accent — CTA-only */
-        turmeric: { DEFAULT: '#E7A614', deep: '#C48A0A' },
+        navy: {
+          DEFAULT: '#0B2545',
+          deep: '#081B33',
+        },
+        'navy-deep': '#081B33',
+        forest: {
+          DEFAULT: '#14532D',
+          deep: '#0F3D21',
+        },
+        turmeric: {
+          DEFAULT: '#E7A614',
+          deep: '#C48A0A',
+        },
+        'turmeric-deep': '#C48A0A',
 
         /* Keep existing brand for backward compat */
         brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a8a' },

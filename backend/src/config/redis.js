@@ -10,7 +10,7 @@ function getRedisClient() {
 
     const isUpstash = redisUri && (redisUri.includes('upstash.io') || redisUri.startsWith('rediss://'));
     const options = {
-      maxRetriesPerRequest: 3,
+      maxRetriesPerRequest: null,
       retryStrategy: (times) => {
         if (times > 3) {
           console.error('Redis retry exhausted, stopping.');

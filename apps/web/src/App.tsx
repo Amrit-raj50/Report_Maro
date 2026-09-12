@@ -9,9 +9,12 @@ import ProblemList from './pages/ProblemList.js';
 import ProblemDetail from './pages/ProblemDetail.js';
 import AdminDashboard from './pages/AdminDashboard.js';
 import UniversityDashboard from './pages/UniversityDashboard.js';
+import MentorDashboard from './pages/MentorDashboard.js';
+import StudentDashboard from './pages/StudentDashboard.js';
 import IndustryPortal from './pages/IndustryPortal.js';
 import ProjectDetail from './pages/ProjectDetail.js';
 import GovernmentDashboard from './pages/GovernmentDashboard.js';
+import AiAnalytics from './pages/AiAnalytics.js';
 
 export default function App() {
   return (
@@ -25,16 +28,22 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/problems" element={<ProblemList />} />
         <Route path="/problems/:id" element={<ProblemDetail />} />
+        <Route path="/analytics" element={<AiAnalytics />} />
+        <Route path="/ai-analytics" element={<AiAnalytics />} />
 
-        <Route element={<ProtectedRoute allow={['citizen', 'admin']} />}>
+        <Route element={<ProtectedRoute allow={['citizen', 'admin', 'university']} />}>
           <Route path="/dashboard" element={<UserDashboard />} />
           <Route path="/submit" element={<UserDashboard initialTab="report" />} />
+          <Route path="/student" element={<StudentDashboard />} />
         </Route>
         <Route element={<ProtectedRoute allow={['admin']} />}>
           <Route path="/admin" element={<AdminDashboard />} />
         </Route>
         <Route element={<ProtectedRoute allow={['university']} />}>
           <Route path="/university" element={<UniversityDashboard />} />
+          <Route path="/university/mentor" element={<MentorDashboard />} />
+          <Route path="/mentor" element={<MentorDashboard />} />
+          <Route path="/university/student" element={<StudentDashboard />} />
         </Route>
         <Route element={<ProtectedRoute allow={['industry']} />}>
           <Route path="/industry" element={<IndustryPortal />} />
