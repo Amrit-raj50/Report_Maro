@@ -1,10 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useLocation, Link, Navigate } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { registerRequestSchema, type UserRole } from '@sih/shared-types';
 import { apiClient, apiErrorMessage } from '../lib/apiClient.js';
 import { useAuthStore } from '../store/authStore.js';
 import { Button } from '../components/Button.js';
-import { getDefaultPortalForUser } from '../utils/portalRouting.js';
 import {
   JHARKHAND_DISTRICTS,
   getBlocksForDistrict,
@@ -30,13 +29,7 @@ export type UniversityRegisterSubRole = 'student' | 'mentor' | 'institution';
 export default function Register() {
   const navigate = useNavigate();
   const location = useLocation();
-  const user = useAuthStore((s) => s.user);
   const setSession = useAuthStore((s) => s.setSession);
-
-  // If user is already authenticated, prevent accessing register page and redirect to their portal
-  if (user) {
-    return <Navigate to={getDefaultPortalForUser(user)} replace />;
-  }
 
   const searchParams = new URLSearchParams(location.search);
   const queryRole = searchParams.get('role');

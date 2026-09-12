@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link, Navigate } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { loginRequestSchema } from '@sih/shared-types';
 import { apiClient, apiErrorMessage } from '../lib/apiClient.js';
 import { useAuthStore } from '../store/authStore.js';
 import { Button } from '../components/Button.js';
 import { useJharkhandUniversities, getUniversityById } from '../data/jharkhandUniversities.js';
-import { getDefaultPortalForUser } from '../utils/portalRouting.js';
 
 export type LoginRoleTab = 'citizen' | 'university' | 'industry' | 'admin';
 export type UniversitySubRole = 'student' | 'mentor' | 'dean';
@@ -13,12 +12,7 @@ export type UniversitySubRole = 'student' | 'mentor' | 'dean';
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, setSession } = useAuthStore();
-
-  // If user is already authenticated, prevent accessing login page and redirect to their portal
-  if (user) {
-    return <Navigate to={getDefaultPortalForUser(user)} replace />;
-  }
+  const setSession = useAuthStore((s) => s.setSession);
 
   const searchParams = new URLSearchParams(location.search);
   const queryRole = searchParams.get('role');
