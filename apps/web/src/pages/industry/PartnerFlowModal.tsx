@@ -58,7 +58,7 @@ export function PartnerFlowModal({
 
       onSuccess(partnership);
       onClose();
-    } catch (err) {
+    } catch {
       setError('Could not submit partnership request. Please try again.');
     } finally {
       setLoading(false);
