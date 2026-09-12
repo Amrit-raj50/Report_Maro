@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore.js';
+import { useLanguageStore } from '../store/languageStore.js';
+import { translations } from '../utils/translations.js';
 import { useSocketConnection } from '../hooks/useSocket.js';
 import { NotificationBell } from './NotificationBell.js';
 import { LogoutPromptModal } from './LogoutPromptModal.js';
@@ -59,7 +61,8 @@ export function Layout() {
   };
   const isUniversity = location.pathname.startsWith('/university');
   const [fontScale, setFontScale] = useState<number>(1);
-  const [lang, setLang] = useState<'en' | 'hi'>('en');
+  const { lang, toggleLang } = useLanguageStore();
+  const t = translations[lang];
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loginMenuOpen, setLoginMenuOpen] = useState(false);
   const [registerMenuOpen, setRegisterMenuOpen] = useState(false);
@@ -101,11 +104,11 @@ export function Layout() {
             {/* Helpline and email */}
             <div className="flex items-center gap-2 sm:gap-3 text-[11px] sm:text-xs">
               <span>
-                <strong className="font-semibold text-turmeric">Helpline:</strong> 1800-345-6570
+                <strong className="font-semibold text-turmeric">{t.helpline.split(':')[0]}:</strong>{t.helpline.split(':')[1]}
               </span>
               <span className="opacity-40 hidden sm:inline">|</span>
               <span className="hidden md:inline">
-                <strong className="font-semibold text-turmeric">Support:</strong>{' '}
+                <strong className="font-semibold text-turmeric">{t.support}:</strong>{' '}
                 support.samadhansetu@jharkhand.gov.in
               </span>
             </div>
@@ -143,15 +146,20 @@ export function Layout() {
               {/* Language toggle */}
               <button
                 type="button"
-                onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
-                className="hover:text-turmeric transition-colors font-medium text-[10px] sm:text-xs"
+                onClick={toggleLang}
+                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-white/10 hover:bg-white/20 border border-white/20 hover:border-turmeric text-white transition-all font-medium text-[10px] sm:text-xs cursor-pointer select-none"
+                title={lang === 'en' ? 'हिन्दी में बदलें / Switch to Hindi' : 'Switch to English / अंग्रेज़ी में बदलें'}
+                aria-label="Toggle Language"
               >
-                {lang === 'en' ? 'English / हिन्दी' : 'हिन्दी / English'}
+                <span className="text-[12px]">🌐</span>
+                <span className={lang === 'en' ? 'text-turmeric font-bold' : 'text-white/70'}>English</span>
+                <span className="text-white/40">/</span>
+                <span className={lang === 'hi' ? 'text-turmeric font-bold' : 'text-white/70'}>हिन्दी</span>
               </button>
 
               <span className="opacity-40 hidden sm:inline">|</span>
               <a href="#main-content" className="hover:underline hidden lg:inline">
-                Skip to Content
+                {t.skipToContent}
               </a>
 
               {user ? (
@@ -166,7 +174,7 @@ export function Layout() {
                       onClick={handleLogout}
                       className="text-white hover:text-urgent underline ml-1 font-sans cursor-pointer"
                     >
-                      Logout
+                      {t.logout}
                     </button>
                   </div>
                 </>
@@ -174,7 +182,7 @@ export function Layout() {
                 <>
                   <span className="opacity-40">|</span>
                   <Link to="/login" className="hover:text-turmeric underline font-medium">
-                    Sign In
+                    {t.signIn}
                   </Link>
                 </>
               )}
@@ -209,8 +217,7 @@ export function Layout() {
                   </span>
                 </div>
                 <div className="text-[10px] sm:text-[11px] text-ink-muted hidden sm:block">
-                  A Digital Platform to Crowdsource Societal Challenges &amp; Drive
-                  University-Industry R&amp;D (PS 26043)
+                  {t.portalTagline}
                 </div>
               </div>
             </Link>
@@ -270,7 +277,7 @@ export function Layout() {
                       }`}
                       aria-expanded={loginMenuOpen}
                     >
-                      <span>PORTAL LOGIN</span>
+                      <span>{t.portalLogin}</span>
                       <span className={`text-[9px] transition-transform duration-200 inline-block ${loginMenuOpen ? 'rotate-180' : ''}`}>▼</span>
                     </button>
 
@@ -372,7 +379,7 @@ export function Layout() {
                       }`}
                       aria-expanded={registerMenuOpen}
                     >
-                      <span>REGISTER</span>
+                      <span>{t.register}</span>
                       <span className={`text-[9px] transition-transform duration-200 inline-block ${registerMenuOpen ? 'rotate-180' : ''}`}>▼</span>
                     </button>
 
@@ -496,14 +503,14 @@ export function Layout() {
                       : 'hover:bg-navy-deep text-white'
                   }`}
                 >
-                  Home
+                  {t.navHome}
                 </Link>
 
                 <a
                   href="/#about-scheme"
                   className="px-2.5 lg:px-3 py-2.5 hover:bg-navy-deep text-white transition-colors whitespace-nowrap"
                 >
-                  About Scheme
+                  {t.navAbout}
                 </a>
 
                 {user?.role === 'citizen' && (
@@ -527,7 +534,7 @@ export function Layout() {
                       : 'hover:bg-navy-deep text-white'
                   }`}
                 >
-                  Track Problems
+                  {t.navProblems}
                 </Link>
 
                 {/* UNIVERSITY PORTAL DROPDOWN IN BAND 3 NAVIGATION */}
@@ -665,7 +672,7 @@ export function Layout() {
                   className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-turmeric text-ink font-bold text-xs uppercase tracking-wider rounded-[2px] border border-turmeric-deep hover:bg-turmeric-deep transition-all shadow-sm whitespace-nowrap"
                 >
                   <span className="text-sm font-black leading-none">+</span>
-                  <span>SUBMIT A PROBLEM</span>
+                  <span>{t.navSubmitIssue}</span>
                 </Link>
               </div>
             </div>

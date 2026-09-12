@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { apiClient } from '../lib/apiClient.js';
+import { useLanguageStore } from '../store/languageStore.js';
+import { translations } from '../utils/translations.js';
 
 interface DashboardStats {
   total: number;
@@ -11,6 +13,8 @@ interface DashboardStats {
 }
 
 export default function Home() {
+  const lang = useLanguageStore((s) => s.lang);
+  const t = translations[lang];
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [universitiesCount, setUniversitiesCount] = useState<number>(38);
@@ -88,7 +92,7 @@ export default function Home() {
             style={{ clipPath: 'polygon(0 0, 100% 0, 68% 100%, 0 100%)' }}
           />
           <div className="absolute top-2 left-3 sm:left-4 text-ink font-mono text-[10px] sm:text-[11px] font-bold tracking-widest uppercase pointer-events-none">
-            JHARKHAND R&amp;D INITIATIVE
+            {t.initiativeTag}
           </div>
 
           {/* Hero Content Box */}
@@ -96,16 +100,13 @@ export default function Home() {
             <div className="max-w-3xl space-y-4 sm:space-y-5">
               {/* Gazette Serif Title */}
               <h1 className="font-display text-2xl sm:text-4xl md:text-5xl text-white font-bold leading-tight tracking-tight drop-shadow-sm">
-                Your Problem. Their Research. <br className="hidden sm:inline" />
-                <span className="text-turmeric">A Solution.</span>
+                {t.heroTitleLine1} <br className="hidden sm:inline" />
+                <span className="text-turmeric">{t.heroTitleLine2}</span>
               </h1>
 
               {/* Official Description Subtext */}
               <p className="text-xs sm:text-base md:text-lg text-white/90 max-w-2xl leading-relaxed">
-                An institutional tripartite platform by the Department of Higher &amp; Technical
-                Education, Government of Jharkhand, bridging grassroots civic hardships directly
-                with premier state university R&amp;D engineering cells and sanctioned corporate CSR
-                funding pipelines.
+                {t.heroSubtext}
               </p>
 
               {/* Action Buttons Row */}
@@ -114,13 +115,13 @@ export default function Home() {
                   to="/submit"
                   className="inline-flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 bg-turmeric text-ink font-bold text-xs sm:text-sm tracking-wider uppercase border border-turmeric-deep hover:bg-turmeric-deep transition-colors rounded-[2px]"
                 >
-                  SUBMIT A PROBLEM →
+                  {t.btnSubmitProblem}
                 </Link>
                 <Link
                   to="/university"
                   className="inline-flex items-center gap-1.5 px-3.5 sm:px-5 py-2.5 sm:py-3 bg-white/15 hover:bg-white/25 text-white font-semibold text-xs sm:text-sm border border-white/30 transition-colors rounded-[2px]"
                 >
-                  <span>🏛️ University Portal</span>
+                  <span>{t.btnUniversityPortal}</span>
                 </Link>
                 <button
                   type="button"
@@ -128,7 +129,7 @@ export default function Home() {
                   className="inline-flex items-center gap-1.5 px-3.5 sm:px-5 py-2.5 sm:py-3 bg-transparent hover:bg-white/10 text-white/90 font-medium text-xs sm:text-sm border border-white/20 transition-colors rounded-[2px]"
                 >
                   <span className="text-turmeric text-sm">▶</span>
-                  <span>Video Guide</span>
+                  <span>{t.btnVideoGuide}</span>
                 </button>
               </div>
 
@@ -136,8 +137,7 @@ export default function Home() {
               <div className="pt-2 text-white/80 font-mono text-[10px] sm:text-xs flex items-center gap-1.5">
                 <span className="text-turmeric">●</span>
                 <span>
-                  All submissions timestamped &amp; encrypted under National Informatics Centre
-                  (NIC) parameters.
+                  {t.nicSecurityNote}
                 </span>
               </div>
             </div>
@@ -154,20 +154,20 @@ export default function Home() {
             {/* Stat 1 */}
             <div className="py-4 sm:py-5 px-3 sm:px-4 flex flex-col items-center md:items-start text-center md:text-left">
               <div className="font-sans text-[11px] sm:text-xs uppercase tracking-wider text-white/70 font-semibold mb-1">
-                Problems Submitted
+                {t.statProblemsSubmitted}
               </div>
               <div className="font-mono text-xl sm:text-2xl md:text-3xl font-bold text-white tracking-tight leading-none">
                 {loading ? '...' : totalProblemsCount.toLocaleString()}
               </div>
               <div className="text-[10px] sm:text-[11px] font-mono text-turmeric mt-1.5 flex items-center gap-1">
-                <span>▲ {verifiedCount}</span> today verified
+                <span>▲ {verifiedCount}</span> {t.statVerifiedToday}
               </div>
             </div>
 
             {/* Stat 2 */}
             <div className="py-4 sm:py-5 px-3 sm:px-4 flex flex-col items-center md:items-start text-center md:text-left">
               <div className="font-sans text-[11px] sm:text-xs uppercase tracking-wider text-white/70 font-semibold mb-1">
-                Universities Onboarded
+                {t.statUniversitiesOnboarded}
               </div>
               <div className="font-mono text-xl sm:text-2xl md:text-3xl font-bold text-white tracking-tight leading-none">
                 {loading ? '...' : universitiesCount}
@@ -180,26 +180,26 @@ export default function Home() {
             {/* Stat 3 */}
             <div className="py-4 sm:py-5 px-3 sm:px-4 flex flex-col items-center md:items-start text-center md:text-left">
               <div className="font-sans text-[11px] sm:text-xs uppercase tracking-wider text-white/70 font-semibold mb-1">
-                Projects In Progress
+                {t.statProjectsInProgress}
               </div>
               <div className="font-mono text-xl sm:text-2xl md:text-3xl font-bold text-turmeric tracking-tight leading-none">
                 {loading ? '...' : projectsCount}
               </div>
               <div className="text-[10px] sm:text-[11px] font-mono text-white/70 mt-1.5">
-                Prototypes in field validation
+                {t.statFieldValidation}
               </div>
             </div>
 
             {/* Stat 4 */}
             <div className="py-4 sm:py-5 px-3 sm:px-4 flex flex-col items-center md:items-start text-center md:text-left">
               <div className="font-sans text-[11px] sm:text-xs uppercase tracking-wider text-white/70 font-semibold mb-1">
-                Districts Covered
+                {t.statDistrictsCovered}
               </div>
               <div className="font-mono text-xl sm:text-2xl md:text-3xl font-bold text-white tracking-tight leading-none">
                 {districtCoverage}
               </div>
               <div className="text-[10px] sm:text-[11px] font-mono text-forest mt-1.5 bg-white px-1.5 py-0.2 rounded font-bold">
-                100% Administrative outreach
+                {t.statOutreach}
               </div>
             </div>
           </div>
@@ -218,22 +218,21 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-border pb-3 mb-6 sm:mb-8 gap-2">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-forest">
-                योजना परिचय · Institutional Mandate
+                {t.aboutMandateTag}
               </span>
               <h2 className="font-display text-xl sm:text-2xl md:text-3xl text-navy font-bold mt-0.5">
-                About the Scheme: Samadhan Setu
+                {t.aboutTitle}
               </h2>
             </div>
             <div className="font-mono text-[11px] sm:text-xs bg-white px-2.5 py-1 border border-border text-ink-muted inline-block shrink-0">
-              Official Directive: DHTE/2026/L99
+              {t.officialDirective}
             </div>
           </div>
 
           {/* Formal Gazette Decree Badge & Two-Column Gazette Narrative */}
           <div className="bg-white border border-border p-5 sm:p-7 md:p-8 rounded-[2px] mb-8 shadow-sm">
             <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-paper border border-border font-mono text-[11px] sm:text-xs text-navy mb-5">
-              <span className="font-bold text-turmeric">● DECREE:</span> Approved under State
-              Innovation &amp; Higher Education Directive No. DHTE/2026/L99
+              <span className="font-bold text-turmeric">● DECREE:</span> {t.decreeBadge}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 text-ink text-xs sm:text-sm md:text-base leading-relaxed text-justify">
@@ -278,40 +277,40 @@ export default function Home() {
               <div className="bg-paper p-3.5 border border-border rounded-[2px]">
                 <div className="font-mono text-xs text-forest font-bold">STAGE 01</div>
                 <div className="font-display text-sm font-bold text-navy mt-1">
-                  Citizen Problem Logging
+                  {t.stage01Title}
                 </div>
                 <div className="text-[11px] text-ink-muted mt-0.5">
-                  Geo-tagged evidence &amp; documentary submission
+                  {t.stage01Desc}
                 </div>
               </div>
 
               <div className="bg-paper p-3.5 border border-border rounded-[2px]">
                 <div className="font-mono text-xs text-forest font-bold">STAGE 02</div>
                 <div className="font-display text-sm font-bold text-navy mt-1">
-                  AI Deduplication &amp; Triage
+                  {t.stage02Title}
                 </div>
                 <div className="text-[11px] text-ink-muted mt-0.5">
-                  District and sector-level automated mapping
+                  {t.stage02Desc}
                 </div>
               </div>
 
               <div className="bg-paper p-3.5 border border-border rounded-[2px]">
                 <div className="font-mono text-xs text-forest font-bold">STAGE 03</div>
                 <div className="font-display text-sm font-bold text-navy mt-1">
-                  University Lab Allocation
+                  {t.stage03Title}
                 </div>
                 <div className="text-[11px] text-ink-muted mt-0.5">
-                  Faculty mentorship &amp; multidisciplinary build
+                  {t.stage03Desc}
                 </div>
               </div>
 
               <div className="bg-paper p-3.5 border border-border rounded-[2px]">
                 <div className="font-mono text-xs text-forest font-bold">STAGE 04</div>
                 <div className="font-display text-sm font-bold text-navy mt-1">
-                  Industry Field Deployment
+                  {t.stage04Title}
                 </div>
                 <div className="text-[11px] text-ink-muted mt-0.5">
-                  CSR prototyping grants &amp; field testing
+                  {t.stage04Desc}
                 </div>
               </div>
             </div>
