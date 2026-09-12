@@ -317,7 +317,7 @@ export default function GovernmentDashboard() {
     document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const [liveChallenges, setLiveChallenges] = useState<any[]>([]);
+  const [liveChallenges, setLiveChallenges] = useState<ChallengeRow[]>([]);
   const [searchPage, setSearchPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [liveFeed, setLiveFeed] = useState<{id: string, text: React.ReactNode, time: string, color: string}[]>([
@@ -369,7 +369,7 @@ export default function GovernmentDashboard() {
       })
       .then(res => {
         if (res.data.success) {
-          setLiveChallenges(res.data.data.map((c: any) => ({
+          setLiveChallenges(res.data.data.map((c: { _id: string; title: string; location?: { district?: string }; category?: string; priority?: string; status: string }) => ({
             id: c._id.substring(0, 10).toUpperCase(),
             title: c.title,
             district: c.location?.district || 'N/A',
