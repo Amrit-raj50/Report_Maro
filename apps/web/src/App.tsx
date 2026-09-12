@@ -60,6 +60,7 @@ export default function App() {
         </Route>
         <Route element={<ProtectedRoute allow={['industry']} />}>
           <Route path="/industry" element={<IndustryPortal />} />
+          <Route path="/industry/*" element={<IndustryPortal />} />
         </Route>
         <Route element={<ProtectedRoute allow={['industry', 'university', 'admin']} />}>
           <Route path="/projects/:id" element={<ProjectDetail />} />
