@@ -13,11 +13,15 @@ import MentorDashboard from './pages/MentorDashboard.js';
 import StudentDashboard from './pages/StudentDashboard.js';
 import IndustryPortal from './pages/IndustryPortal.js';
 import ProjectDetail from './pages/ProjectDetail.js';
+import GovernmentDashboard from './pages/GovernmentDashboard.js';
 import AiAnalytics from './pages/AiAnalytics.js';
 
 export default function App() {
   return (
     <Routes>
+      {/* Government dashboard has its own full-screen layout (sidebar + three-band header) */}
+      <Route path="/government" element={<GovernmentDashboard />} />
+
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
