@@ -1,13 +1,62 @@
-import { useState, useEffect } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore.js';
 import { useSocketConnection } from '../hooks/useSocket.js';
 import { NotificationBell } from './NotificationBell.js';
+import { LogoutPromptModal } from './LogoutPromptModal.js';
+import { getDefaultPortalForUser, getUniversitySubRole } from '../utils/portalRouting.js';
 
 export function Layout() {
   useSocketConnection();
   const { user, clearSession } = useAuthStore();
+  const navigate = useNavigate();
   const location = useLocation();
+
+  // Back button guard for active portal sessions
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const isLoggingOutRef = useRef(false);
+
+  useEffect(() => {
+    if (!user) {
+      setShowLogoutModal(false);
+      return;
+    }
+
+    // Push guard history entry so browser back button pops this dummy state instead of leaving the portal
+    window.history.pushState({ authGuard: true }, '', window.location.href);
+
+    const onPopState = () => {
+      if (isLoggingOutRef.current) return;
+
+      // Trap the back navigation: re-push current URL to remain on the active portal page
+      window.history.pushState({ authGuard: true }, '', window.location.href);
+
+      // Trigger the logout confirmation prompt
+      setShowLogoutModal(true);
+    };
+
+    window.addEventListener('popstate', onPopState);
+
+    return () => {
+      window.removeEventListener('popstate', onPopState);
+    };
+  }, [user, location.pathname]);
+
+  const handleModalStay = () => {
+    setShowLogoutModal(false);
+  };
+
+  const handleLogout = () => {
+    isLoggingOutRef.current = true;
+    setShowLogoutModal(false);
+    clearSession();
+    try {
+      localStorage.removeItem('samadhansetu_university_profile');
+    } catch {
+      // ignore
+    }
+    navigate('/login', { replace: true });
+  };
   const isUniversity = location.pathname.startsWith('/university');
   const [fontScale, setFontScale] = useState<number>(1);
   const [lang, setLang] = useState<'en' | 'hi'>('en');
@@ -114,8 +163,8 @@ export function Layout() {
                     </span>
                     <button
                       type="button"
-                      onClick={clearSession}
-                      className="text-white hover:text-urgent underline ml-1 font-sans"
+                      onClick={handleLogout}
+                      className="text-white hover:text-urgent underline ml-1 font-sans cursor-pointer"
                     >
                       Logout
                     </button>
@@ -137,7 +186,7 @@ export function Layout() {
         <div className="w-full bg-paper border-b border-border py-2.5 sm:py-3 px-3 sm:px-4">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
             {/* State Emblem & Platform Title */}
-            <Link to="/" className="flex items-center gap-3 group text-center md:text-left">
+            <Link to={user ? getDefaultPortalForUser(user) : "/"} className="flex items-center gap-3 group text-center md:text-left">
               {/* Circular Emblem Crest */}
               <img
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-Saiq8B8HfuJ4idwInA2z4XrnYcglrpW8bRdUTgZg5iXUb0e_TnzlHMlZlopZXeOXOYukXp0nesbHgwQK9l_Pp6se0AyCWFS4ziY870E-CQTJo0b-fdaP6NMuLbhSJhhIfCUG3J0PozKv_wHL5tAjIKPlKHqNcOUsRQUtWG5OtawQ9TbeJ5cDnjxkvJBcVVnYl8-hn2TGt2btwhJDFSmub6fzbIavbHEUR98gdp5KmsOH-CpBr8k"
@@ -180,15 +229,7 @@ export function Layout() {
                 <div className="flex items-center gap-2 sm:gap-3">
                   <NotificationBell />
                   <Link
-                    to={
-                      user.role === 'admin'
-                        ? '/admin'
-                        : user.role === 'university'
-                          ? '/university'
-                          : user.role === 'industry'
-                            ? '/industry'
-                            : '/problems'
-                    }
+                    to={getDefaultPortalForUser(user)}
                     className={`px-3 py-1.5 text-[11px] sm:text-xs font-bold rounded-[2px] border transition-colors uppercase tracking-wide flex items-center gap-1.5 ${
                       user.role === 'university'
                         ? 'bg-turmeric text-ink border-turmeric-deep hover:bg-turmeric-deep'
@@ -197,12 +238,16 @@ export function Layout() {
                   >
                     <span>
                       {user.role === 'university'
-                        ? '🏛️ University Dashboard'
+                        ? getUniversitySubRole(user) === 'mentor'
+                          ? '👨‍🏫 Mentor Workspace'
+                          : getUniversitySubRole(user) === 'student'
+                            ? '👨‍🎓 Student Desk'
+                            : '🏛️ University Dashboard'
                         : user.role === 'admin'
                           ? '⚙️ Admin Dashboard'
                           : user.role === 'industry'
                             ? '💼 Industry Portal'
-                            : '📋 My Grievances'}
+                            : '📋 My Dashboard'}
                     </span>
                   </Link>
                 </div>
@@ -444,7 +489,7 @@ export function Layout() {
             <div className="hidden md:flex flex-row items-center justify-between min-h-[42px]">
               <nav className="flex items-center space-x-0.5 lg:space-x-1 text-[11px] lg:text-xs font-bold uppercase tracking-wider whitespace-nowrap">
                 <Link
-                  to="/"
+                  to={user ? getDefaultPortalForUser(user) : "/"}
                   className={`px-2.5 lg:px-3 py-2.5 transition-colors whitespace-nowrap ${
                     location.pathname === '/'
                       ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
@@ -547,31 +592,35 @@ export function Layout() {
                           <div className="text-[10px] text-white/70">Proof of work, GPS photos &amp; live deliverables</div>
                         </div>
                       </Link>
-                      <div className="px-3 pt-2 pb-1 text-[10px] font-mono uppercase font-bold text-white/50 tracking-wider">
-                        University Authentication
-                      </div>
-                      <div className="grid grid-cols-2 gap-1 px-2 pb-1">
-                        <Link
-                          to="/login?role=university"
-                          onClick={() => setUnivDropdownOpen(false)}
-                          className="px-2 py-1.5 bg-white/10 hover:bg-white/20 text-center rounded-[2px] text-[11px] font-bold text-white uppercase tracking-wider"
-                        >
-                          🔑 Sign In
-                        </Link>
-                        <Link
-                          to="/register?role=university"
-                          onClick={() => setUnivDropdownOpen(false)}
-                          className="px-2 py-1.5 bg-turmeric text-ink hover:bg-turmeric-deep text-center rounded-[2px] text-[11px] font-bold uppercase tracking-wider"
-                        >
-                          📝 Register
-                        </Link>
-                      </div>
+                      {!user && (
+                        <>
+                          <div className="px-3 pt-2 pb-1 text-[10px] font-mono uppercase font-bold text-white/50 tracking-wider">
+                            University Authentication
+                          </div>
+                          <div className="grid grid-cols-2 gap-1 px-2 pb-1">
+                            <Link
+                              to="/login?role=university"
+                              onClick={() => setUnivDropdownOpen(false)}
+                              className="px-2 py-1.5 bg-white/10 hover:bg-white/20 text-center rounded-[2px] text-[11px] font-bold text-white uppercase tracking-wider"
+                            >
+                              🔑 Sign In
+                            </Link>
+                            <Link
+                              to="/register?role=university"
+                              onClick={() => setUnivDropdownOpen(false)}
+                              className="px-2 py-1.5 bg-turmeric text-ink hover:bg-turmeric-deep text-center rounded-[2px] text-[11px] font-bold uppercase tracking-wider"
+                            >
+                              📝 Register
+                            </Link>
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
 
                 <Link
-                  to={user?.role === 'industry' ? '/industry' : '/login?role=industry'}
+                  to={user ? (user.role === 'industry' ? '/industry' : getDefaultPortalForUser(user)) : '/login?role=industry'}
                   className={`px-2.5 lg:px-3 py-2.5 transition-colors whitespace-nowrap ${
                     location.pathname.startsWith('/industry') || (location.pathname === '/login' && location.search.includes('role=industry'))
                       ? 'bg-navy-deep text-turmeric border-b-2 border-turmeric'
@@ -657,20 +706,22 @@ export function Layout() {
                     <Link to="/student" className="py-1 text-xs text-white hover:text-turmeric flex items-center gap-1.5">
                       <span>👨‍🎓</span> <span>Student Innovator Dashboard</span>
                     </Link>
-                    <div className="flex items-center gap-2 pt-1 mt-1 border-t border-white/10">
-                      <Link to="/login?role=university" className="text-[11px] font-bold text-turmeric underline">
-                        University Sign In
-                      </Link>
-                      <span className="text-white/40">|</span>
-                      <Link to="/register?role=university" className="text-[11px] font-bold text-turmeric underline">
-                        Register
-                      </Link>
-                    </div>
+                    {!user && (
+                      <div className="flex items-center gap-2 pt-1 mt-1 border-t border-white/10">
+                        <Link to="/login?role=university" className="text-[11px] font-bold text-turmeric underline">
+                          University Sign In
+                        </Link>
+                        <span className="text-white/40">|</span>
+                        <Link to="/register?role=university" className="text-[11px] font-bold text-turmeric underline">
+                          Register
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 <Link
-                  to={user?.role === 'industry' ? '/industry' : '/login?role=industry'}
+                  to={user ? (user.role === 'industry' ? '/industry' : getDefaultPortalForUser(user)) : '/login?role=industry'}
                   className="px-3 py-2.5 hover:bg-navy-deep text-white"
                 >
                   ● Industry &amp; CSR
@@ -812,6 +863,16 @@ export function Layout() {
           </div>
         </div>
       </footer>
+
+      {/* Persistent Logout Confirmation Modal on Back Button */}
+      {user && (
+        <LogoutPromptModal
+          isOpen={showLogoutModal}
+          user={user}
+          onStay={handleModalStay}
+          onLogout={handleLogout}
+        />
+      )}
     </div>
   );
 }

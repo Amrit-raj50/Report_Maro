@@ -1,6 +1,9 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuthStore } from './store/authStore.js';
+import { getDefaultPortalForUser } from './utils/portalRouting.js';
 import { Layout } from './components/Layout.js';
 import { ProtectedRoute } from './components/ProtectedRoute.js';
+import { PublicOnlyRoute } from './components/PublicOnlyRoute.js';
 import Home from './pages/Home.js';
 import Login from './pages/Login.js';
 import Register from './pages/Register.js';
@@ -16,6 +19,14 @@ import ProjectDetail from './pages/ProjectDetail.js';
 import GovernmentDashboard from './pages/GovernmentDashboard.js';
 import AiAnalytics from './pages/AiAnalytics.js';
 
+function HomeRouteWrapper() {
+  const user = useAuthStore((s) => s.user);
+  if (user) {
+    return <Navigate to={getDefaultPortalForUser(user)} replace />;
+  }
+  return <Home />;
+}
+
 export default function App() {
   return (
     <Routes>
@@ -23,9 +34,11 @@ export default function App() {
       <Route path="/government" element={<GovernmentDashboard />} />
 
       <Route element={<Layout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/" element={<HomeRouteWrapper />} />
+        <Route element={<PublicOnlyRoute />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Route>
         <Route path="/problems" element={<ProblemList />} />
         <Route path="/problems/:id" element={<ProblemDetail />} />
         <Route path="/analytics" element={<AiAnalytics />} />

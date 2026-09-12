@@ -629,9 +629,14 @@ export default function UserDashboard({
             type="button"
             onClick={() => {
               clearSession();
-              navigate('/');
+              try {
+                localStorage.removeItem('samadhansetu_university_profile');
+              } catch {
+                // ignore
+              }
+              navigate('/login', { replace: true });
             }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-urgent hover:bg-urgent/10 font-bold rounded-[2px] transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-urgent hover:bg-urgent/10 font-bold rounded-[2px] transition-colors cursor-pointer"
           >
             <span className="material-symbols-outlined text-base">logout</span>
             <span>Logout / लॉग आउट</span>

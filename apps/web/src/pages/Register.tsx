@@ -538,25 +538,25 @@ export default function Register() {
         }
       }
 
-      // Smart role-based redirect
+      // Smart role-based redirect (with replace: true so /register is not preserved in history)
       if (role === 'citizen') {
         if (queryFor === 'submit') {
-          navigate('/submit');
+          navigate('/submit', { replace: true });
         } else {
-          navigate('/dashboard');
+          navigate('/dashboard', { replace: true });
         }
       } else if (role === 'university') {
         if (univSubRole === 'student') {
-          navigate('/student');
+          navigate('/student', { replace: true });
         } else if (univSubRole === 'mentor') {
-          navigate('/university/mentor');
+          navigate('/university/mentor', { replace: true });
         } else {
-          navigate('/university');
+          navigate('/university', { replace: true });
         }
       } else if (role === 'industry') {
-        navigate('/industry');
+        navigate('/industry', { replace: true });
       } else {
-        navigate('/');
+        navigate('/', { replace: true });
       }
     } catch (err) {
       setError(
