@@ -173,7 +173,7 @@ export default function Home() {
                 {loading ? '...' : universitiesCount}
               </div>
               <div className="text-[10px] sm:text-[11px] font-mono text-white/70 mt-1.5">
-                BIT Mesra, NIT, RU &amp; VBU
+                {lang === 'hi' ? 'बीआईटी मेसरा, एनआईटी, आरयू एवं वीबीयू' : 'BIT Mesra, NIT, RU & VBU'}
               </div>
             </div>
 
@@ -232,50 +232,25 @@ export default function Home() {
           {/* Formal Gazette Decree Badge & Two-Column Gazette Narrative */}
           <div className="bg-white border border-border p-5 sm:p-7 md:p-8 rounded-[2px] mb-8 shadow-sm">
             <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-paper border border-border font-mono text-[11px] sm:text-xs text-navy mb-5">
-              <span className="font-bold text-turmeric">● DECREE:</span> {t.decreeBadge}
+              <span className="font-bold text-turmeric">● {lang === 'hi' ? 'शासनादेश:' : 'DECREE:'}</span> {t.decreeBadge}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 text-ink text-xs sm:text-sm md:text-base leading-relaxed text-justify">
               <div className="space-y-3 sm:space-y-4">
-                <p>
-                  The <strong>Samadhan Setu</strong> framework represents an institutionalized
-                  civic-scientific bridge mandated by the Department of Higher &amp; Technical
-                  Education, Government of Jharkhand. By establishing a direct digital pipeline
-                  between rural and urban citizen grievances and academic faculties, the portal
-                  converts daily livelihood and infrastructure hardships into actionable, accredited
-                  final-year engineering and postgraduate thesis topics under the tenets of the{' '}
-                  <strong>National Education Policy (NEP 2020)</strong>.
-                </p>
-                <p>
-                  Under this mechanism, problems logged by citizens undergo natural language AI
-                  deduplication, geographic clustering, and district officer validation. Once
-                  categorized into designated technical taxonomy, dossiers are assigned to
-                  institutional R&amp;D laboratories across thirty-eight premier technical
-                  institutes within the state.
-                </p>
+                <p>{t.aboutPara1}</p>
+                <p>{t.aboutPara2}</p>
               </div>
 
               <div className="space-y-3 sm:space-y-4">
-                <p>
-                  Faculty mentors and student investigator teams work directly with field data
-                  collected via geotagged mobile uploads. The State Innovation Grant Board
-                  concurrently reviews validated prototypes to sanction seed capital through
-                  corporate social responsibility (CSR) pacts signed with regional industrial
-                  powerhouses in steel, mining, renewable infrastructure, and agribusiness.
-                </p>
-                <p>
-                  This institutional loop ensures transparent public accountability, accelerates
-                  applied scientific solutions tailored precisely to Jharkhand’s socio-ecological
-                  topography, and prevents redundant academic publications disconnected from
-                  immediate regional development necessities.
-                </p>
+                <p>{t.aboutPara3}</p>
+                <p>{t.aboutPara4}</p>
               </div>
             </div>
 
             {/* Tripartite Flow Indicator Bar */}
             <div className="mt-8 pt-6 border-t border-border grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-center">
               <div className="bg-paper p-3.5 border border-border rounded-[2px]">
-                <div className="font-mono text-xs text-forest font-bold">STAGE 01</div>
+                <div className="font-mono text-xs text-forest font-bold">{lang === 'hi' ? 'चरण 01' : 'STAGE 01'}</div>
                 <div className="font-display text-sm font-bold text-navy mt-1">
                   {t.stage01Title}
                 </div>
@@ -285,7 +260,7 @@ export default function Home() {
               </div>
 
               <div className="bg-paper p-3.5 border border-border rounded-[2px]">
-                <div className="font-mono text-xs text-forest font-bold">STAGE 02</div>
+                <div className="font-mono text-xs text-forest font-bold">{lang === 'hi' ? 'चरण 02' : 'STAGE 02'}</div>
                 <div className="font-display text-sm font-bold text-navy mt-1">
                   {t.stage02Title}
                 </div>
@@ -295,7 +270,7 @@ export default function Home() {
               </div>
 
               <div className="bg-paper p-3.5 border border-border rounded-[2px]">
-                <div className="font-mono text-xs text-forest font-bold">STAGE 03</div>
+                <div className="font-mono text-xs text-forest font-bold">{lang === 'hi' ? 'चरण 03' : 'STAGE 03'}</div>
                 <div className="font-display text-sm font-bold text-navy mt-1">
                   {t.stage03Title}
                 </div>
@@ -305,7 +280,7 @@ export default function Home() {
               </div>
 
               <div className="bg-paper p-3.5 border border-border rounded-[2px]">
-                <div className="font-mono text-xs text-forest font-bold">STAGE 04</div>
+                <div className="font-mono text-xs text-forest font-bold">{lang === 'hi' ? 'चरण 04' : 'STAGE 04'}</div>
                 <div className="font-display text-sm font-bold text-navy mt-1">
                   {t.stage04Title}
                 </div>
@@ -325,10 +300,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
             <span className="text-xs font-bold uppercase tracking-wider text-forest">
-              विभागीय नेतृत्व · Apex Leadership
+              {t.leadershipTag}
             </span>
             <h2 className="font-display text-xl sm:text-2xl md:text-3xl text-navy font-bold mt-1">
-              Leadership &amp; Departmental Direction
+              {t.leadershipTitle}
             </h2>
             <div className="w-16 h-1 bg-turmeric mx-auto mt-2" />
           </div>
@@ -344,14 +319,14 @@ export default function Home() {
                 />
               </div>
               <h3 className="font-display text-base sm:text-lg text-navy font-bold">
-                Shri Hemant Soren
+                {t.cmName}
               </h3>
               <p className="text-[11px] sm:text-xs font-bold text-forest uppercase tracking-wider mt-0.5 sm:mt-1">
-                Hon'ble Chief Minister
+                {t.cmDesignation}
               </p>
-              <p className="text-[11px] sm:text-xs text-ink-muted">Government of Jharkhand</p>
+              <p className="text-[11px] sm:text-xs text-ink-muted">{t.cmGovt}</p>
               <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-border w-full font-mono text-[10px] sm:text-xs text-navy font-semibold">
-                Patron-in-Chief · Samadhan Setu
+                {t.cmRole}
               </div>
             </div>
 
@@ -365,16 +340,16 @@ export default function Home() {
                 />
               </div>
               <h3 className="font-display text-base sm:text-lg text-navy font-bold">
-                Dr. Baidyanath Ram
+                {t.ministerName}
               </h3>
               <p className="text-[11px] sm:text-xs font-bold text-forest uppercase tracking-wider mt-0.5 sm:mt-1">
-                Hon'ble Minister
+                {t.ministerDesignation}
               </p>
               <p className="text-[11px] sm:text-xs text-ink-muted">
-                Dept. of Higher &amp; Technical Education
+                {t.ministerDept}
               </p>
               <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-border w-full font-mono text-[10px] sm:text-xs text-navy font-semibold">
-                Chairperson · Steering Apex Committee
+                {t.ministerRole}
               </div>
             </div>
 
@@ -388,16 +363,16 @@ export default function Home() {
                 />
               </div>
               <h3 className="font-display text-base sm:text-lg text-navy font-bold">
-                Shri Rahul Purwar, IAS
+                {t.secretaryName}
               </h3>
               <p className="text-[11px] sm:text-xs font-bold text-forest uppercase tracking-wider mt-0.5 sm:mt-1">
-                Principal Secretary
+                {t.secretaryDesignation}
               </p>
               <p className="text-[11px] sm:text-xs text-ink-muted">
-                Dept. of Higher &amp; Technical Education
+                {t.secretaryDept}
               </p>
               <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-border w-full font-mono text-[10px] sm:text-xs text-navy font-semibold">
-                Executive Director · Implementation Mission
+                {t.secretaryRole}
               </div>
             </div>
           </div>
@@ -412,15 +387,14 @@ export default function Home() {
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8 pb-3 border-b border-border gap-2">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-forest">
-                समस्या वर्गीकरण · Thematic Domains
+                {t.sectorsTag}
               </span>
               <h2 className="font-display text-xl sm:text-2xl md:text-3xl text-navy font-bold mt-1">
-                Key Problem Sectors &amp; Open Challenges
+                {t.sectorsTitle}
               </h2>
             </div>
             <p className="text-xs sm:text-sm text-ink-muted">
-              Select a domain to inspect ongoing R&amp;D thesis allocations or file district
-              challenges.
+              {t.sectorsSubtitle}
             </p>
           </div>
 
@@ -433,14 +407,13 @@ export default function Home() {
                     <span className="material-symbols-outlined text-2xl">school</span>
                   </div>
                   <span className="font-mono text-xs text-cat-education font-bold bg-cat-education/10 px-2 py-0.5 border border-cat-education/30">
-                    {getCategoryCount('education', 612)} Open Challenges
+                    {getCategoryCount('education', 612)} {t.openChallengesBadge}
                   </span>
                 </div>
-                <h3 className="font-display text-base sm:text-lg text-navy font-bold">Education</h3>
-                <p className="text-xs font-semibold text-forest">शिक्षा एवं डिजिटल शिक्षण</p>
+                <h3 className="font-display text-base sm:text-lg text-navy font-bold">{t.secEducationTitle}</h3>
+                <p className="text-xs font-semibold text-forest">{t.secEducationSub}</p>
                 <p className="text-xs sm:text-sm text-ink-muted mt-2 leading-normal">
-                  Smart rural classrooms, vernacular language STEM tools, and offline digital
-                  attendance in tribal school belts.
+                  {t.secEducationDesc}
                 </p>
               </div>
               <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs font-semibold text-navy">
@@ -448,9 +421,9 @@ export default function Home() {
                   to="/problems?category=education"
                   className="hover:underline flex items-center gap-1"
                 >
-                  View Sector Brief →
+                  {t.viewSectorBrief}
                 </Link>
-                <span className="font-mono text-ink-muted">SEC-01</span>
+                <span className="font-mono text-ink-muted">{lang === 'hi' ? 'प्रभाग-01' : 'SEC-01'}</span>
               </div>
             </div>
 
@@ -462,18 +435,17 @@ export default function Home() {
                     <span className="material-symbols-outlined text-2xl">local_hospital</span>
                   </div>
                   <span className="font-mono text-xs text-cat-health font-bold bg-cat-health/10 px-2 py-0.5 border border-cat-health/30">
-                    {getCategoryCount('health', 540)} Open Challenges
+                    {getCategoryCount('health', 540)} {t.openChallengesBadge}
                   </span>
                 </div>
                 <h3 className="font-display text-base sm:text-lg text-navy font-bold">
-                  Healthcare
+                  {t.secHealthTitle}
                 </h3>
                 <p className="text-xs font-semibold text-forest">
-                  स्वास्थ्य सेवाएं एवं प्राथमिक उपचार
+                  {t.secHealthSub}
                 </p>
                 <p className="text-xs sm:text-sm text-ink-muted mt-2 leading-normal">
-                  Telemedicine diagnostics for remote Primary Health Centres, sickle-cell detection
-                  kits, and cold-chain vaccine transit.
+                  {t.secHealthDesc}
                 </p>
               </div>
               <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs font-semibold text-navy">
@@ -481,9 +453,9 @@ export default function Home() {
                   to="/problems?category=health"
                   className="hover:underline flex items-center gap-1"
                 >
-                  View Sector Brief →
+                  {t.viewSectorBrief}
                 </Link>
-                <span className="font-mono text-ink-muted">SEC-02</span>
+                <span className="font-mono text-ink-muted">{lang === 'hi' ? 'प्रभाग-02' : 'SEC-02'}</span>
               </div>
             </div>
 
@@ -495,16 +467,15 @@ export default function Home() {
                     <span className="material-symbols-outlined text-2xl">agriculture</span>
                   </div>
                   <span className="font-mono text-xs text-cat-agriculture font-bold bg-cat-agriculture/10 px-2 py-0.5 border border-cat-agriculture/30">
-                    {getCategoryCount('agriculture', 845)} Open Challenges
+                    {getCategoryCount('agriculture', 845)} {t.openChallengesBadge}
                   </span>
                 </div>
                 <h3 className="font-display text-base sm:text-lg text-navy font-bold">
-                  Agriculture
+                  {t.secAgriTitle}
                 </h3>
-                <p className="text-xs font-semibold text-forest">कृषि एवं सूक्ष्म सिंचाई तंत्र</p>
+                <p className="text-xs font-semibold text-forest">{t.secAgriSub}</p>
                 <p className="text-xs sm:text-sm text-ink-muted mt-2 leading-normal">
-                  Low-cost micro-drip irrigation, post-harvest lac processing mechanics, and soil
-                  acidity neutralization formulas.
+                  {t.secAgriDesc}
                 </p>
               </div>
               <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs font-semibold text-navy">
@@ -512,9 +483,9 @@ export default function Home() {
                   to="/problems?category=agriculture"
                   className="hover:underline flex items-center gap-1"
                 >
-                  View Sector Brief →
+                  {t.viewSectorBrief}
                 </Link>
-                <span className="font-mono text-ink-muted">SEC-03</span>
+                <span className="font-mono text-ink-muted">{lang === 'hi' ? 'प्रभाग-03' : 'SEC-03'}</span>
               </div>
             </div>
 
@@ -526,16 +497,15 @@ export default function Home() {
                     <span className="material-symbols-outlined text-2xl">water_drop</span>
                   </div>
                   <span className="font-mono text-xs text-cat-water font-bold bg-cat-water/10 px-2 py-0.5 border border-cat-water/30">
-                    {getCategoryCount('water', 789)} Open Challenges
+                    {getCategoryCount('water', 789)} {t.openChallengesBadge}
                   </span>
                 </div>
                 <h3 className="font-display text-base sm:text-lg text-navy font-bold">
-                  Water Resources
+                  {t.secWaterTitle}
                 </h3>
-                <p className="text-xs font-semibold text-forest">जल संसाधन एवं भूजल संरक्षण</p>
+                <p className="text-xs font-semibold text-forest">{t.secWaterSub}</p>
                 <p className="text-xs sm:text-sm text-ink-muted mt-2 leading-normal">
-                  Fluoride and iron filtration for plateau borewells, automated check-dam sluice
-                  controllers, and Jal Jeevan telemetry.
+                  {t.secWaterDesc}
                 </p>
               </div>
               <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs font-semibold text-navy">
@@ -543,9 +513,9 @@ export default function Home() {
                   to="/problems?category=water"
                   className="hover:underline flex items-center gap-1"
                 >
-                  View Sector Brief →
+                  {t.viewSectorBrief}
                 </Link>
-                <span className="font-mono text-ink-muted">SEC-04</span>
+                <span className="font-mono text-ink-muted">{lang === 'hi' ? 'प्रभाग-04' : 'SEC-04'}</span>
               </div>
             </div>
 
@@ -557,16 +527,15 @@ export default function Home() {
                     <span className="material-symbols-outlined text-2xl">forest</span>
                   </div>
                   <span className="font-mono text-xs text-cat-environment font-bold bg-cat-environment/10 px-2 py-0.5 border border-cat-environment/30">
-                    {getCategoryCount('environment', 324)} Open Challenges
+                    {getCategoryCount('environment', 324)} {t.openChallengesBadge}
                   </span>
                 </div>
                 <h3 className="font-display text-base sm:text-lg text-navy font-bold">
-                  Environment
+                  {t.secEnvTitle}
                 </h3>
-                <p className="text-xs font-semibold text-forest">पर्यावरण एवं वन संपदा</p>
+                <p className="text-xs font-semibold text-forest">{t.secEnvSub}</p>
                 <p className="text-xs sm:text-sm text-ink-muted mt-2 leading-normal">
-                  Mine tailing rehabilitation, real-time forest fire warning telemetry, and elephant
-                  migration route geo-fencing.
+                  {t.secEnvDesc}
                 </p>
               </div>
               <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs font-semibold text-navy">
@@ -574,9 +543,9 @@ export default function Home() {
                   to="/problems?category=environment"
                   className="hover:underline flex items-center gap-1"
                 >
-                  View Sector Brief →
+                  {t.viewSectorBrief}
                 </Link>
-                <span className="font-mono text-ink-muted">SEC-05</span>
+                <span className="font-mono text-ink-muted">{lang === 'hi' ? 'प्रभाग-05' : 'SEC-05'}</span>
               </div>
             </div>
 
@@ -588,14 +557,13 @@ export default function Home() {
                     <span className="material-symbols-outlined text-2xl">bolt</span>
                   </div>
                   <span className="font-mono text-xs text-cat-energy font-bold bg-cat-energy/10 px-2 py-0.5 border border-cat-energy/30">
-                    {getCategoryCount('energy', 298)} Open Challenges
+                    {getCategoryCount('energy', 298)} {t.openChallengesBadge}
                   </span>
                 </div>
-                <h3 className="font-display text-base sm:text-lg text-navy font-bold">Energy</h3>
-                <p className="text-xs font-semibold text-forest">ऊर्जा एवं नवीकरणीय ऊर्जा</p>
+                <h3 className="font-display text-base sm:text-lg text-navy font-bold">{t.secEnergyTitle}</h3>
+                <p className="text-xs font-semibold text-forest">{t.secEnergySub}</p>
                 <p className="text-xs sm:text-sm text-ink-muted mt-2 leading-normal">
-                  Decentralized solar micro-grids for hill villages, biomass briquette units, and
-                  rural transformer load balancing.
+                  {t.secEnergyDesc}
                 </p>
               </div>
               <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs font-semibold text-navy">
@@ -603,9 +571,9 @@ export default function Home() {
                   to="/problems?category=energy"
                   className="hover:underline flex items-center gap-1"
                 >
-                  View Sector Brief →
+                  {t.viewSectorBrief}
                 </Link>
-                <span className="font-mono text-ink-muted">SEC-06</span>
+                <span className="font-mono text-ink-muted">{lang === 'hi' ? 'प्रभाग-06' : 'SEC-06'}</span>
               </div>
             </div>
 
@@ -617,16 +585,15 @@ export default function Home() {
                     <span className="material-symbols-outlined text-2xl">apartment</span>
                   </div>
                   <span className="font-mono text-xs text-cat-urban font-bold bg-cat-urban/10 px-2 py-0.5 border border-cat-urban/30">
-                    {getCategoryCount('road', 518)} Open Challenges
+                    {getCategoryCount('road', 518)} {t.openChallengesBadge}
                   </span>
                 </div>
                 <h3 className="font-display text-base sm:text-lg text-navy font-bold">
-                  Urban Development
+                  {t.secUrbanTitle}
                 </h3>
-                <p className="text-xs font-semibold text-forest">नगर विकास एवं ठोस अपशिष्ट</p>
+                <p className="text-xs font-semibold text-forest">{t.secUrbanSub}</p>
                 <p className="text-xs sm:text-sm text-ink-muted mt-2 leading-normal">
-                  Municipal plastic pyrolysis systems, decentralized bio-gas digestors, and traffic
-                  bottleneck AI modeling for Ranchi and Dhanbad.
+                  {t.secUrbanDesc}
                 </p>
               </div>
               <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs font-semibold text-navy">
@@ -634,9 +601,9 @@ export default function Home() {
                   to="/problems?category=road"
                   className="hover:underline flex items-center gap-1"
                 >
-                  View Sector Brief →
+                  {t.viewSectorBrief}
                 </Link>
-                <span className="font-mono text-ink-muted">SEC-07</span>
+                <span className="font-mono text-ink-muted">{lang === 'hi' ? 'प्रभाग-07' : 'SEC-07'}</span>
               </div>
             </div>
 
@@ -648,18 +615,17 @@ export default function Home() {
                     <span className="material-symbols-outlined text-2xl">accessible_forward</span>
                   </div>
                   <span className="font-mono text-xs text-cat-accessibility font-bold bg-cat-accessibility/10 px-2 py-0.5 border border-cat-accessibility/30">
-                    {getCategoryCount('accessibility', 415)} Open Challenges
+                    {getCategoryCount('accessibility', 415)} {t.openChallengesBadge}
                   </span>
                 </div>
                 <h3 className="font-display text-base sm:text-lg text-navy font-bold">
-                  Accessibility
+                  {t.secAccessTitle}
                 </h3>
                 <p className="text-xs font-semibold text-forest">
-                  दिव्यांगजन सुगमता एवं सहायक यंत्र
+                  {t.secAccessSub}
                 </p>
                 <p className="text-xs sm:text-sm text-ink-muted mt-2 leading-normal">
-                  Affordable prosthetic limbs tailored for agricultural labor, screen readers in
-                  regional Ho and Santhali scripts.
+                  {t.secAccessDesc}
                 </p>
               </div>
               <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs font-semibold text-navy">
@@ -667,9 +633,9 @@ export default function Home() {
                   to="/problems?category=other"
                   className="hover:underline flex items-center gap-1"
                 >
-                  View Sector Brief →
+                  {t.viewSectorBrief}
                 </Link>
-                <span className="font-mono text-ink-muted">SEC-08</span>
+                <span className="font-mono text-ink-muted">{lang === 'hi' ? 'प्रभाग-08' : 'SEC-08'}</span>
               </div>
             </div>
 
@@ -681,18 +647,17 @@ export default function Home() {
                     <span className="material-symbols-outlined text-2xl">work</span>
                   </div>
                   <span className="font-mono text-xs text-cat-livelihood font-bold bg-cat-livelihood/10 px-2 py-0.5 border border-cat-livelihood/30">
-                    {getCategoryCount('other', 480)} Open Challenges
+                    {getCategoryCount('other', 480)} {t.openChallengesBadge}
                   </span>
                 </div>
                 <h3 className="font-display text-base sm:text-lg text-navy font-bold">
-                  Rural Livelihoods
+                  {t.secLivelihoodTitle}
                 </h3>
                 <p className="text-xs font-semibold text-forest">
-                  ग्रामीण आजीविका एवं कुटीर उद्योग
+                  {t.secLivelihoodSub}
                 </p>
                 <p className="text-xs sm:text-sm text-ink-muted mt-2 leading-normal">
-                  Mechanical Tussar silk reeler looms, motorized Sal leaf plate pressing machines,
-                  and honey extractor centrifuges.
+                  {t.secLivelihoodDesc}
                 </p>
               </div>
               <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs font-semibold text-navy">
@@ -700,9 +665,9 @@ export default function Home() {
                   to="/problems?category=other"
                   className="hover:underline flex items-center gap-1"
                 >
-                  View Sector Brief →
+                  {t.viewSectorBrief}
                 </Link>
-                <span className="font-mono text-ink-muted">SEC-09</span>
+                <span className="font-mono text-ink-muted">{lang === 'hi' ? 'प्रभाग-09' : 'SEC-09'}</span>
               </div>
             </div>
           </div>
@@ -720,11 +685,11 @@ export default function Home() {
               <div className="flex items-center gap-2.5">
                 <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-turmeric inline-block shrink-0" />
                 <h3 className="font-display text-base sm:text-lg md:text-xl font-bold">
-                  Official Notices, Circulars &amp; SIH 2026 Directives
+                  {t.noticesTitle}
                 </h3>
               </div>
               <div className="font-mono text-[11px] sm:text-xs text-white/70">
-                Gazette Section · Dept. Ref: JHK/DHTE/GAZ/2026
+                {t.noticesGazetteRef}
               </div>
             </div>
 
@@ -741,23 +706,22 @@ export default function Home() {
                       to="/university"
                       className="font-semibold text-navy hover:underline block leading-snug"
                     >
-                      Guidelines for University Faculty Mentors on Submitting R&amp;D Project
-                      Proposals for Smart India Hackathon 2026
+                      {t.notice1Title}
                     </Link>
                     <div className="font-mono text-[11px] text-ink-muted mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
-                      <span className="font-bold text-forest">[Ref: DHTE/NOT/2026/042]</span>
-                      <span>Directorate of Technical Education</span>
+                      <span className="font-bold text-forest">[{lang === 'hi' ? 'संदर्भ' : 'Ref'}: DHTE/NOT/2026/042]</span>
+                      <span>{t.notice1Dept}</span>
                       <Link
                         to="/university"
                         className="text-forest font-semibold bg-forest/10 px-1.5 py-0.2 rounded hover:underline"
                       >
-                        Launch R&amp;D Portal →
+                        {t.notice1Action}
                       </Link>
                     </div>
                   </div>
                 </div>
                 <div className="font-mono text-[11px] text-ink-muted shrink-0 md:text-right">
-                  24 Feb 2026
+                  {lang === 'hi' ? '24 फरवरी 2026' : '24 Feb 2026'}
                 </div>
               </div>
 
@@ -772,20 +736,19 @@ export default function Home() {
                       to="/problems"
                       className="font-semibold text-navy hover:underline block leading-snug"
                     >
-                      Gazette Notification: District-Level Field Verification Protocol for Water
-                      &amp; Agritech Issues
+                      {t.notice2Title}
                     </Link>
                     <div className="font-mono text-[11px] text-ink-muted mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
-                      <span className="font-bold text-forest">[Ref: JHK/GAZ/ORD-811]</span>
-                      <span>Dept. of Drinking Water &amp; Sanitation</span>
+                      <span className="font-bold text-forest">[{lang === 'hi' ? 'संदर्भ' : 'Ref'}: JHK/GAZ/ORD-811]</span>
+                      <span>{t.notice2Dept}</span>
                       <span className="text-forest font-semibold bg-forest/10 px-1.5 py-0.2 rounded">
-                        PDF (840 KB)
+                        {lang === 'hi' ? 'पीडीएफ (840 KB)' : 'PDF (840 KB)'}
                       </span>
                     </div>
                   </div>
                 </div>
                 <div className="font-mono text-[11px] text-ink-muted shrink-0 md:text-right">
-                  19 Feb 2026
+                  {lang === 'hi' ? '19 फरवरी 2026' : '19 Feb 2026'}
                 </div>
               </div>
 
@@ -800,20 +763,19 @@ export default function Home() {
                       to="/industry"
                       className="font-semibold text-navy hover:underline block leading-snug"
                     >
-                      Call for CSR and Industry Partners for Seed Stage Prototyping Grants (Phase II
-                      Allocation)
+                      {t.notice3Title}
                     </Link>
                     <div className="font-mono text-[11px] text-ink-muted mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
-                      <span className="font-bold text-forest">[Ref: DHTE/CSR-RND/009]</span>
-                      <span>Jharkhand Innovation Council</span>
+                      <span className="font-bold text-forest">[{lang === 'hi' ? 'संदर्भ' : 'Ref'}: DHTE/CSR-RND/009]</span>
+                      <span>{t.notice3Dept}</span>
                       <span className="text-forest font-semibold bg-forest/10 px-1.5 py-0.2 rounded">
-                        PDF (2.1 MB)
+                        {lang === 'hi' ? 'पीडीएफ (2.1 MB)' : 'PDF (2.1 MB)'}
                       </span>
                     </div>
                   </div>
                 </div>
                 <div className="font-mono text-[11px] text-ink-muted shrink-0 md:text-right">
-                  14 Feb 2026
+                  {lang === 'hi' ? '14 फरवरी 2026' : '14 Feb 2026'}
                 </div>
               </div>
 
@@ -828,20 +790,19 @@ export default function Home() {
                       to="/submit"
                       className="font-semibold text-navy hover:underline block leading-snug"
                     >
-                      Standard Operating Procedure (SOP) for Citizen Problem Geo-Tagging &amp; Video
-                      Verification
+                      {t.notice4Title}
                     </Link>
                     <div className="font-mono text-[11px] text-ink-muted mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
-                      <span className="font-bold text-forest">[Ref: NIC-SOP-V3.4]</span>
-                      <span>State NIC E-Governance Cell</span>
+                      <span className="font-bold text-forest">[{lang === 'hi' ? 'संदर्भ' : 'Ref'}: NIC-SOP-V3.4]</span>
+                      <span>{t.notice4Dept}</span>
                       <span className="text-forest font-semibold bg-forest/10 px-1.5 py-0.2 rounded">
-                        PDF (620 KB)
+                        {lang === 'hi' ? 'पीडीएफ (620 KB)' : 'PDF (620 KB)'}
                       </span>
                     </div>
                   </div>
                 </div>
                 <div className="font-mono text-[11px] text-ink-muted shrink-0 md:text-right">
-                  08 Feb 2026
+                  {lang === 'hi' ? '08 फरवरी 2026' : '08 Feb 2026'}
                 </div>
               </div>
             </div>
@@ -849,14 +810,13 @@ export default function Home() {
             {/* Gazette Notice Footer */}
             <div className="bg-[#F5F2E9] p-3.5 sm:p-4 border-t border-border flex flex-col sm:flex-row items-center justify-between text-xs gap-2">
               <div className="text-ink-muted font-mono text-center sm:text-left">
-                Archived notifications from 2024 to 2026 are accessible under the State Gazette
-                Digital Repository.
+                {t.noticesArchiveNote}
               </div>
               <Link
                 to="/problems"
                 className="inline-flex items-center px-3 py-1.5 bg-white border border-border text-navy font-semibold hover:bg-paper transition-colors rounded-[2px]"
               >
-                Browse All Open Challenges →
+                {t.browseAllChallenges}
               </Link>
             </div>
           </div>
@@ -871,7 +831,7 @@ export default function Home() {
           <div className="bg-white border-2 border-navy max-w-2xl w-full p-5 sm:p-6 space-y-4 rounded-[2px] shadow-lg">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <h3 className="font-display text-base sm:text-lg text-navy font-bold">
-                Portal Workflow Video Guide · समाधान सेतु
+                {t.videoModalTitle}
               </h3>
               <button
                 type="button"
@@ -888,23 +848,23 @@ export default function Home() {
                 play_circle
               </span>
               <p className="font-display text-sm sm:text-base font-semibold text-center">
-                Tripartite Workflow Presentation: SIH 2026 PS 26043
+                {t.videoModalSub}
               </p>
               <p className="font-mono text-[10px] sm:text-xs text-white/70 mt-1 text-center">
-                Duration: 03m 42s · High Definition Video Guide (Hindi &amp; English)
+                {t.videoModalDuration}
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row justify-between items-center gap-2 pt-2">
               <span className="font-mono text-[11px] text-ink-muted">
-                NIC Video Stream Node: JH-RANCHI-01
+                {t.videoModalNode}
               </span>
               <button
                 type="button"
                 onClick={() => setVideoModalOpen(false)}
                 className="w-full sm:w-auto px-4 py-1.5 bg-navy text-white text-xs font-semibold hover:bg-navy-deep rounded-[2px]"
               >
-                Close Guide
+                {t.videoModalClose}
               </button>
             </div>
           </div>

@@ -287,7 +287,7 @@ export function Layout() {
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="px-3 py-1 bg-navy text-white text-[10px] font-bold uppercase tracking-wider font-mono">
-                          Official Role-Based Login
+                          {lang === 'hi' ? 'आधिकारिक भूमिका-आधारित लॉगिन' : 'Official Role-Based Login'}
                         </div>
                         <Link
                           to="/login?role=admin"
@@ -296,8 +296,12 @@ export function Layout() {
                         >
                           <span className="text-base mt-0.5">🏛️</span>
                           <div>
-                            <div className="text-xs font-bold text-navy">Government / State Admin</div>
-                            <div className="text-[10px] text-ink-muted">AI queue &amp; grievance triage</div>
+                            <div className="text-xs font-bold text-navy">
+                              {lang === 'hi' ? 'शासकीय / राज्य व्यवस्थापक' : 'Government / State Admin'}
+                            </div>
+                            <div className="text-[10px] text-ink-muted">
+                              {lang === 'hi' ? 'एआई कतार एवं शिकायत प्राथमिकता' : 'AI queue & grievance triage'}
+                            </div>
                           </div>
                         </Link>
                         <Link
@@ -307,12 +311,16 @@ export function Layout() {
                         >
                           <span className="text-base mt-0.5">👥</span>
                           <div>
-                            <div className="text-xs font-bold text-navy">Citizen Grievance Portal</div>
-                            <div className="text-[10px] text-ink-muted">Track complaints &amp; local issues</div>
+                            <div className="text-xs font-bold text-navy">
+                              {lang === 'hi' ? 'नागरिक शिकायत निवारण पोर्टल' : 'Citizen Grievance Portal'}
+                            </div>
+                            <div className="text-[10px] text-ink-muted">
+                              {lang === 'hi' ? 'शिकायतें एवं स्थानीय मुद्दे ट्रैक करें' : 'Track complaints & local issues'}
+                            </div>
                           </div>
                         </Link>
                         <div className="bg-paper-dark/70 px-3 py-1 text-[10px] font-bold text-forest uppercase tracking-wider font-mono border-b border-border/40">
-                          🎓 University Ecosystem
+                          🎓 {lang === 'hi' ? 'विश्वविद्यालय पारिस्थितिकी तंत्र' : 'University Ecosystem'}
                         </div>
                         <Link
                           to="/login?role=university&type=student"
@@ -321,8 +329,12 @@ export function Layout() {
                         >
                           <span className="text-xs mt-0.5">👨‍🎓</span>
                           <div>
-                            <div className="text-xs font-bold text-navy">Student Innovator Desk</div>
-                            <div className="text-[10px] text-ink-muted">Deliverables, GPS photos &amp; telemetry</div>
+                            <div className="text-xs font-bold text-navy">
+                              {lang === 'hi' ? 'छात्र नवाचार डेस्क' : 'Student Innovator Desk'}
+                            </div>
+                            <div className="text-[10px] text-ink-muted">
+                              {lang === 'hi' ? 'प्रोजेक्ट प्रगति, जीपीएस साक्ष्य व टेलीमेट्री' : 'Deliverables, GPS photos & telemetry'}
+                            </div>
                           </div>
                         </Link>
                         <Link
@@ -332,8 +344,12 @@ export function Layout() {
                         >
                           <span className="text-xs mt-0.5">👨‍🏫</span>
                           <div>
-                            <div className="text-xs font-bold text-navy">Faculty Mentor Workspace</div>
-                            <div className="text-[10px] text-ink-muted">Project review &amp; student messaging</div>
+                            <div className="text-xs font-bold text-navy">
+                              {lang === 'hi' ? 'संकाय मार्गदर्शक कार्यक्षेत्र' : 'Faculty Mentor Workspace'}
+                            </div>
+                            <div className="text-[10px] text-ink-muted">
+                              {lang === 'hi' ? 'प्रोजेक्ट समीक्षा एवं छात्र संवाद' : 'Project review & student messaging'}
+                            </div>
                           </div>
                         </Link>
                         <Link
@@ -343,8 +359,12 @@ export function Layout() {
                         >
                           <span className="text-xs mt-0.5">🏛️</span>
                           <div>
-                            <div className="text-xs font-bold text-navy">Dean R&amp;D / Institutional Admin</div>
-                            <div className="text-[10px] text-ink-muted">Proposal approvals &amp; fund allocations</div>
+                            <div className="text-xs font-bold text-navy">
+                              {lang === 'hi' ? 'डीन अनुसंधान / संस्थागत नोडल' : 'Dean R&D / Institutional Admin'}
+                            </div>
+                            <div className="text-[10px] text-ink-muted">
+                              {lang === 'hi' ? 'प्रस्ताव अनुमोदन एवं अनुदान आवंटन' : 'Proposal approvals & fund allocations'}
+                            </div>
                           </div>
                         </Link>
                         <Link
@@ -354,8 +374,12 @@ export function Layout() {
                         >
                           <span className="text-base mt-0.5">💼</span>
                           <div>
-                            <div className="text-xs font-bold text-navy">Industry / CSR Partner</div>
-                            <div className="text-[10px] text-ink-muted">Corporate sponsorship &amp; co-funding</div>
+                            <div className="text-xs font-bold text-navy">
+                              {lang === 'hi' ? 'उद्योग व कॉर्पोरेट सीएसआर साझीदार' : 'Industry / CSR Partner'}
+                            </div>
+                            <div className="text-[10px] text-ink-muted">
+                              {lang === 'hi' ? 'कॉर्पोरेट प्रायोजन व सह-वित्तपोषण' : 'Corporate sponsorship & co-funding'}
+                            </div>
                           </div>
                         </Link>
                       </div>
@@ -389,7 +413,7 @@ export function Layout() {
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="px-3 py-1 bg-turmeric text-ink text-[10px] font-bold uppercase tracking-wider font-mono">
-                          New User Registration
+                          {lang === 'hi' ? 'नया उपयोगकर्ता पंजीकरण' : 'New User Registration'}
                         </div>
                         <Link
                           to="/register?role=citizen"
@@ -398,12 +422,16 @@ export function Layout() {
                         >
                           <span className="text-base mt-0.5">👥</span>
                           <div>
-                            <div className="text-xs font-bold text-navy">Citizen Account</div>
-                            <div className="text-[10px] text-ink-muted">LGD &amp; Pincode-integrated reporting</div>
+                            <div className="text-xs font-bold text-navy">
+                              {lang === 'hi' ? 'नागरिक खाता' : 'Citizen Account'}
+                            </div>
+                            <div className="text-[10px] text-ink-muted">
+                              {lang === 'hi' ? 'एलजीडी एवं पिनकोड-एकीकृत रिपोर्टिंग' : 'LGD & Pincode-integrated reporting'}
+                            </div>
                           </div>
                         </Link>
                         <div className="bg-paper-dark/70 px-3 py-1 text-[10px] font-bold text-forest uppercase tracking-wider font-mono border-b border-border/40">
-                          🎓 University Onboarding
+                          🎓 {lang === 'hi' ? 'विश्वविद्यालय ऑनबोर्डिंग' : 'University Onboarding'}
                         </div>
                         <Link
                           to="/register?role=university&type=student"
@@ -412,8 +440,12 @@ export function Layout() {
                         >
                           <span className="text-xs mt-0.5">👨‍🎓</span>
                           <div>
-                            <div className="text-xs font-bold text-navy">Student Researcher</div>
-                            <div className="text-[10px] text-ink-muted">Join innovation team with Roll No / APAAR</div>
+                            <div className="text-xs font-bold text-navy">
+                              {lang === 'hi' ? 'छात्र शोधार्थी' : 'Student Researcher'}
+                            </div>
+                            <div className="text-[10px] text-ink-muted">
+                              {lang === 'hi' ? 'रोल नंबर / अपार आईडी से टीम में जुड़ें' : 'Join innovation team with Roll No / APAAR'}
+                            </div>
                           </div>
                         </Link>
                         <Link
@@ -423,8 +455,12 @@ export function Layout() {
                         >
                           <span className="text-xs mt-0.5">👨‍🏫</span>
                           <div>
-                            <div className="text-xs font-bold text-navy">Faculty Mentor / PI</div>
-                            <div className="text-[10px] text-ink-muted">Guide students with Vidwan / Faculty ID</div>
+                            <div className="text-xs font-bold text-navy">
+                              {lang === 'hi' ? 'संकाय मार्गदर्शक / पीआई' : 'Faculty Mentor / PI'}
+                            </div>
+                            <div className="text-[10px] text-ink-muted">
+                              {lang === 'hi' ? 'विद्वान / संकाय आईडी से मार्गदर्शन करें' : 'Guide students with Vidwan / Faculty ID'}
+                            </div>
                           </div>
                         </Link>
                         <Link
@@ -434,8 +470,12 @@ export function Layout() {
                         >
                           <span className="text-xs mt-0.5">🏛️</span>
                           <div>
-                            <div className="text-xs font-bold text-navy">University / Institution Node</div>
-                            <div className="text-[10px] text-ink-muted">Register university with AISHE code</div>
+                            <div className="text-xs font-bold text-navy">
+                              {lang === 'hi' ? 'विश्वविद्यालय / उच्च शिक्षण संस्थान' : 'University / Institution Node'}
+                            </div>
+                            <div className="text-[10px] text-ink-muted">
+                              {lang === 'hi' ? 'AISHE कोड द्वारा संस्थान पंजीकृत करें' : 'Register university with AISHE code'}
+                            </div>
                           </div>
                         </Link>
                         <Link
@@ -445,8 +485,12 @@ export function Layout() {
                         >
                           <span className="text-base mt-0.5">💼</span>
                           <div>
-                            <div className="text-xs font-bold text-navy">Industry / CSR Partner</div>
-                            <div className="text-[10px] text-ink-muted">Corporate sponsorship &amp; co-funding</div>
+                            <div className="text-xs font-bold text-navy">
+                              {lang === 'hi' ? 'उद्योग व कॉर्पोरेट सीएसआर साझीदार' : 'Industry / CSR Partner'}
+                            </div>
+                            <div className="text-[10px] text-ink-muted">
+                              {lang === 'hi' ? 'कॉर्पोरेट प्रायोजन व सह-वित्तपोषण' : 'Corporate sponsorship & co-funding'}
+                            </div>
                           </div>
                         </Link>
                       </div>
@@ -473,7 +517,11 @@ export function Layout() {
                   <span className="material-symbols-outlined text-base">
                     {mobileMenuOpen ? 'close' : 'menu'}
                   </span>
-                  <span>{mobileMenuOpen ? 'Close Menu' : 'Portal Menu'}</span>
+                  <span>
+                    {mobileMenuOpen
+                      ? (lang === 'hi' ? 'मेनू बंद करें' : 'Close Menu')
+                      : (lang === 'hi' ? 'पोर्टल मेनू' : 'Portal Menu')}
+                  </span>
                 </button>
 
                 <div className="flex items-center gap-1.5">
@@ -481,13 +529,13 @@ export function Layout() {
                     to={user ? "/submit" : "/login?role=citizen&for=submit"}
                     className="px-2.5 py-1 bg-turmeric text-ink font-bold text-[11px] uppercase tracking-wider rounded-[2px] border border-turmeric-deep"
                   >
-                    SUBMIT ISSUE
+                    {t.navSubmitIssue}
                   </Link>
                   <Link
                     to="/problems"
                     className="px-2.5 py-1 bg-transparent text-white font-medium text-[11px] uppercase tracking-wider rounded-[2px] border border-white/50"
                   >
-                    TRACK
+                    {t.navTrack}
                   </Link>
                 </div>
               </div>
@@ -522,7 +570,7 @@ export function Layout() {
                         : 'hover:bg-navy-deep text-white'
                     }`}
                   >
-                    Citizen Dashboard
+                    {t.navCitizenDashboard}
                   </Link>
                 )}
 
@@ -554,7 +602,7 @@ export function Layout() {
                     }`}
                     aria-expanded={univDropdownOpen}
                   >
-                    <span>University Portal</span>
+                    <span>{t.navUniversities}</span>
                     <span className={`text-[9px] transition-transform duration-200 inline-block ${univDropdownOpen ? 'rotate-180' : 'opacity-80'}`}>▼</span>
                   </button>
 
@@ -564,7 +612,7 @@ export function Layout() {
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="px-3 py-1 text-[10px] font-mono uppercase font-bold text-turmeric border-b border-white/10 tracking-wider">
-                        Higher Education &amp; Research Desks
+                        {lang === 'hi' ? 'उच्च शिक्षा एवं अनुसंधान प्रभाग' : 'Higher Education & Research Desks'}
                       </div>
                       <Link
                         to="/university"
@@ -573,8 +621,12 @@ export function Layout() {
                       >
                         <span className="text-base mt-0.5">🏛️</span>
                         <div>
-                          <div className="text-xs font-bold text-turmeric">Dean R&amp;D Desk</div>
-                          <div className="text-[10px] text-white/70">Institutional proposals, MoUs &amp; approvals</div>
+                          <div className="text-xs font-bold text-turmeric">
+                            {lang === 'hi' ? 'डीन अनुसंधान डेस्क' : 'Dean R&D Desk'}
+                          </div>
+                          <div className="text-[10px] text-white/70">
+                            {lang === 'hi' ? 'संस्थागत प्रस्ताव, सहमति पत्र व स्वीकृति' : 'Institutional proposals, MoUs & approvals'}
+                          </div>
                         </div>
                       </Link>
                       <Link
@@ -584,8 +636,12 @@ export function Layout() {
                       >
                         <span className="text-base mt-0.5">👨‍🏫</span>
                         <div>
-                          <div className="text-xs font-bold text-turmeric">Faculty Mentor Workspace</div>
-                          <div className="text-[10px] text-white/70">Guide student projects, telemetry &amp; live chat</div>
+                          <div className="text-xs font-bold text-turmeric">
+                            {lang === 'hi' ? 'संकाय मार्गदर्शक कार्यक्षेत्र' : 'Faculty Mentor Workspace'}
+                          </div>
+                          <div className="text-[10px] text-white/70">
+                            {lang === 'hi' ? 'शोध प्रोजेक्ट मार्गदर्शन, टेलीमेट्री व संवाद' : 'Guide student projects, telemetry & live chat'}
+                          </div>
                         </div>
                       </Link>
                       <Link
@@ -595,14 +651,18 @@ export function Layout() {
                       >
                         <span className="text-base mt-0.5">👨‍🎓</span>
                         <div>
-                          <div className="text-xs font-bold text-turmeric">Student Innovator Dashboard</div>
-                          <div className="text-[10px] text-white/70">Proof of work, GPS photos &amp; live deliverables</div>
+                          <div className="text-xs font-bold text-turmeric">
+                            {lang === 'hi' ? 'छात्र नवाचार डैशबोर्ड' : 'Student Innovator Dashboard'}
+                          </div>
+                          <div className="text-[10px] text-white/70">
+                            {lang === 'hi' ? 'कार्य प्रमाण, जीपीएस तस्वीरें व प्रोजेक्ट प्रगति' : 'Proof of work, GPS photos & live deliverables'}
+                          </div>
                         </div>
                       </Link>
                       {!user && (
                         <>
                           <div className="px-3 pt-2 pb-1 text-[10px] font-mono uppercase font-bold text-white/50 tracking-wider">
-                            University Authentication
+                            {lang === 'hi' ? 'विश्वविद्यालय प्रमाणीकरण' : 'University Authentication'}
                           </div>
                           <div className="grid grid-cols-2 gap-1 px-2 pb-1">
                             <Link
@@ -610,14 +670,14 @@ export function Layout() {
                               onClick={() => setUnivDropdownOpen(false)}
                               className="px-2 py-1.5 bg-white/10 hover:bg-white/20 text-center rounded-[2px] text-[11px] font-bold text-white uppercase tracking-wider"
                             >
-                              🔑 Sign In
+                              🔑 {lang === 'hi' ? 'लॉग इन' : 'Sign In'}
                             </Link>
                             <Link
                               to="/register?role=university"
                               onClick={() => setUnivDropdownOpen(false)}
                               className="px-2 py-1.5 bg-turmeric text-ink hover:bg-turmeric-deep text-center rounded-[2px] text-[11px] font-bold uppercase tracking-wider"
                             >
-                              📝 Register
+                              📝 {lang === 'hi' ? 'पंजीकरण' : 'Register'}
                             </Link>
                           </div>
                         </>
@@ -634,7 +694,7 @@ export function Layout() {
                       : 'hover:bg-navy-deep text-white'
                   }`}
                 >
-                  Industry &amp; CSR
+                  {t.industryCsr}
                 </Link>
 
                 <Link
@@ -645,7 +705,7 @@ export function Layout() {
                       : 'hover:bg-navy-deep text-white'
                   }`}
                 >
-                  AI Analytics
+                  {t.navAnalytics}
                 </Link>
                 <Link
                   to="/government"
@@ -655,13 +715,13 @@ export function Layout() {
                       : 'hover:bg-navy-deep text-white'
                   }`}
                 >
-                  Govt Dashboard
+                  {t.navGovtDashboard}
                 </Link>
                 <a
                   href="/#notices"
                   className="px-2.5 lg:px-3 py-2.5 hover:bg-navy-deep text-white transition-colors whitespace-nowrap"
                 >
-                  Notices
+                  {t.navNotices}
                 </a>
               </nav>
 
@@ -681,46 +741,46 @@ export function Layout() {
             {mobileMenuOpen && (
               <nav className="md:hidden flex flex-col divide-y divide-navy-deep bg-navy border-t border-navy-deep py-2 text-xs font-semibold uppercase tracking-wider">
                 <Link to="/" className="px-3 py-2.5 hover:bg-navy-deep text-white">
-                  ● Home
+                  ● {t.navHome}
                 </Link>
                 <a href="/#about-scheme" className="px-3 py-2.5 hover:bg-navy-deep text-white">
-                  ● About the Scheme
+                  ● {t.navAbout}
                 </a>
                 <Link to={user ? "/submit" : "/login?role=citizen&for=submit"} className="px-3 py-2.5 hover:bg-navy-deep text-turmeric font-bold">
-                  ● Submit a Problem
+                  ● {t.navSubmitIssue}
                 </Link>
                 {user?.role === 'citizen' && (
                   <Link to="/dashboard" className="px-3 py-2.5 hover:bg-navy-deep text-turmeric font-bold">
-                    ● Citizen Dashboard
+                    ● {t.navCitizenDashboard}
                   </Link>
                 )}
                 <Link to="/problems" className="px-3 py-2.5 hover:bg-navy-deep text-white">
-                  ● Track Problems
+                  ● {t.navProblems}
                 </Link>
 
                 {/* University Section in Mobile Drawer */}
                 <div className="bg-navy-deep/80 px-3 py-2">
                   <div className="text-[10px] font-mono text-turmeric font-bold mb-1">
-                    🎓 UNIVERSITY ECOSYSTEM
+                    🎓 {lang === 'hi' ? 'विश्वविद्यालय पारिस्थितिकी तंत्र' : 'UNIVERSITY ECOSYSTEM'}
                   </div>
                   <div className="flex flex-col gap-1 pl-2 font-normal normal-case">
                     <Link to="/university" className="py-1 text-xs text-white hover:text-turmeric flex items-center gap-1.5">
-                      <span>🏛️</span> <span>Dean R&amp;D Desk</span>
+                      <span>🏛️</span> <span>{lang === 'hi' ? 'डीन अनुसंधान डेस्क' : 'Dean R&D Desk'}</span>
                     </Link>
                     <Link to="/university/mentor" className="py-1 text-xs text-white hover:text-turmeric flex items-center gap-1.5">
-                      <span>👨‍🏫</span> <span>Faculty Mentor Workspace</span>
+                      <span>👨‍🏫</span> <span>{lang === 'hi' ? 'संकाय मार्गदर्शक कार्यक्षेत्र' : 'Faculty Mentor Workspace'}</span>
                     </Link>
                     <Link to="/student" className="py-1 text-xs text-white hover:text-turmeric flex items-center gap-1.5">
-                      <span>👨‍🎓</span> <span>Student Innovator Dashboard</span>
+                      <span>👨‍🎓</span> <span>{lang === 'hi' ? 'छात्र नवाचार डैशबोर्ड' : 'Student Innovator Dashboard'}</span>
                     </Link>
                     {!user && (
                       <div className="flex items-center gap-2 pt-1 mt-1 border-t border-white/10">
                         <Link to="/login?role=university" className="text-[11px] font-bold text-turmeric underline">
-                          University Sign In
+                          {lang === 'hi' ? 'विश्वविद्यालय लॉगिन' : 'University Sign In'}
                         </Link>
                         <span className="text-white/40">|</span>
                         <Link to="/register?role=university" className="text-[11px] font-bold text-turmeric underline">
-                          Register
+                          {lang === 'hi' ? 'पंजीकरण' : 'Register'}
                         </Link>
                       </div>
                     )}
@@ -731,36 +791,36 @@ export function Layout() {
                   to={user ? (user.role === 'industry' ? '/industry' : getDefaultPortalForUser(user)) : '/login?role=industry'}
                   className="px-3 py-2.5 hover:bg-navy-deep text-white"
                 >
-                  ● Industry &amp; CSR
+                  ● {t.industryCsr}
                 </Link>
                 <Link to="/analytics" className="px-3 py-2.5 hover:bg-navy-deep text-white">
-                  ● AI Analytics
+                  ● {t.navAnalytics}
                 </Link>
                 <Link to="/government" className="px-3 py-2.5 hover:bg-navy-deep text-white">
-                  ● Govt Dashboard
+                  ● {t.navGovtDashboard}
                 </Link>
                 <a href="/#notices" className="px-3 py-2.5 hover:bg-navy-deep text-white">
-                  ● Circulars &amp; Notices
+                  ● {t.navNotices}
                 </a>
 
                 {/* Quick Role-based Access Links for Mobile */}
                 {!user && (
                   <div className="p-3 bg-navy-deep/40 flex flex-col gap-2">
                     <div className="text-[10px] font-mono text-ink-muted uppercase font-bold text-white/70">
-                      QUICK ROLE LOGIN &amp; REGISTER
+                      {lang === 'hi' ? 'त्वरित भूमिका लॉगिन व पंजीकरण' : 'QUICK ROLE LOGIN & REGISTER'}
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <Link
                         to="/login"
                         className="py-1.5 text-center bg-white text-navy font-bold text-[11px] rounded-[2px]"
                       >
-                        Sign In Portal
+                        {lang === 'hi' ? 'लॉगिन पोर्टल' : 'Sign In Portal'}
                       </Link>
                       <Link
                         to="/register"
                         className="py-1.5 text-center bg-turmeric text-ink font-bold text-[11px] rounded-[2px]"
                       >
-                        Register Account
+                        {lang === 'hi' ? 'नया पंजीकरण' : 'Register Account'}
                       </Link>
                     </div>
                   </div>
@@ -780,13 +840,13 @@ export function Layout() {
           <Link
             to={user ? "/submit" : "/login?role=citizen&for=submit"}
             className="fixed right-0 top-1/2 -translate-y-1/2 z-40 hidden md:flex items-center bg-turmeric text-ink border-l-2 border-t-2 border-b-2 border-turmeric-deep px-2 py-4 shadow-sm hover:bg-turmeric-deep transition-all group"
-            title="Quickly Submit a Civic Problem"
+            title={lang === 'hi' ? 'नागरिक समस्या दर्ज करें' : 'Quickly Submit a Civic Problem'}
           >
             <span
               className="font-bold text-xs uppercase tracking-widest text-ink"
               style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
             >
-              ● SUBMIT A PROBLEM
+              ● {t.navSubmitIssue}
             </span>
           </Link>
 
@@ -794,7 +854,7 @@ export function Layout() {
           <Link
             to={user ? "/submit" : "/login?role=citizen&for=submit"}
             className="md:hidden fixed bottom-5 right-5 z-40 w-12 h-12 rounded-full bg-turmeric text-ink font-bold flex items-center justify-center border-2 border-turmeric-deep shadow-lg active:scale-95"
-            title="Submit a Problem"
+            title={lang === 'hi' ? 'समस्या दर्ज करें' : 'Submit a Problem'}
           >
             <span className="material-symbols-outlined text-2xl font-bold">add</span>
           </Link>
@@ -816,13 +876,16 @@ export function Layout() {
         <div className="w-full py-4 border-b border-border bg-[#F5F2E9]">
           <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between text-xs text-ink-muted gap-2 text-center md:text-left">
             <div className="font-mono">
-              Developed for <strong>Smart India Hackathon 2026</strong> · PS 26043
+              {lang === 'hi' ? 'स्मार्ट इंडिया हैकाथॉन 2026 हेतु विकसित' : 'Developed for'}{' '}
+              <strong>Smart India Hackathon 2026</strong> · PS 26043
             </div>
             <div className="font-semibold text-navy">
-              Department of Higher &amp; Technical Education, Government of Jharkhand
+              {lang === 'hi'
+                ? 'उच्च एवं तकनीकी शिक्षा विभाग, झारखंड सरकार'
+                : 'Department of Higher & Technical Education, Government of Jharkhand'}
             </div>
             <div className="font-mono text-[11px]">
-              Version 1.0 (NIC Standard) | Best viewed in Chrome, Edge, Firefox
+              {t.footerVersion}
             </div>
           </div>
         </div>
@@ -831,41 +894,39 @@ export function Layout() {
         <div className="w-full bg-navy text-white py-6">
           <div className="max-w-7xl mx-auto px-4 text-center space-y-3">
             <p className="text-xs opacity-90 leading-relaxed">
-              © 2026 Government of Jharkhand. All Rights Reserved. Content Owned, Maintained and
-              Updated by Department of Higher &amp; Technical Education.
+              {t.footerCopyright}
             </p>
             <div className="flex flex-wrap justify-center gap-x-3 sm:gap-x-4 gap-y-1 text-xs text-white/70">
               <a href="#about-scheme" className="hover:text-turmeric hover:underline">
-                About Samadhan Setu
+                {t.footerAbout}
               </a>
               <span>|</span>
               <a href="#accessibility" className="hover:text-turmeric hover:underline">
-                Accessibility Statement
+                {t.footerAccessibility}
               </a>
               <span>|</span>
               <a href="#privacy" className="hover:text-turmeric hover:underline">
-                Privacy Policy
+                {t.footerPrivacy}
               </a>
               <span>|</span>
               <a href="#terms" className="hover:text-turmeric hover:underline">
-                Terms of Use
+                {t.footerTerms}
               </a>
               <span>|</span>
               <a href="#hyperlinking" className="hover:text-turmeric hover:underline">
-                Hyperlinking Policy
+                {t.footerHyperlink}
               </a>
               <span>|</span>
               <a href="#sitemap" className="hover:text-turmeric hover:underline">
-                Sitemap
+                {t.footerSitemap}
               </a>
               <span>|</span>
               <a href="#help" className="hover:text-turmeric hover:underline">
-                Helpdesk &amp; FAQs
+                {t.footerHelpdesk}
               </a>
             </div>
             <div className="pt-2 text-[10px] sm:text-[11px] font-mono text-white/50">
-              National Informatics Centre (NIC) Server Node: JH-RANCHI-01 · Last Updated: 10
-              September 2026
+              {t.footerNicNode}
             </div>
           </div>
         </div>

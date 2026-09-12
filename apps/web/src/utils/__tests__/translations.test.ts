@@ -33,4 +33,29 @@ describe('Language Store & Bilingual Translations', () => {
     expect(useLanguageStore.getState().lang).toBe('hi');
     expect(translations.hi.statProblemsSubmitted).toBe('कुल दर्ज समस्याएं');
   });
+
+  it('contains complete parity between English and Hindi keys', () => {
+    const enKeys = Object.keys(translations.en) as (keyof typeof translations.en)[];
+    const hiKeys = Object.keys(translations.hi) as (keyof typeof translations.hi)[];
+
+    expect(enKeys.sort()).toEqual(hiKeys.sort());
+
+    enKeys.forEach((k) => {
+      expect(translations.en[k]).toBeTruthy();
+      expect(translations.hi[k]).toBeTruthy();
+    });
+  });
+
+  it('translates narrative, leadership, sectors, notices, and footer correctly', () => {
+    const hi = translations.hi;
+    expect(hi.aboutTitle).toBe('योजना परिचय: समाधान सेतु');
+    expect(hi.cmName).toBe('श्री हेमन्त सोरेन');
+    expect(hi.ministerName).toBe('डॉ. बैद्यनाथ राम');
+    expect(hi.secretaryName).toContain('श्री राहुल पुरवार');
+    expect(hi.secEducationTitle).toBe('शिक्षा');
+    expect(hi.secWaterTitle).toBe('जल संसाधन');
+    expect(hi.noticesTitle).toContain('आधिकारिक सूचनाएं');
+    expect(hi.footerAbout).toBe('समाधान सेतु परिचय');
+    expect(hi.footerCopyright).toContain('झारखंड सरकार');
+  });
 });
