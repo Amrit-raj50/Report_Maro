@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link, Navigate } from 'react-router-dom';
 import { loginRequestSchema } from '@sih/shared-types';
 import { apiClient, apiErrorMessage } from '../lib/apiClient.js';
 import { useAuthStore } from '../store/authStore.js';
 import { Button } from '../components/Button.js';
 import { useJharkhandUniversities, getUniversityById } from '../data/jharkhandUniversities.js';
+import { getDefaultPortalForUser } from '../utils/portalRouting.js';
 
 export type LoginRoleTab = 'citizen' | 'university' | 'industry' | 'admin';
 export type UniversitySubRole = 'student' | 'mentor' | 'dean';
@@ -12,7 +13,12 @@ export type UniversitySubRole = 'student' | 'mentor' | 'dean';
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, clearSession, setSession } = useAuthStore();
+  const { user, setSession } = useAuthStore();
+
+  // If user is already authenticated, prevent accessing login page and redirect to their portal
+  if (user) {
+    return <Navigate to={getDefaultPortalForUser(user)} replace />;
+  }
 
   const searchParams = new URLSearchParams(location.search);
   const queryRole = searchParams.get('role');
@@ -190,26 +196,48 @@ export default function Login() {
 
         const role = res.data.user.role;
 
-        // Routing logic based on role & subrole
+        // Persist university profile if university role
+        if (role === 'university') {
+          const sub =
+            forcedRole === 'student' || (activeRole === 'university' && univSubRole === 'student') || loginEmail.includes('himmat')
+              ? 'student'
+              : forcedRole === 'mentor' || (activeRole === 'university' && univSubRole === 'mentor') || loginEmail.includes('rsharma')
+                ? 'mentor'
+                : 'dean';
+          try {
+            localStorage.setItem(
+              'samadhansetu_university_profile',
+              JSON.stringify({
+                univId: selectedUnivId,
+                univName: selectedUniv?.name || 'NIT Jamshedpur',
+                subRole: sub,
+              }),
+            );
+          } catch {
+            // ignore
+          }
+        }
+
+        // Routing logic based on role & subrole (using replace: true so /login is not kept in history)
         if (forcedRole === 'student' || (activeRole === 'university' && univSubRole === 'student') || loginEmail.includes('himmat')) {
-          navigate('/student');
+          navigate('/student', { replace: true });
         } else if (forcedRole === 'mentor' || (activeRole === 'university' && univSubRole === 'mentor') || loginEmail.includes('rsharma')) {
-          navigate('/university/mentor');
+          navigate('/university/mentor', { replace: true });
         } else if (forcedRole === 'dean' || (activeRole === 'university' && univSubRole === 'dean') || loginEmail.includes('dean')) {
-          navigate('/university');
+          navigate('/university', { replace: true });
         } else if (fromPath && (role === 'university' || !fromPath.startsWith('/university'))) {
-          navigate(fromPath);
+          navigate(fromPath, { replace: true });
         } else if (role === 'university') {
-          navigate('/university');
+          navigate('/university', { replace: true });
         } else if (role === 'admin') {
-          navigate('/admin');
+          navigate('/admin', { replace: true });
         } else if (role === 'industry') {
-          navigate('/industry');
+          navigate('/industry', { replace: true });
         } else {
           if (queryFor === 'submit' || fromPath === '/submit') {
-            navigate('/submit');
+            navigate('/submit', { replace: true });
           } else {
-            navigate('/dashboard');
+            navigate('/dashboard', { replace: true });
           }
         }
       }
@@ -286,20 +314,6 @@ export default function Login() {
             <span>
               {stateObj?.message || 'Please sign in with your University credential or use the 1-click University demo accounts below.'}
             </span>
-            {user && (
-              <div className="mt-2 pt-2 border-t border-forest/20 flex items-center justify-between text-[11px] text-ink">
-                <span>
-                  Currently signed in as: <strong>{user.full_name}</strong> ({user.role})
-                </span>
-                <button
-                  type="button"
-                  onClick={clearSession}
-                  className="text-urgent font-bold underline hover:text-urgent/80"
-                >
-                  Switch Account
-                </button>
-              </div>
-            )}
           </div>
         )}
 

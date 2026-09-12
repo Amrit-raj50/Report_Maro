@@ -94,14 +94,6 @@ export default function Home() {
           {/* Hero Content Box */}
           <div className="relative max-w-7xl mx-auto px-4 py-12 md:py-20 w-full">
             <div className="max-w-3xl space-y-4 sm:space-y-5">
-              {/* Monospace Portal Reference Badge */}
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-2.5 sm:px-3 py-1 sm:py-1.5 border border-white/20 text-white rounded-[2px]">
-                <span className="inline-block w-2 h-2 rounded-full bg-turmeric animate-pulse" />
-                <span className="font-mono text-[10px] sm:text-xs font-semibold tracking-wider text-turmeric truncate">
-                  PORTAL ID: PS-26043 · LIVE CITIZEN GRIEVANCE &amp; RESEARCH NEXUS
-                </span>
-              </div>
-
               {/* Gazette Serif Title */}
               <h1 className="font-display text-2xl sm:text-4xl md:text-5xl text-white font-bold leading-tight tracking-tight drop-shadow-sm">
                 Your Problem. Their Research. <br className="hidden sm:inline" />
