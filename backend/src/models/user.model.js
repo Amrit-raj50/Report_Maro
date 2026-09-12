@@ -63,6 +63,11 @@ const UserSchema = new mongoose.Schema(
       type: Number,
       default: null,
     },
+    university_profile: {
+      departments: { type: [String], default: [] },
+      research_areas: { type: [String], default: [] },
+      technical_capabilities: { type: [String], default: [] },
+    },
   },
   {
     timestamps: {

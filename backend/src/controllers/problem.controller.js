@@ -112,7 +112,8 @@ const getProblemById = async (req, res, next) => {
   try {
     const problem = await Problem.findById(req.params.id)
       .populate('submitted_by', 'full_name email')
-      .populate('assigned_university', 'full_name organization');
+      .populate('assigned_university', 'full_name organization')
+      .populate('recommended_universities.university', 'full_name organization university_profile');
 
     if (!problem) {
       return res.status(404).json({

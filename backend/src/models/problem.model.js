@@ -19,6 +19,10 @@ const ProblemSchema = new mongoose.Schema(
       enum: ['water', 'road', 'health', 'other'],
       default: null,
     },
+    sub_category: {
+      type: String,
+      default: null,
+    },
     priority: {
       type: String,
       enum: ['low', 'medium', 'high'],
@@ -55,6 +59,28 @@ const ProblemSchema = new mongoose.Schema(
       max: 1,
       default: null,
     },
+    ai_reasoning: {
+      type: String,
+      default: null,
+    },
+    required_expertise: {
+      type: [String],
+      default: [],
+    },
+    duplicate_check: {
+      is_duplicate: { type: Boolean, default: false },
+      similarity_score: { type: Number, min: 0, max: 1, default: 0 },
+      duplicate_of: { type: mongoose.Schema.Types.ObjectId, ref: 'Problem', default: null },
+      reason: { type: String, default: null },
+    },
+    recommended_universities: [
+      {
+        university: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        match_score: { type: Number, min: 0, max: 1, default: 0 },
+        matched_departments: { type: [String], default: [] },
+        reason: { type: String, default: null },
+      },
+    ],
   },
   {
     timestamps: {
