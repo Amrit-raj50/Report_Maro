@@ -37,13 +37,20 @@ function setStoredData<T>(key: string, data: T): void {
   }
 }
 
+interface BackendProjectRecord {
+  _id: string;
+  proposal_text?: string;
+  status?: string;
+  budget?: number;
+}
+
 export const partnershipsApi = {
   async getProjects(): Promise<IndustryProject[]> {
     try {
       const res = await apiClient.get('/projects');
       if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
         // Merge backend projects if present
-        const backendProjects: IndustryProject[] = res.data.data.map((p: { _id: string; proposal_text?: string; status?: string; budget?: number }) => ({
+        const backendProjects: IndustryProject[] = res.data.data.map((p: BackendProjectRecord) => ({
           id: p._id,
           code: `JH-PRJ-2026-${p._id.slice(-3)}`,
           title: p.proposal_text?.slice(0, 60) || 'Civic Solution Initiative',
