@@ -5,6 +5,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 
 // ✅ Import all routes
+const voiceRoutes = require('./routes/voice.route');
 const authRoutes = require('./routes/auth.route');
 const problemRoutes = require('./routes/problem.route');
 const projectRoutes = require('./routes/project.route');
@@ -31,7 +32,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/government', governmentRoutes);
 app.use('/api/universities', universityRoutes);
-
+app.use('/api/voice', voiceRoutes);
 // Health check (optional)
 app.get('/health', (req, res) => {
   res.json({ 
