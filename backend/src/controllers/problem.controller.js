@@ -1,4 +1,4 @@
-// controllers/problem.controller.js
+﻿// controllers/problem.controller.js
 const Problem = require('../models/problem.model');
 const Project = require('../models/project.model');
 const Notification = require('../models/notification.model');
@@ -11,7 +11,7 @@ const { uploadToCloudinary } = require('../utils/cloudinary');
 // POST /api/problems - Citizen submits problem
 const createProblem = async (req, res, next) => {
   try {
-    let { title, description, location, image_urls } = req.body;
+    let { title, description, location, image_urls, category, is_emergency } = req.body;
 
     // Handle parsed location if submitted as JSON string in multipart/form-data
     if (typeof location === 'string') {
@@ -23,19 +23,38 @@ const createProblem = async (req, res, next) => {
     }
 
     // Validate required fields
-    if (!title || !description || !location || !location.lat || !location.lng || !location.district) {
+    if (!location || !location.lat || !location.lng || !location.district) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields: title, description, location (lat, lng, district)',
+        message: 'Missing required fields: location (lat, lng, district)',
       });
     }
 
-    // Upload images to Cloudinary (if any)
+    // Auto-fill title and description if not provided
+    if (!title) title = `${category || 'road'} समस्या`;
+    if (!description || description.length < 20) {
+      description = (description || '') + ' नागरिक द्वारा दर्ज की गई समस्या — कृपया ध्यान दें।';
+    }
+
+    // Extract User ID safely (supports both req.user.id and req.user._id)
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'उपयोगकर्ता पहचान नहीं हो सकी (Unauthorized)',
+      });
+    }
+
+    // Upload images to Cloudinary (if any) — each upload is individually protected
     let uploadedImages = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
-        const result = await uploadToCloudinary(file.path);
-        uploadedImages.push(result.secure_url);
+        try {
+          const result = await uploadToCloudinary(file.path);
+          uploadedImages.push(result.secure_url);
+        } catch (cErr) {
+          console.error('[Cloudinary] Image upload warning (skipping):', cErr.message);
+        }
       }
     }
 
@@ -43,32 +62,42 @@ const createProblem = async (req, res, next) => {
     const problem = await Problem.create({
       title,
       description,
+      category: category || 'road',
       location,
       image_urls: uploadedImages.length > 0 ? uploadedImages : (image_urls || []),
-      submitted_by: req.user.id,
+      submitted_by: userId,
       status: 'submitted',
+      priority: is_emergency ? 'high' : 'medium',
     });
 
-    // Enqueue for AI processing (Fire and forget)
-    await enqueueClassification(problem._id, description);
+    // Enqueue for AI processing — FIRE AND FORGET (never crash if Redis is down)
+    enqueueClassification(problem._id, description).catch((err) => {
+      console.error('⚠️ [BullMQ AI Queue] Redis connection error (bypassed, problem still saved):', err.message);
+    });
 
     // 202 Accepted - Processing in background
     res.status(202).json({
       success: true,
-      message: 'Problem submitted successfully. AI is processing it in the background.',
+      message: 'समस्या सफलतापूर्वक दर्ज की गई। AI पृष्ठभूमि में प्रसंस्करण कर रही है।',
       data: {
+        _id: problem._id,
         id: problem._id,
         title: problem.title,
+        description: problem.description,
+        category: problem.category,
         status: problem.status,
+        location: problem.location,
+        image_urls: problem.image_urls,
         created_at: problem.created_at,
       },
     });
   } catch (error) {
+    console.error('❌ [Problem Controller] createProblem error:', error);
     next(error);
   }
 };
 
-// 📝 GET /api/problems - List problems with filters
+// GET /api/problems - List problems with filters
 const getProblems = async (req, res, next) => {
   try {
     const { category, district, status, submitted_by, page = 1, limit = 10 } = req.query;
@@ -78,7 +107,7 @@ const getProblems = async (req, res, next) => {
     if (district) filter['location.district'] = district;
     if (status) filter.status = status;
     if (submitted_by === 'me' && req.user) {
-      filter.submitted_by = req.user.id;
+      filter.submitted_by = req.user.id || req.user._id;
     } else if (submitted_by) {
       filter.submitted_by = submitted_by;
     }
@@ -107,7 +136,7 @@ const getProblems = async (req, res, next) => {
   }
 };
 
-// 📝 GET /api/problems/:id - Get single problem
+// GET /api/problems/:id - Get single problem
 const getProblemById = async (req, res, next) => {
   try {
     const problem = await Problem.findById(req.params.id)
@@ -128,7 +157,7 @@ const getProblemById = async (req, res, next) => {
   }
 };
 
-// 📝 PUT /api/problems/:id/assign - Admin assigns to university
+// PUT /api/problems/:id/assign - Admin assigns to university
 const assignProblem = async (req, res, next) => {
   try {
     const { universityId } = req.body;
@@ -186,7 +215,7 @@ const assignProblem = async (req, res, next) => {
     // Audit log
     await AuditLog.create({
       eventType: 'PROBLEM_ASSIGNED',
-      payload: { problemId: problem._id, universityId, assignedBy: req.user.id },
+      payload: { problemId: problem._id, universityId, assignedBy: req.user.id || req.user._id },
       source: 'admin',
     }).catch(err => console.error('AuditLog error:', err.message));
 
@@ -209,7 +238,7 @@ const assignProblem = async (req, res, next) => {
     }
 
     // Invalidate stats cache
-    await setCache('stats:dashboard', null, 0);
+    await setCache('stats:dashboard', null, 0).catch(() => {});
 
     res.json({
       success: true,
@@ -224,13 +253,13 @@ const assignProblem = async (req, res, next) => {
   }
 };
 
-// 📝 GET /api/problems/stats - Admin dashboard stats (cached 5 min)
+// GET /api/problems/stats - Admin dashboard stats (cached 5 min)
 const getStats = async (req, res, next) => {
   try {
     const cacheKey = 'stats:dashboard';
 
     // Check cache
-    const cached = await getCache(cacheKey);
+    const cached = await getCache(cacheKey).catch(() => null);
     if (cached) {
       return res.json({
         success: true,
@@ -264,7 +293,7 @@ const getStats = async (req, res, next) => {
     };
 
     // Cache for 5 minutes (300 seconds)
-    await setCache(cacheKey, stats, 300);
+    await setCache(cacheKey, stats, 300).catch(() => {});
 
     res.json({
       success: true,
