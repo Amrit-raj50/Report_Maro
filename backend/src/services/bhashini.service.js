@@ -1,92 +1,194 @@
-﻿// src/services/bhashini.service.js
+// src/services/bhashini.service.js
 const axios = require('axios');
 
-let cachedConfig = null;
+const INFERENCE_URL = 'https://dhruva-api.bhashini.gov.in/services/inference/pipeline';
+const PIPELINE_CONFIG_URL = 'https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline';
 
-async function getPipelineConfig() {
-  if (cachedConfig) return cachedConfig;
+// Known working serviceIds for Bhashini pipeline (fallback when MeitY config API is slow/down)
+const DEFAULT_SERVICE_IDS = {
+  tts: {
+    hi: 'ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4',
+    en: 'ai4bharat/indic-tts-coqui-misc-gpu--t4',
+    bn: 'ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4',
+    or: 'ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4',
+  },
+  asr: {
+    hi: 'ai4bharat/conformer-hi-gpu--t4',
+    en: 'ai4bharat/whisper-medium-en--gpu--t4',
+    bn: 'ai4bharat/conformer-multilingual-indo_aryan-gpu--t4',
+    or: 'ai4bharat/conformer-multilingual-indo_aryan-gpu--t4',
+    ur: 'ai4bharat/conformer-multilingual-indo_aryan-gpu--t4',
+  },
+};
 
-  // Check for required env vars before making any network request
-  if (!process.env.BHASHINI_USER_ID || !process.env.BHASHINI_UDYAT_KEY || !process.env.BHASHINI_PIPELINE_ID) {
-    throw new Error('Bhashini env vars missing: BHASHINI_USER_ID, BHASHINI_UDYAT_KEY, BHASHINI_PIPELINE_ID');
+const serviceIdCache = new Map();
+
+// Supported native TTS languages in Bhashini
+const SUPPORTED_TTS_LANGS = ['hi', 'en', 'bn', 'or'];
+const SUPPORTED_ASR_LANGS = ['hi', 'en', 'bn', 'or', 'ur'];
+
+function resolveLanguage(lang, supportedList) {
+  if (!lang) return 'hi';
+  const cleanLang = String(lang).trim().toLowerCase();
+  return supportedList.includes(cleanLang) ? cleanLang : 'hi';
+}
+
+async function getServiceId(taskType, language) {
+  const cacheKey = `${taskType}_${language}`;
+  if (serviceIdCache.has(cacheKey)) {
+    return serviceIdCache.get(cacheKey);
   }
 
-  const response = await axios.post(
-    'https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline',
-    {
-      pipelineTasks: [{ taskType: 'tts' }, { taskType: 'asr' }],
-      pipelineRequestConfig: { pipelineId: process.env.BHASHINI_PIPELINE_ID },
-    },
-    {
-      headers: {
-        userID: process.env.BHASHINI_USER_ID,
-        ulcaApiKey: process.env.BHASHINI_UDYAT_KEY,
-      },
-      timeout: 10000,
-    }
-  );
+  const userId = process.env.BHASHINI_USER_ID;
+  const inferenceKey = process.env.BHASHINI_INFERENCE_KEY;
+  const pipelineId = process.env.BHASHINI_PIPELINE_ID || '64392f96daac500b55c543cd';
 
-  const { pipelineInferenceAPIEndPoint, pipelineResponseConfig } = response.data;
-  cachedConfig = {
-    callbackUrl: pipelineInferenceAPIEndPoint.callbackUrl,
-    inferenceKey: pipelineInferenceAPIEndPoint.inferenceApiKey?.value || process.env.BHASHINI_INFERENCE_KEY,
+  if (userId && inferenceKey) {
+    try {
+      const response = await axios.post(
+        PIPELINE_CONFIG_URL,
+        {
+          pipelineTasks: [{ taskType, config: { language: { sourceLanguage: language } } }],
+          pipelineRequestConfig: { pipelineId },
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            userID: userId,
+            Authorization: inferenceKey,
+          },
+          timeout: 8000,
+        }
+      );
+
+      const serviceId = response.data?.pipelineResponseConfig?.[0]?.config?.[0]?.serviceId;
+      if (serviceId) {
+        serviceIdCache.set(cacheKey, serviceId);
+        return serviceId;
+      }
+    } catch (err) {
+      console.warn(
+        `[Bhashini] Failed to fetch dynamic serviceId for ${taskType}/${language}, using fallback:`,
+        err.response?.data?.message || err.message
+      );
+    }
+  }
+
+  const fallback = DEFAULT_SERVICE_IDS[taskType]?.[language] || DEFAULT_SERVICE_IDS[taskType]?.['hi'];
+  if (fallback) {
+    serviceIdCache.set(cacheKey, fallback);
+    return fallback;
+  }
+
+  throw new Error(`No serviceId found for ${taskType} in ${language}`);
+}
+
+async function getPipelineConfig() {
+  const userId = process.env.BHASHINI_USER_ID;
+  const inferenceKey = process.env.BHASHINI_INFERENCE_KEY;
+  if (!userId || !inferenceKey) {
+    throw new Error('Bhashini credentials missing in env: BHASHINI_USER_ID or BHASHINI_INFERENCE_KEY');
+  }
+
+  return {
+    callbackUrl: INFERENCE_URL,
+    inferenceKey,
     serviceIds: {
-      tts: pipelineResponseConfig.find(p => p.taskType === 'tts')?.config?.[0]?.serviceId || null,
-      asr: pipelineResponseConfig.find(p => p.taskType === 'asr')?.config?.[0]?.serviceId || null,
+      tts: await getServiceId('tts', 'hi'),
+      asr: await getServiceId('asr', 'hi'),
     },
   };
-  console.log('✅ [Bhashini] Pipeline config loaded:', cachedConfig.callbackUrl);
-  return cachedConfig;
 }
 
 async function textToSpeech(text, sourceLanguage = 'hi') {
-  const cfg = await getPipelineConfig();
+  if (!text || typeof text !== 'string' || !text.trim()) {
+    throw new Error('Text is required for TTS');
+  }
+
+  const effectiveLang = resolveLanguage(sourceLanguage, SUPPORTED_TTS_LANGS);
+  const serviceId = await getServiceId('tts', effectiveLang);
+
+  const inferenceKey = process.env.BHASHINI_INFERENCE_KEY;
+  const userId = process.env.BHASHINI_USER_ID;
+
+  if (!inferenceKey || !userId) {
+    throw new Error('Bhashini env vars missing: BHASHINI_USER_ID or BHASHINI_INFERENCE_KEY');
+  }
+
   const res = await axios.post(
-    cfg.callbackUrl,
+    INFERENCE_URL,
     {
       pipelineTasks: [{
         taskType: 'tts',
         config: {
-          serviceId: cfg.serviceIds.tts,
-          language: { sourceLanguage },
+          serviceId,
+          language: { sourceLanguage: effectiveLang },
           gender: 'female',
         },
       }],
-      inputData: { input: [{ source: text }] },
+      inputData: { input: [{ source: text.trim() }] },
     },
     {
-      headers: { Authorization: cfg.inferenceKey },
-      timeout: 15000,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: inferenceKey,
+        userID: userId,
+      },
+      timeout: 20000,
     }
   );
-  return res.data.pipelineResponse[0].audio[0].audioContent;
+
+  const audioContent = res.data?.pipelineResponse?.[0]?.audio?.[0]?.audioContent;
+  if (!audioContent) {
+    throw new Error('Bhashini TTS returned empty audio payload');
+  }
+
+  return audioContent;
 }
 
 async function speechToText(base64Audio, sourceLanguage = 'hi') {
-  const cfg = await getPipelineConfig();
+  if (!base64Audio) {
+    throw new Error('Audio data is required for ASR');
+  }
+
+  const effectiveLang = resolveLanguage(sourceLanguage, SUPPORTED_ASR_LANGS);
+  const serviceId = await getServiceId('asr', effectiveLang);
+
+  const inferenceKey = process.env.BHASHINI_INFERENCE_KEY;
+  const userId = process.env.BHASHINI_USER_ID;
+
+  if (!inferenceKey || !userId) {
+    throw new Error('Bhashini env vars missing: BHASHINI_USER_ID or BHASHINI_INFERENCE_KEY');
+  }
+
   const res = await axios.post(
-    cfg.callbackUrl,
+    INFERENCE_URL,
     {
       pipelineTasks: [{
         taskType: 'asr',
         config: {
-          serviceId: cfg.serviceIds.asr,
-          language: { sourceLanguage },
+          serviceId,
+          language: { sourceLanguage: effectiveLang },
         },
       }],
       inputData: { audio: [{ audioContent: base64Audio }] },
     },
     {
-      headers: { Authorization: cfg.inferenceKey },
-      timeout: 15000,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: inferenceKey,
+        userID: userId,
+      },
+      timeout: 20000,
     }
   );
-  return res.data.pipelineResponse[0].output[0].source;
+
+  const source = res.data?.pipelineResponse?.[0]?.output?.[0]?.source;
+  return source || '';
 }
 
-// Reset cached config (useful if keys are rotated)
 function resetCache() {
-  cachedConfig = null;
+  serviceIdCache.clear();
 }
 
 module.exports = { getPipelineConfig, textToSpeech, speechToText, resetCache };

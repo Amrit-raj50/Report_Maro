@@ -22,12 +22,19 @@ router.post(
   createProblem
 );
 
+// Stats route (MUST be before /:id so 'stats' is not matched as an ObjectId)
+router.get(
+  '/stats/dashboard',
+  authMiddleware,
+  rbacMiddleware(['admin', 'citizen', 'university', 'industry']),
+  getStats
+);
+
 // All authenticated users
 router.get('/', authMiddleware, getProblems);
 router.get('/:id', authMiddleware, getProblemById);
 
 // Admin only
-router.put('/:id/assign',authMiddleware,rbacMiddleware(['admin']),assignProblem);
-router.get('/stats/dashboard',authMiddleware,rbacMiddleware(['admin']),getStats);
+router.put('/:id/assign', authMiddleware, rbacMiddleware(['admin']), assignProblem);
 
 module.exports = router;
