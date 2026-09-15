@@ -11,26 +11,54 @@ const DEFAULT_SERVICE_IDS = {
     en: 'ai4bharat/indic-tts-coqui-misc-gpu--t4',
     bn: 'ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4',
     or: 'ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4',
+    bho: 'ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4',
+    sat: 'ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4',
+    anp: 'ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4',
+    mai: 'ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4',
   },
   asr: {
     hi: 'ai4bharat/conformer-hi-gpu--t4',
     en: 'ai4bharat/whisper-medium-en--gpu--t4',
     bn: 'ai4bharat/conformer-multilingual-indo_aryan-gpu--t4',
     or: 'ai4bharat/conformer-multilingual-indo_aryan-gpu--t4',
+    bho: 'ai4bharat/conformer-multilingual-indo_aryan-gpu--t4',
+    sat: 'ai4bharat/conformer-multilingual-indo_aryan-gpu--t4',
+    anp: 'ai4bharat/conformer-multilingual-indo_aryan-gpu--t4',
+    mai: 'ai4bharat/conformer-multilingual-indo_aryan-gpu--t4',
     ur: 'ai4bharat/conformer-multilingual-indo_aryan-gpu--t4',
   },
 };
 
 const serviceIdCache = new Map();
 
-// Supported native TTS languages in Bhashini
-const SUPPORTED_TTS_LANGS = ['hi', 'en', 'bn', 'or'];
-const SUPPORTED_ASR_LANGS = ['hi', 'en', 'bn', 'or', 'ur'];
+// Supported native TTS & ASR languages in Bhashini (Hindi, English, Bengali, Odia, Bhojpuri, Santhali, Angika, Khortha, Nagpuri, Magahi, Maithili, Kurukh, Urdu)
+const SUPPORTED_TTS_LANGS = [
+  'hi', 'en', 'bn', 'or', 'bho', 'sat', 'anp', 'kht', 'nag', 'mag', 'mai', 'kru'
+];
+const SUPPORTED_ASR_LANGS = [
+  'hi', 'en', 'bn', 'or', 'bho', 'sat', 'anp', 'kht', 'nag', 'mag', 'mai', 'kru', 'ur'
+];
+
+const BHASHINI_TTS_PIPELINE_MAP = {
+  bn: 'bn',
+  or: 'or',
+  en: 'en',
+  hi: 'hi',
+  bho: 'hi',
+  sat: 'hi',
+  anp: 'hi',
+  kht: 'hi',
+  nag: 'hi',
+  mag: 'hi',
+  mai: 'hi',
+  kru: 'hi',
+};
 
 function resolveLanguage(lang, supportedList) {
   if (!lang) return 'hi';
   const cleanLang = String(lang).trim().toLowerCase();
-  return supportedList.includes(cleanLang) ? cleanLang : 'hi';
+  const mapped = BHASHINI_TTS_PIPELINE_MAP[cleanLang] || cleanLang;
+  return supportedList.includes(mapped) ? mapped : 'hi';
 }
 
 async function getServiceId(taskType, language) {
@@ -100,14 +128,8 @@ async function getPipelineConfig() {
   };
 }
 
-async function textToSpeech(text, sourceLanguage = 'hi') {
-  if (!text || typeof text !== 'string' || !text.trim()) {
-    throw new Error('Text is required for TTS');
-  }
-
-  const effectiveLang = resolveLanguage(sourceLanguage, SUPPORTED_TTS_LANGS);
-  const serviceId = await getServiceId('tts', effectiveLang);
-
+async function callBhashiniTts(text, targetLang) {
+  const serviceId = await getServiceId('tts', targetLang);
   const inferenceKey = process.env.BHASHINI_INFERENCE_KEY;
   const userId = process.env.BHASHINI_USER_ID;
 
@@ -122,7 +144,7 @@ async function textToSpeech(text, sourceLanguage = 'hi') {
         taskType: 'tts',
         config: {
           serviceId,
-          language: { sourceLanguage: effectiveLang },
+          language: { sourceLanguage: targetLang },
           gender: 'female',
         },
       }],
@@ -140,10 +162,33 @@ async function textToSpeech(text, sourceLanguage = 'hi') {
 
   const audioContent = res.data?.pipelineResponse?.[0]?.audio?.[0]?.audioContent;
   if (!audioContent) {
-    throw new Error('Bhashini TTS returned empty audio payload');
+    throw new Error(`Bhashini TTS returned empty audio payload for language ${targetLang}`);
   }
 
   return audioContent;
+}
+
+async function textToSpeech(text, sourceLanguage = 'hi') {
+  if (!text || typeof text !== 'string' || !text.trim()) {
+    throw new Error('Text is required for TTS');
+  }
+
+  const effectiveLang = resolveLanguage(sourceLanguage, SUPPORTED_TTS_LANGS);
+  
+  try {
+    return await callBhashiniTts(text, effectiveLang);
+  } catch (err) {
+    // If a regional dialect (e.g. anp, bho, sat, or) fails on Bhashini API, try Hindi fallback
+    if (effectiveLang !== 'hi') {
+      console.warn(`[Bhashini] Regional TTS (${effectiveLang}) failed, retrying with Hindi fallback:`, err.message);
+      try {
+        return await callBhashiniTts(text, 'hi');
+      } catch (fallbackErr) {
+        throw err;
+      }
+    }
+    throw err;
+  }
 }
 
 async function speechToText(base64Audio, sourceLanguage = 'hi') {
