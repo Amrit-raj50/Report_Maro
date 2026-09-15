@@ -1,4 +1,4 @@
-﻿// controllers/problem.controller.js
+// controllers/problem.controller.js
 const Problem = require('../models/problem.model');
 const Project = require('../models/project.model');
 const Notification = require('../models/notification.model');
@@ -30,8 +30,22 @@ const createProblem = async (req, res, next) => {
       });
     }
 
+    // Normalize and validate category
+    const validCategories = [
+      'water',
+      'road',
+      'health',
+      'environment',
+      'school',
+      'electricity',
+      'toilet',
+      'emergency',
+      'other',
+    ];
+    const safeCategory = validCategories.includes(category) ? category : 'other';
+
     // Auto-fill title and description if not provided
-    if (!title) title = `${category || 'road'} समस्या`;
+    if (!title) title = `${safeCategory} समस्या`;
     if (!description || description.length < 20) {
       description = (description || '') + ' नागरिक द्वारा दर्ज की गई समस्या — कृपया ध्यान दें।';
     }
@@ -43,6 +57,15 @@ const createProblem = async (req, res, next) => {
         success: false,
         message: 'उपयोगकर्ता पहचान नहीं हो सकी (Unauthorized)',
       });
+    }
+
+    // Parse image_urls if sent as JSON string in FormData
+    if (typeof image_urls === 'string') {
+      try {
+        image_urls = JSON.parse(image_urls);
+      } catch (e) {
+        image_urls = image_urls ? [image_urls] : [];
+      }
     }
 
     // Upload images to Cloudinary (if any) — each upload is individually protected
@@ -62,7 +85,7 @@ const createProblem = async (req, res, next) => {
     const problem = await Problem.create({
       title,
       description,
-      category: category || 'road',
+      category: safeCategory,
       location,
       image_urls: uploadedImages.length > 0 ? uploadedImages : (image_urls || []),
       submitted_by: userId,
@@ -71,9 +94,13 @@ const createProblem = async (req, res, next) => {
     });
 
     // Enqueue for AI processing — FIRE AND FORGET (never crash if Redis is down)
-    enqueueClassification(problem._id, description).catch((err) => {
-      console.error('⚠️ [BullMQ AI Queue] Redis connection error (bypassed, problem still saved):', err.message);
-    });
+    try {
+      enqueueClassification(problem._id, description).catch((err) => {
+        console.error('⚠️ [BullMQ AI Queue] Redis connection error (bypassed, problem still saved):', err.message);
+      });
+    } catch (qErr) {
+      console.warn('⚠️ [BullMQ AI Queue] Synchronous enqueue warning (bypassed):', qErr.message);
+    }
 
     // 202 Accepted - Processing in background
     res.status(202).json({

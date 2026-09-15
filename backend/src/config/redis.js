@@ -5,10 +5,14 @@ let redisClient = null;
 function getRedisClient() {
   if (!redisClient) {
     const redisUri = process.env.REDIS_URI;
+    if (!redisUri) {
+      console.warn('⚠️ REDIS_URI environment variable is not set. Redis features will be disabled.');
+      return null;
+    }
     
     console.log('Connecting to Redis at:', redisUri.replace(/:[^@]*@/, ':****@')); // Hide password in logs
 
-    const isUpstash = redisUri && (redisUri.includes('upstash.io') || redisUri.startsWith('rediss://'));
+    const isUpstash = redisUri.includes('upstash.io') || redisUri.startsWith('rediss://');
     const options = {
       maxRetriesPerRequest: null,
       retryStrategy: (times) => {
@@ -18,14 +22,19 @@ function getRedisClient() {
         }
         return Math.min(times * 100, 3000);
       },
-      lazyConnect: false,
+      lazyConnect: true,
     };
 
     if (isUpstash) {
       options.tls = { rejectUnauthorized: false };
     }
 
-    redisClient = new Redis(redisUri, options);
+    try {
+      redisClient = new Redis(redisUri, options);
+    } catch (err) {
+      console.error('❌ Failed to initialize Redis client:', err.message);
+      return null;
+    }
 
     redisClient.on('connect', () => {
       console.log('Redis connected successfully (singleton)');

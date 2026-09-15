@@ -8,18 +8,27 @@ let classificationQueue = null;
 
 function getQueue() {
   if (!classificationQueue) {
-    classificationQueue = new Queue('classification-queue', {
-      connection: getRedisClient(),
-      defaultJobOptions: {
-        attempts: 3, // Retry 3 times if fails
-        backoff: {
-          type: 'exponential', // Wait longer each retry
-          delay: 1000,         // Start with 1 second
+    const client = getRedisClient();
+    if (!client) {
+      return null;
+    }
+    try {
+      classificationQueue = new Queue('classification-queue', {
+        connection: client,
+        defaultJobOptions: {
+          attempts: 3, // Retry 3 times if fails
+          backoff: {
+            type: 'exponential', // Wait longer each retry
+            delay: 1000,         // Start with 1 second
+          },
+          removeOnComplete: true, // Auto-cleanup after success
+          removeOnFail: false,    // Keep failed jobs for debugging
         },
-        removeOnComplete: true, // Auto-cleanup after success
-        removeOnFail: false,    // Keep failed jobs for debugging
-      },
-    });
+      });
+    } catch (err) {
+      console.warn('⚠️ [Queue] Could not create BullMQ queue:', err.message);
+      return null;
+    }
   }
   return classificationQueue;
 }
@@ -30,8 +39,17 @@ function getQueue() {
  * @param {string} text - The problem description text
  */
 const enqueueClassification = async (problemId, text) => {
-  await getQueue().add('classify', { problemId, text });
-  console.log(`📤 [Queue] Job added for problem: ${problemId}`);
+  try {
+    const q = getQueue();
+    if (!q) {
+      console.warn(`⚠️ [Queue] Redis queue unavailable; skipping AI job for problem ${problemId}`);
+      return;
+    }
+    await q.add('classify', { problemId, text });
+    console.log(`📤 [Queue] Job added for problem: ${problemId}`);
+  } catch (err) {
+    console.warn(`⚠️ [Queue] Could not enqueue classification for ${problemId}:`, err.message);
+  }
 };
 
 module.exports = { getQueue, enqueueClassification };

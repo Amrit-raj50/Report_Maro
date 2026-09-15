@@ -16,8 +16,18 @@ const ProblemSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['water', 'road', 'health', 'other'],
-      default: null,
+      enum: [
+        'water',
+        'road',
+        'health',
+        'environment',
+        'school',
+        'electricity',
+        'toilet',
+        'emergency',
+        'other',
+      ],
+      default: 'other',
     },
     sub_category: {
       type: String,
